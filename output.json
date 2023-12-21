@@ -1,0 +1,59 @@
+{
+  "structure": {
+    "label": "root",
+    "data": {
+      "faces": [
+        "f2"
+      ],
+      "edges": [
+        "e2"
+      ]
+    },
+    "children": [
+      {
+        "label": "child1",
+        "data": {
+          "faces": [
+            "f1"
+          ],
+          "edges": [
+            "e1"
+          ]
+        },
+        "children": []
+      }
+    ]
+  },
+  "faces": [
+    {
+      "id": "f1",
+      "shape": "rectangle",
+      "color": "red",
+      "layer": "L1",
+      "material": "steel"
+    },
+    {
+      "id": "f2",
+      "shape": "circle",
+      "color": "blue",
+      "layer": "L1",
+      "material": "steel"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "shape": "line",
+      "color": "green",
+      "layer": "L2",
+      "material": "steel"
+    },
+    {
+      "id": "e2",
+      "shape": "line",
+      "color": "yellow",
+      "layer": "L2",
+      "material": "steel"
+    }
+  ]
+}
