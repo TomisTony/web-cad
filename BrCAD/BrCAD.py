@@ -64,8 +64,8 @@ class BrCAD:
     def to_dict(self) -> Dict:
         return {
             "structure": self.structure.to_dict(),
-            "faces": [face.to_dict() for face in self.faces.values()],
-            "edges": [edge.to_dict() for edge in self.edges.values()],
+            "faces": [face.to_dict() for face in self.faces],
+            "edges": [edge.to_dict() for edge in self.edges],
         }
 
     def to_json(self, path: str) -> None:

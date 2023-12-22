@@ -1,16 +1,20 @@
 from typing import List, Dict
 
 from OCC.Core.TopoDS import TopoDS_Shape
-from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_SHAPE
+from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_FACE, TopAbs_SHAPE
 from OCC.Core.TopExp import TopExp_Explorer
 from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
 from OCC.Core.TopLoc import TopLoc_Location
 from OCC.Core.BRep import BRep_Tool
 from OCC.Core.gp import gp_Pnt
+from OCC.Core.TopAbs import TopAbs_FORWARD
+from OCC.Core.StdPrs import StdPrs_ToolTriangulatedShape
+from OCC.Core.TColgp import TColgp_Array1OfDir
+from OCC.Core.Poly import Poly_Connect
 
 from BrCAD.BrCAD import BrCAD_node, BrCAD_face, BrCAD_edge, BrCAD
 
-MAX_SAFE_INT = 2**32 - 1
+MAX_SAFE_INT = 2**31 - 1
 
 
 class TopoDSShapeConvertor:
@@ -48,7 +52,7 @@ class TopoDSShapeConvertor:
         # 开启 mesh 化
         BRepMesh_IncrementalMesh(self.topods_shape, self.max_deviation, False, self.max_deviation * 5, False)
         # 遍历所有面
-        faceExp = TopExp_Explorer(self.topods_shape, TopAbs_EDGE, TopAbs_SHAPE)
+        faceExp = TopExp_Explorer(self.topods_shape, TopAbs_FACE, TopAbs_SHAPE)
         while faceExp.More():
             face = faceExp.Current()
             location = TopLoc_Location()
@@ -86,8 +90,44 @@ class TopoDSShapeConvertor:
             orient = face.Orientation()
             if triangulation.HasUVNodes():
                 UMin = UMax = VMin = VMax = 0
-                uv_nodes_count = triangulation.MapUVNodeArray()
+                uv_nodes = triangulation.MapUVNodeArray()
+                for i in range(1, uv_nodes.Length() + 1):
+                    uv_node = uv_nodes.Value(i)
+                    brcad_face.uv_coordinates.append(uv_node.X())
+                    brcad_face.uv_coordinates.append(uv_node.Y())
+                    # 计算 UV Bounds
+                    if i == 1:
+                        UMin = UMax = uv_node.X()
+                        VMin = VMax = uv_node.Y()
+                    else:
+                        UMin = min(UMin, uv_node.X())
+                        UMax = max(UMax, uv_node.X())
+                        VMin = min(VMin, uv_node.Y())
+                        VMax = max(VMax, uv_node.Y())
+                # normalize uv
+                for i in range(0, len(brcad_face.uv_coordinates), 2):
+                    x = brcad_face.uv_coordinates[i]
+                    y = brcad_face.uv_coordinates[i + 1]
+                    x = (x - UMin) / (UMax - UMin)
+                    y = (y - VMin) / (VMax - VMin)
+                    if orient == TopAbs_FORWARD:
+                        x = 1 - x
+                    brcad_face.uv_coordinates[i] = x
+                    brcad_face.uv_coordinates[i + 1] = y
+            
+            # 填充 normal_coordinates
+            normals =  TColgp_Array1OfDir(1, len(nodes))  
+            pc = Poly_Connect(triangulation)
+            StdPrs_ToolTriangulatedShape.Normal(face, pc, normals)
+            for i in range(1, normals.Length() + 1):
+                normal = normals.Value(i).Transformed(location.Transformation())
+                brcad_face.normal_coordinates.append(normal.X())
+                brcad_face.normal_coordinates.append(normal.Y())
+                brcad_face.normal_coordinates.append(normal.Z())
                 
+            # 填充 triangle_indexes
+            faceList.append(brcad_face)
+            faceExp.Next()      
                 
                 
             

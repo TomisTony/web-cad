@@ -13,21 +13,21 @@ from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
 from OCC.Core import TopoDS
 from OCC.Core.TopAbs import TopAbs_COMPOUND, TopAbs_COMPSOLID, TopAbs_SOLID, TopAbs_SHELL, TopAbs_FACE, TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_SHAPE, TopAbs_FORWARD
 
-old_face_hashes = {}
-BRepMesh_IncrementalMesh(shape, 0.1, False, 0.5, False)
-exp = TopExp_Explorer(shape, TopAbs_FACE, TopAbs_SHAPE)
-while exp.More():
-    face = exp.Current()
-    hash = face.HashCode(100000000)
-    aloc = TopLoc_Location()
-    bt = BRep_Tool()
-    myT = bt.Triangulation(face, aloc)
-    print(myT)
-    if hash not in old_face_hashes:
-        old_face_hashes[hash] = face
-    exp.Next()
+# old_face_hashes = {}
+# BRepMesh_IncrementalMesh(shape, 0.1, False, 0.5, False)
+# exp = TopExp_Explorer(shape, TopAbs_FACE, TopAbs_SHAPE)
+# while exp.More():
+#     face = exp.Current()
+#     hash = face.HashCode(100000000)
+#     aloc = TopLoc_Location()
+#     bt = BRep_Tool()
+#     myT = bt.Triangulation(face, aloc)
+#     print(myT)
+#     if hash not in old_face_hashes:
+#         old_face_hashes[hash] = face
+#     exp.Next()
     
-BRepMesh_IncrementalMesh(shape, 0.1, False, 0.5, False)
+# BRepMesh_IncrementalMesh(shape, 0.1, False, 0.5, False)
 
 # new_face_hashes = {}
 # exp2 = TopExp_Explorer(shape, TopAbs_FACE, TopAbs_SHAPE)
@@ -41,6 +41,11 @@ BRepMesh_IncrementalMesh(shape, 0.1, False, 0.5, False)
 # print(len(old_face_hashes))
 # print(len(new_face_hashes))
 # print(len(old_face_hashes) - len(new_face_hashes))
+import sys
+sys.path.insert(0, 'C:/USERS/GXLYQ_AIR/DESKTOP/WEB-CAD')
+from BrCAD import TopoDSShapeConvertor
+converter = TopoDSShapeConvertor.TopoDSShapeConvertor(shape)
+print(converter.get_BrCAD().to_json("output.json"))
 
 
 
