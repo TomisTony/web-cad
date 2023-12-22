@@ -1,103 +1,46 @@
-# from OCC.Extend.DataExchange import read_step_file
+from OCC.Extend.DataExchange import read_step_file
 
-# # 读取 STEP 文件
-# step_filename = 'c:\\users\\GXLYQ_AIR\\Desktop\\web-cad\\test\\as1-oc-214-mat.stp'
-# shape = read_step_file(step_filename)
+# 读取 STEP 文件
+step_filename = 'c:\\users\\GXLYQ_AIR\\Desktop\\web-cad\\test\\as1-oc-214-mat.stp'
+shape = read_step_file(step_filename)
 
-# # from OCC.Core.TopExp import TopExp_Explorer
-# from OCC.Core.TopoDS import TopoDS_Iterator
-# from OCC.Core import TopoDS
-# from OCC.Core.TopAbs import TopAbs_COMPOUND, TopAbs_COMPSOLID, TopAbs_SOLID, TopAbs_SHELL, TopAbs_FACE, TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_SHAPE, TopAbs_FORWARD
+# from OCC.Core.TopExp import TopExp_Explorer
+from OCC.Core.TopoDS import TopoDS_Iterator
+from OCC.Core.TopLoc import TopLoc_Location
+from OCC.Core.BRep import BRep_Tool
+from OCC.Core.TopExp import TopExp_Explorer
+from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
+from OCC.Core import TopoDS
+from OCC.Core.TopAbs import TopAbs_COMPOUND, TopAbs_COMPSOLID, TopAbs_SOLID, TopAbs_SHELL, TopAbs_FACE, TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_SHAPE, TopAbs_FORWARD
 
-# topo_lut = {
-#     TopAbs_COMPOUND: "COMPOUND",
-#     TopAbs_COMPSOLID: "COMPSOLID",
-#     TopAbs_SOLID: "SOLID",
-#     TopAbs_SHELL: "SHELL",
-#     TopAbs_FACE: "FACE",
-#     TopAbs_WIRE: "WIRE",
-#     TopAbs_EDGE: "EDGE",
-#     TopAbs_VERTEX: "VERTEX",
-#     TopAbs_SHAPE: "SHAPE"
-# }
+old_face_hashes = {}
+BRepMesh_IncrementalMesh(shape, 0.1, False, 0.5, False)
+exp = TopExp_Explorer(shape, TopAbs_FACE, TopAbs_SHAPE)
+while exp.More():
+    face = exp.Current()
+    hash = face.HashCode(100000000)
+    aloc = TopLoc_Location()
+    bt = BRep_Tool()
+    myT = bt.Triangulation(face, aloc)
+    print(myT)
+    if hash not in old_face_hashes:
+        old_face_hashes[hash] = face
+    exp.Next()
+    
+BRepMesh_IncrementalMesh(shape, 0.1, False, 0.5, False)
 
-# def iterate_shape(shape) -> dict:
-#     shape_iter = TopoDS_Iterator(shape)
-#     shape_dict = {}
-#     while shape_iter.More():
-#         sub_shape = shape_iter.Value()
-#         shape_type = topo_lut[sub_shape.ShapeType()]
-#         shape_dict[shape_type] = iterate_shape(sub_shape)
-#         shape_iter.Next()
-#     return shape_dict
+# new_face_hashes = {}
+# exp2 = TopExp_Explorer(shape, TopAbs_FACE, TopAbs_SHAPE)
+# while exp2.More():
+#     face = exp2.Current()
+#     hash = face.HashCode(100000000)
+#     if hash not in new_face_hashes:
+#         new_face_hashes[hash] = face
+#     exp2.Next()
+    
+# print(len(old_face_hashes))
+# print(len(new_face_hashes))
+# print(len(old_face_hashes) - len(new_face_hashes))
 
-# shape_dict = iterate_shape(shape)
-# # 格式化打印
-# import json
-# print(json.dumps(shape_dict, indent=4, ensure_ascii=False))
 
-from OCC.Core.TCollection import TCollection_ExtendedString
 
-from OCC.Core.TDocStd import TDocStd_Document
-from OCC.Core.XCAFDoc import (XCAFDoc_DocumentTool_ShapeTool,
-                              XCAFDoc_DocumentTool_ColorTool,
-                              XCAFDoc_DocumentTool_LayerTool,
-                              XCAFDoc_DocumentTool_MaterialTool)
-from OCC.Core.STEPCAFControl import STEPCAFControl_Reader
-from OCC.Core.IFSelect import IFSelect_RetDone
-from OCC.Core.TDF import TDF_LabelSequence
-
-from OCC.Display.SimpleGui import init_display
-
-filename = 'c:\\users\\GXLYQ_AIR\\Desktop\\web-cad\\test\\as1-oc-214-mat.stp'
-_shapes = []
-
-# create an handle to a document
-doc = TDocStd_Document(TCollection_ExtendedString("pythonocc-doc"))
-
-# Get root assembly
-shape_tool = XCAFDoc_DocumentTool_ShapeTool(doc.Main())
-l_colors = XCAFDoc_DocumentTool_ColorTool(doc.Main())
-l_layers = XCAFDoc_DocumentTool_LayerTool(doc.Main())
-l_materials = XCAFDoc_DocumentTool_MaterialTool(doc.Main())
-
-step_reader = STEPCAFControl_Reader()
-step_reader.SetColorMode(True)
-step_reader.SetLayerMode(True)
-step_reader.SetNameMode(True)
-step_reader.SetMatMode(True)
-
-status = step_reader.ReadFile(filename)
-if status == IFSelect_RetDone:
-    step_reader.Transfer(doc)
-
-labels = TDF_LabelSequence()
-color_labels = TDF_LabelSequence()
-
-shape_tool.GetFreeShapes(labels)
-
-print("Number of shapes at root :%i" % labels.Length())
-for i in range(labels.Length()):
-    sub_shapes_labels = TDF_LabelSequence()
-    print("Is Assembly :", shape_tool.IsAssembly(labels.Value(i+1)))
-    sub_shapes = shape_tool.GetSubShapes(labels.Value(i+1), sub_shapes_labels)
-    print("Number of subshapes in the assemly :%i" % sub_shapes_labels.Length())
-l_colors.GetColors(color_labels)
-
-print("Number of colors=%i" % color_labels.Length())
-for i in range(color_labels.Length()):
-    color = color_labels.Value(i+1)
-
-for i in range(labels.Length()):
-    label = labels.Value(i+1)
-    print(label.Data())
-    a_shape = shape_tool.GetShape(label)
-    m = l_layers.GetLayers(a_shape)
-    _shapes.append(a_shape)
-
-#
-# Display
-#
-display, start_display, add_menu, add_function_to_menu = init_display()
-display.DisplayShape(_shapes, update=True)
-start_display()
