@@ -1,0 +1,4 @@
+__pycache__
+*.stp
+*.step
+output.json
