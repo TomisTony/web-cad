@@ -11,6 +11,8 @@ from OCC.Core.TopAbs import TopAbs_FORWARD
 from OCC.Core.StdPrs import StdPrs_ToolTriangulatedShape
 from OCC.Core.TColgp import TColgp_Array1OfDir
 from OCC.Core.Poly import Poly_Connect
+from OCC.Core.BRepAdaptor import BRepAdaptor_Curve
+from OCC.Core.GCPnts import GCPnts_TangentialDeflection
 
 from BrCAD.BrCAD import BrCAD_node, BrCAD_face, BrCAD_edge, BrCAD
 
@@ -45,12 +47,16 @@ class TopoDSShapeConvertor:
         )
 
     def _converte(self) -> (List[BrCAD_face], List[BrCAD_edge]):
-        faceList: List[BrCAD_face] = []
-        edgeList: List[BrCAD_edge] = []
-        edge_hashes = self._get_edge_hashes(self.topods_shape)
-        face_hashes = self._get_face_hashes(self.topods_shape)
+        face_list: List[BrCAD_face] = []
+        edge_list: List[BrCAD_edge] = []
+        # edge_hashes = self._get_edge_hashes(self.topods_shape)
+        # face_hashes = self._get_face_hashes(self.topods_shape)
         # 开启 mesh 化
         BRepMesh_IncrementalMesh(self.topods_shape, self.max_deviation, False, self.max_deviation * 5, False)
+        
+        # 由于我们在遍历所有面的时候就会开始填充 edgeList，所以需要一个 set 来记录已经填充过的 edge
+        complete_edge_set = set()
+        
         # 遍历所有面
         faceExp = TopExp_Explorer(self.topods_shape, TopAbs_FACE, TopAbs_SHAPE)
         while faceExp.More():
@@ -126,12 +132,75 @@ class TopoDSShapeConvertor:
                 brcad_face.normal_coordinates.append(normal.Z())
                 
             # 填充 triangle_indexes
-            faceList.append(brcad_face)
-            faceExp.Next()      
-                
-                
+            triangles = triangulation.Triangles()
+            validFaceTriangleCount = 0
+            for i in range(1, triangulation.NbTriangles() + 1):
+                triangle = triangles.Value(i)
+                node1 = triangle.Value(1)
+                node2 = triangle.Value(2)
+                node3 = triangle.Value(3)
+                if orient != TopAbs_FORWARD:
+                    node1, node2 = node2, node1
+                brcad_face.triangle_indexes.append(node1 - 1)
+                brcad_face.triangle_indexes.append(node2 - 1)
+                brcad_face.triangle_indexes.append(node3 - 1)
+                validFaceTriangleCount += 1
+            brcad_face.number_of_triangles = validFaceTriangleCount
+
+            face_list.append(brcad_face)
             
-        return faceList, edgeList
+            # 在每一个面中遍历所有 edge，这些边可能是三角化之后新产生的
+            edgeExp = TopExp_Explorer(face, TopAbs_EDGE, TopAbs_SHAPE)
+            while edgeExp.More():
+                edge = edgeExp.Current()
+                hash = edge.HashCode(MAX_SAFE_INT)
+                # 为什么这里是 in 而不是 not in 呢
+                # 因为我们在三角化 face 之后会产生很多边，而这些新产生的边是我们不要的
+                # 这些边的特征就是，只会出现一次；而我们要的那些原本图形的边是会出现多次的（因为会被多个面共享）
+                # 所以能够被二次探测的边才是我们要的边
+                if hash in complete_edge_set:
+                    brcad_edge = BrCAD_edge(
+                        id=hash,
+                        vertex_coordinates=[],
+                    )
+                    poly = BRep_Tool().PolygonOnTriangulation(edge, triangulation, location)
+                    edge_nodes = poly.Nodes()                    
+                    # 填充 vertex_coordinates
+                    for i in range(1, edge_nodes.Length() + 1):
+                        vertex_index = edge_nodes.Value(i)
+                        brcad_edge.vertex_coordinates.append(brcad_face.vertex_coordinates[(vertex_index - 1) * 3 + 0])
+                        brcad_edge.vertex_coordinates.append(brcad_face.vertex_coordinates[(vertex_index - 1) * 3 + 1])
+                        brcad_edge.vertex_coordinates.append(brcad_face.vertex_coordinates[(vertex_index - 1) * 3 + 2])
+                    edge_list.append(brcad_edge)
+                else:
+                    complete_edge_set.add(hash)
+                edgeExp.Next()
+            faceExp.Next()      
+
+        # 并不一定所有的边都在 face 中，而且这些边我们需要特殊处理，所以我们需要额外遍历
+        edgeExp = TopExp_Explorer(self.topods_shape, TopAbs_EDGE, TopAbs_SHAPE) 
+        while edgeExp.More():
+            edge = edgeExp.Current()
+            hash = edge.HashCode(MAX_SAFE_INT)
+            if hash not in complete_edge_set:
+                brcad_edge = BrCAD_edge(
+                    id=hash,
+                    vertex_coordinates=[],
+                )
+                location = TopLoc_Location()
+                adaptorCurve = BRepAdaptor_Curve(edge)
+                tangDef = GCPnts_TangentialDeflection(adaptorCurve, self.max_deviation, 0.1)                  
+                # 填充 vertex_coordinates
+                for i in range(1, tangDef.NbPoints() + 1):
+                    vertex = tangDef.Value(i).Transformed(location.Transformation())
+                    brcad_edge.vertex_coordinates.append(vertex.X())
+                    brcad_edge.vertex_coordinates.append(vertex.Y())
+                    brcad_edge.vertex_coordinates.append(vertex.Z())
+                complete_edge_set.add(hash)
+                edge_list.append(brcad_edge)
+            edgeExp.Next() 
+                   
+        return face_list, edge_list
 
     def _get_edge_hashes(self, shape: TopoDS_Shape) -> Dict[str, int]:
         edge_hashes = {}
@@ -156,4 +225,4 @@ class TopoDSShapeConvertor:
             face_hashes[hash] = face_index
             face_index += 1
             faceExp.Next()
-        return face_hashes
+        return face_hashes  

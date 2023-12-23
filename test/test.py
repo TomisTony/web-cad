@@ -41,11 +41,25 @@ from OCC.Core.TopAbs import TopAbs_COMPOUND, TopAbs_COMPSOLID, TopAbs_SOLID, Top
 # print(len(old_face_hashes))
 # print(len(new_face_hashes))
 # print(len(old_face_hashes) - len(new_face_hashes))
+
+# 统计 edge 数量 
+edge_exp = TopExp_Explorer(shape, TopAbs_EDGE, TopAbs_SHAPE)
+edge_hash = {}
+edge_count = 0
+while edge_exp.More():
+    edge = edge_exp.Current()
+    hash = edge.HashCode(100000000)
+    if hash not in edge_hash:
+        edge_hash[hash] = edge
+        edge_count += 1
+    edge_exp.Next()
+print("原始数量" +  str(edge_count))
+
 import sys
 sys.path.insert(0, 'C:/USERS/GXLYQ_AIR/DESKTOP/WEB-CAD')
 from BrCAD import TopoDSShapeConvertor
 converter = TopoDSShapeConvertor.TopoDSShapeConvertor(shape)
-print(converter.get_BrCAD().to_json("output.json"))
+converter.get_BrCAD().to_json("output.json")
 
 
 

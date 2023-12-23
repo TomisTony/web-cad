@@ -23,11 +23,11 @@ class BrCAD_node:
 class BrCAD_face:
     def __init__(self, id: str, vertex_coordinates: [], uv_coordinates: [], normal_coordinates: [], triangle_indexes: [], number_of_triangles: int):
         self.id = id
-        self.vertex_coordinates = vertex_coordinates
-        self.uv_coordinates = uv_coordinates
-        self.normal_coordinates = normal_coordinates
-        self.triangle_indexes = triangle_indexes
-        self.number_of_triangles = number_of_triangles
+        self.vertex_coordinates: List[int] = vertex_coordinates
+        self.uv_coordinates: List[int] = uv_coordinates
+        self.normal_coordinates: List[int] = normal_coordinates
+        self.triangle_indexes: List[int] = triangle_indexes
+        self.number_of_triangles: int = number_of_triangles
 
     def to_dict(self) -> Dict:
         return {
@@ -41,8 +41,8 @@ class BrCAD_face:
 
 class BrCAD_edge:
     def __init__(self, id: str, vertex_coordinates: []):
-        self.id = id
-        self.vertex_coordinates = vertex_coordinates
+        self.id: int = id
+        self.vertex_coordinates: List[int] = vertex_coordinates
 
     def to_dict(self) -> Dict:
         return {
