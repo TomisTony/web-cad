@@ -1,8 +1,8 @@
 import React from 'react';
-import * as THREE from 'three';
 import { ThreeScene } from './ThreeScene';
 
 function App() {
+  const scene = new ThreeScene();
   return (
     <div>111</div>
   );

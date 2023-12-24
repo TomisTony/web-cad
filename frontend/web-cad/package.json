@@ -15,8 +15,8 @@
     "typescript": "^5.3.3"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build"
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build"
   },
   "browserslist": {
     "production": [
@@ -31,6 +31,8 @@
     ]
   },
   "devDependencies": {
-    "@types/three": "^0.160.0"
+    "@types/three": "^0.160.0",
+    "customize-cra": "^1.0.0",
+    "react-app-rewired": "^2.2.1"
   }
 }

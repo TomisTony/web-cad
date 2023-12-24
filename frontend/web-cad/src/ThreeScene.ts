@@ -2,6 +2,7 @@ import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 // import { OrbitControls } from "three"
 import { ThreeRaycaster } from "./ThreeRaycaster";
+import {BrCAD} from "./types/BrCAD";
 
 export class ThreeScene {
     public scene: THREE.Scene
@@ -185,6 +186,10 @@ export class ThreeScene {
 
     public getIntersect(event): THREE.Vector3 {
         return this.raycaster.getIntersect(event)
+    }
+    
+    public addBrCADToScene(brCAD: BrCAD) {
+        
     }
 
 
