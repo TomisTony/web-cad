@@ -42,6 +42,12 @@ from OCC.Core.TopAbs import TopAbs_COMPOUND, TopAbs_COMPSOLID, TopAbs_SOLID, Top
 # print(len(new_face_hashes))
 # print(len(old_face_hashes) - len(new_face_hashes))
 
+# 新建一个长方体
+from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
+
+# Create a box
+shape = BRepPrimAPI_MakeBox(70, 20, 30).Shape()
+
 # 统计 edge 数量 
 edge_exp = TopExp_Explorer(shape, TopAbs_EDGE, TopAbs_SHAPE)
 edge_hash = {}
