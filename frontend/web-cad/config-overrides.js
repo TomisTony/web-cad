@@ -1,15 +1,12 @@
-const path = require('path')
-
-function resolve(dir) {
-  return path.join(__dirname, '.', dir)
-}
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const path = require("path");
 
 module.exports = function override(config, env) {
   config.resolve = {
-    extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    extensions: [".js", ".jsx", ".ts", ".tsx"],
     alias: {
-      '@': path.resolve(__dirname, 'src/'),
+      "@": path.resolve(__dirname, "src/"),
     },
-  }
-  return config
-}
+  };
+  return config;
+};
