@@ -1,53 +1,55 @@
-import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import * as THREE from "three"
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 // import { OrbitControls } from "three"
-import { ThreeRaycaster } from "./ThreeRaycaster";
-import { BrCAD } from "./types/BrCAD";
+import { ThreeRaycaster } from "./ThreeRaycaster"
+import { BrCAD } from "./types/BrCAD"
+
+const todoshape_json = ""
 
 export class ThreeScene {
-  public scene: THREE.Scene;
-  public camera: THREE.PerspectiveCamera;
-  public renderer: THREE.WebGLRenderer;
-  public controls: OrbitControls;
-  public raycaster: ThreeRaycaster;
+  public scene!: THREE.Scene
+  public camera!: THREE.PerspectiveCamera
+  public renderer!: THREE.WebGLRenderer
+  public controls!: OrbitControls
+  public raycaster!: ThreeRaycaster
 
   constructor() {
-    this.init();
-    this.raycaster = new ThreeRaycaster(this.camera);
+    this.init()
+    this.raycaster = new ThreeRaycaster(this.camera)
   }
   private init() {
-    this.initScene();
-    this.initRenderer();
-    this.initCamera();
-    this.initLight();
-    this.initControls();
-    window.addEventListener("resize", this.onWindowResize, false);
-    this.animate();
+    this.initScene()
+    this.initRenderer()
+    this.initCamera()
+    this.initLight()
+    this.initControls()
+    window.addEventListener("resize", this.onWindowResize, false)
+    this.animate()
     //this.setCamera();
   }
   private onWindowResize = () => {
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-  };
+    this.camera.aspect = window.innerWidth / window.innerHeight
+    this.camera.updateProjectionMatrix()
+    this.renderer.setSize(window.innerWidth, window.innerHeight)
+  }
   /**
    * 场景
    */
   private initScene() {
-    this.scene = new THREE.Scene();
+    this.scene = new THREE.Scene()
     //背景颜色
     //this.scene.background = new THREE.Color(0x222222);
-    this.scene.background = new THREE.Color(0xbbbbbb);
-    const axes = new THREE.AxesHelper(10);
+    this.scene.background = new THREE.Color(0xbbbbbb)
+    const axes = new THREE.AxesHelper(10)
     //axes.rotation.set(Math.PI / 2.0,0,0);
-    this.scene.add(axes);
+    this.scene.add(axes)
 
-    const grid: any = new THREE.GridHelper(500, 10, 0xffffff, 0xffffff);
-    grid.rotation.set(Math.PI / 2.0, 0, 0);
-    grid.material.opacity = 0.5;
-    grid.material.depthWrite = false;
-    grid.material.transparent = true;
-    this.scene.add(grid);
+    const grid: any = new THREE.GridHelper(500, 10, 0xffffff, 0xffffff)
+    grid.rotation.set(Math.PI / 2.0, 0, 0)
+    grid.material.opacity = 0.5
+    grid.material.depthWrite = false
+    grid.material.transparent = true
+    this.scene.add(grid)
   }
 
   /**
@@ -59,10 +61,10 @@ export class ThreeScene {
       window.innerWidth / window.innerHeight,
       0.1,
       10000,
-    );
-    this.camera.position.set(0, -400, 530);
-    this.camera.up = new THREE.Vector3(0, 0, 1);
-    this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+    )
+    this.camera.position.set(0, -400, 530)
+    this.camera.up = new THREE.Vector3(0, 0, 1)
+    this.camera.lookAt(new THREE.Vector3(0, 0, 0))
   }
 
   /**
@@ -71,11 +73,11 @@ export class ThreeScene {
   private initRenderer() {
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
-    });
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    })
+    this.renderer.setSize(window.innerWidth, window.innerHeight)
     //renderer.shadowMap.enabled = true;
     //renderer.setClearColor(0xdddddd);
-    document.body.appendChild(this.renderer.domElement);
+    document.body.appendChild(this.renderer.domElement)
   }
 
   private initLight() {
@@ -95,18 +97,18 @@ export class ThreeScene {
     // light2.castShadow = true;
     // this.scene.add(light2); //追加光源到场景
 
-    const light = new THREE.HemisphereLight(0xffffff, 0x444444);
-    light.position.set(0, 200, 0);
-    const light2 = new THREE.DirectionalLight(0xbbbbbb);
-    light2.position.set(6, 50, -12);
-    light2.castShadow = true;
-    light2.shadow.camera.top = 200;
-    light2.shadow.camera.bottom = -200;
-    light2.shadow.camera.left = -200;
-    light2.shadow.camera.right = 200;
+    const light = new THREE.HemisphereLight(0xffffff, 0x444444)
+    light.position.set(0, 200, 0)
+    const light2 = new THREE.DirectionalLight(0xbbbbbb)
+    light2.position.set(6, 50, -12)
+    light2.castShadow = true
+    light2.shadow.camera.top = 200
+    light2.shadow.camera.bottom = -200
+    light2.shadow.camera.left = -200
+    light2.shadow.camera.right = 200
     //this.light2.shadow.radius        =  32;
-    light2.shadow.mapSize.width = 128;
-    light2.shadow.mapSize.height = 128;
+    light2.shadow.mapSize.width = 128
+    light2.shadow.mapSize.height = 128
   }
 
   /**
@@ -115,15 +117,15 @@ export class ThreeScene {
   private initControls() {
     //初始化轨迹球控件
     //this.controls = new TrackballControls(this.camera, this.renderer.domElement);
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement)
     // 使动画循环使用时阻尼或自转 意思是否有惯性
-    this.controls.enableDamping = true;
+    this.controls.enableDamping = true
     //动态阻尼系数 就是鼠标拖拽旋转灵敏度
-    this.controls.dampingFactor = 0.5;
+    this.controls.dampingFactor = 0.5
     //是否可以缩放
-    this.controls.enableZoom = true;
+    this.controls.enableZoom = true
     //是否自动旋转
-    this.controls.autoRotate = false;
+    this.controls.autoRotate = false
     //设置相机距离原点的最近距离
     //controls.minDistance = 50;
     //设置相机距离原点的最远距离
@@ -134,7 +136,7 @@ export class ThreeScene {
       LEFT: THREE.MOUSE.DOLLY,
       MIDDLE: THREE.MOUSE.PAN,
       RIGHT: THREE.MOUSE.ROTATE,
-    };
+    }
   }
 
   /**
@@ -142,15 +144,15 @@ export class ThreeScene {
    */
   private render() {
     //设置主场景视区大小
-    this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-    this.renderer.render(this.scene, this.camera);
+    this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight)
+    this.renderer.render(this.scene, this.camera)
   }
 
   private animate = () => {
-    requestAnimationFrame(this.animate);
-    this.render();
-    this.controls.update();
-  };
+    requestAnimationFrame(this.animate)
+    this.render()
+    this.controls.update()
+  }
 
   /**
    * //设置模型到适合观察的大小
@@ -158,30 +160,30 @@ export class ThreeScene {
   public setCamera() {
     try {
       //计算包围盒
-      const boxHelper = new THREE.BoxHelper(this.scene);
-      boxHelper.geometry.computeBoundingBox();
-      const radius = (boxHelper.geometry.boundingSphere as THREE.Sphere).radius;
+      const boxHelper = new THREE.BoxHelper(this.scene)
+      boxHelper.geometry.computeBoundingBox()
+      const radius = (boxHelper.geometry.boundingSphere as THREE.Sphere).radius
       //计算相机位置
-      const box = boxHelper.geometry.boundingBox as THREE.Box3;
+      const box = boxHelper.geometry.boundingBox as THREE.Box3
       const center = new THREE.Vector3(
         (box.max.x + box.min.x) / 2,
         (box.max.y + box.min.y) / 2,
         (box.max.z + box.min.z) / 2,
-      );
+      )
       const cameraPos = new THREE.Vector3(
         center.x,
         center.y - radius,
         center.z + (box.max.z - box.min.z),
-      );
-      this.camera.lookAt(center);
-      this.camera.position.copy(cameraPos);
-      this.controls.target = center;
+      )
+      this.camera.lookAt(center)
+      this.camera.position.copy(cameraPos)
+      this.controls.target = center
     } catch {}
-    this.controls.update();
+    this.controls.update()
   }
 
   public getIntersect(event: any): THREE.Vector3 {
-    return this.raycaster.getIntersect(event);
+    return this.raycaster.getIntersect(event)
   }
 
   public addBrCADToScene(brCAD: BrCAD) {}

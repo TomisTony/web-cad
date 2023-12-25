@@ -3,7 +3,7 @@ module.exports = {
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended",
   ],
-  plugins: ["react", "@typescript-eslint"],
+  plugins: ["react", "@typescript-eslint", "prettier"],
   env: {
     browser: true,
     es6: true,
@@ -23,10 +23,13 @@ module.exports = {
   },
   rules: {
     "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-empty-function": "warn",
+    semi: ["error", "never"],
     "prettier/prettier": [
-      "error",
+      "warn",
       {
         endOfLine: "auto",
+        semi: false,
       },
     ],
   },
