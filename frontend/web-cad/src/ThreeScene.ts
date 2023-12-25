@@ -2,9 +2,7 @@ import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 // import { OrbitControls } from "three"
 import { ThreeRaycaster } from "./ThreeRaycaster"
-import { BrCAD } from "./types/BrCAD"
-
-const todoshape_json = ""
+import { BrCAD, BrCADEdge } from "./types/BrCAD"
 
 export class ThreeScene {
   public scene!: THREE.Scene
@@ -12,6 +10,7 @@ export class ThreeScene {
   public renderer!: THREE.WebGLRenderer
   public controls!: OrbitControls
   public raycaster!: ThreeRaycaster
+  public mainObject: THREE.Group = new THREE.Group()
 
   constructor() {
     this.init()
@@ -186,5 +185,122 @@ export class ThreeScene {
     return this.raycaster.getIntersect(event)
   }
 
-  public addBrCADToScene(brCAD: BrCAD) {}
+  public addBrCADToScene(brCAD: BrCAD) {
+    const faceList = brCAD.faces
+    const edgeList = brCAD.edges
+
+    if (faceList && faceList.length > 0) {
+      const vertices: number[] = [],
+        normals: number[] = [],
+        triangles: number[] = [],
+        uvs: number[] = []
+      let vInd = 0
+      faceList.forEach((face) => {
+        // Copy Vertices into three.js Vector3 List
+        vertices.push(...face.vertexCoordinates)
+        normals.push(...face.normalCoordinates)
+        uvs.push(...face.uvCoordinates)
+
+        // Sort Triangles into a three.js Face List
+        for (let i = 0; i < face.triangleIndexes.length; i += 3) {
+          triangles.push(
+            face.triangleIndexes[i + 0] + vInd,
+            face.triangleIndexes[i + 1] + vInd,
+            face.triangleIndexes[i + 2] + vInd,
+          )
+        }
+        vInd += face.vertexCoordinates.length / 3
+      })
+      // Compile the connected vertices and faces into a model
+      // And add to the scene
+      const geometry = new THREE.BufferGeometry()
+      geometry.setIndex(triangles)
+      geometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(vertices, 3),
+      )
+      geometry.setAttribute(
+        "normal",
+        new THREE.Float32BufferAttribute(normals, 3),
+      )
+      geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2))
+      geometry.setAttribute("uv2", new THREE.Float32BufferAttribute(uvs, 2))
+      geometry.computeBoundingSphere()
+      geometry.computeBoundingBox()
+      const model: any = new THREE.Mesh(geometry)
+      // model.castShadow = true
+      // model.name = "Model Faces"
+      // model.faceColors = colors
+      // model.globalFaceMetadata = globalFaceMetadata
+      // model.highlightFaceAtFaceIndex = function (index: string | number) {
+      //   const startIndex = this.globalFaceMetadata[index].start
+      //   const endIndex = this.globalFaceMetadata[index].end
+      //   for (let i = 0; i < this.faceColors.length / 4; i++) {
+      //     let colIndex = 4 * i
+      //     this.faceColors[colIndex] =
+      //       colIndex >= startIndex && colIndex <= endIndex ? 1 : 1
+      //     colIndex = 4 * i + 1
+      //     this.faceColors[colIndex] =
+      //       colIndex >= startIndex && colIndex <= endIndex ? 1 : 1
+      //     colIndex = 4 * i + 2
+      //     this.faceColors[colIndex] =
+      //       colIndex >= startIndex && colIndex <= endIndex ? 0 : 1
+      //   }
+      //   this.geometry.setAttribute(
+      //     "color",
+      //     new THREE.Float32BufferAttribute(this.faceColors, 4),
+      //   )
+      //   this.geometry.colorsNeedUpdate = true
+      // }.bind(model)
+      // model.clearHighlights = function () {
+      //   return this.highlightFaceAtFaceIndex(-1)
+      // }.bind(model)
+
+      this.mainObject.add(model)
+    }
+
+    if (edgeList && edgeList.length > 0) {
+      const lineVertices: THREE.Vector3[] = []
+      const globalEdgeIndices: number[] = []
+      let curGlobalEdgeIndex = 0
+      edgeList.forEach((edge: BrCADEdge) => {
+        for (let i = 0; i < edge.vertexCoordinates.length - 3; i += 3) {
+          lineVertices.push(
+            new THREE.Vector3(
+              edge.vertexCoordinates[i],
+              edge.vertexCoordinates[i + 1],
+              edge.vertexCoordinates[i + 2],
+            ),
+          )
+
+          lineVertices.push(
+            new THREE.Vector3(
+              edge.vertexCoordinates[i + 3],
+              edge.vertexCoordinates[i + 1 + 3],
+              edge.vertexCoordinates[i + 2 + 3],
+            ),
+          )
+          globalEdgeIndices.push(curGlobalEdgeIndex)
+        }
+        curGlobalEdgeIndex++
+      })
+
+      const lineGeometry = new THREE.BufferGeometry().setFromPoints(
+        lineVertices,
+      )
+      const lineColors = []
+      for (let i = 0; i < lineVertices.length; i++) {
+        lineColors.push(0, 0, 0)
+      }
+      lineGeometry.setAttribute(
+        "color",
+        new THREE.Float32BufferAttribute(lineColors, 3),
+      )
+      const line: any = new THREE.LineSegments(lineGeometry)
+      line.globalEdgeIndices = globalEdgeIndices
+      line.name = "Model Edges"
+      this.mainObject.add(line)
+    }
+    this.scene.add(this.mainObject)
+  }
 }

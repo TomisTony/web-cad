@@ -1,7 +1,7 @@
 export interface BrCADNode {
   label: string
-  faces: number[]
-  edges: number[]
+  faces: string[]
+  edges: string[]
   children: BrCADNode[]
 }
 
@@ -20,7 +20,7 @@ export interface BrCADEdge {
 }
 
 export interface BrCAD {
-  structure: BrCADNode[]
+  structure: BrCADNode
   faces: BrCADFace[]
   edges: BrCADEdge[]
 }
