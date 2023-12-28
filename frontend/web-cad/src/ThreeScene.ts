@@ -3,6 +3,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 // import { OrbitControls } from "three"
 import { ThreeRaycaster } from "./ThreeRaycaster"
 import { BrCAD, BrCADEdge } from "./types/BrCAD"
+import { FaceMetaData } from "./types/Metadata"
 
 export class ThreeScene {
   public scene!: THREE.Scene
@@ -16,6 +17,43 @@ export class ThreeScene {
     this.init()
     this.raycaster = new ThreeRaycaster(this.camera)
   }
+
+  // 权宜之计，material 之后要额外处理
+  private static _modelMaterial: THREE.MeshPhongMaterial = null as any
+  /**
+   * 模型材质
+   */
+  public static get modelMaterial(): THREE.MeshPhongMaterial {
+    if (this._modelMaterial == null) {
+      const loader = new THREE.TextureLoader()
+      loader.setCrossOrigin("")
+      const matcap = loader.load("./dullFrontLitMetal.png")
+      const m: any = new THREE.MeshMatcapMaterial({
+        // color: new THREE.Color(0xf5f5f5),
+        vertexColors: true,
+        matcap: matcap,
+        polygonOffset: true, // Push the mesh back for line drawing
+        polygonOffsetFactor: 2.0,
+        polygonOffsetUnits: 1.0,
+      })
+      this._modelMaterial = m
+    }
+    return this._modelMaterial
+  }
+
+  private static _lineMaterial: THREE.LineBasicMaterial = null as any
+
+  public static get lineMaterial(): THREE.LineBasicMaterial {
+    if (this._lineMaterial == null) {
+      this._lineMaterial = new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        linewidth: 1.5,
+        vertexColors: true,
+      })
+    }
+    return this._lineMaterial
+  }
+
   private init() {
     this.initScene()
     this.initRenderer()
@@ -193,7 +231,9 @@ export class ThreeScene {
       const vertices: number[] = [],
         normals: number[] = [],
         triangles: number[] = [],
-        uvs: number[] = []
+        uvs: number[] = [],
+        colors: number[] = []
+      const globalFaceMetadata: FaceMetaData[] = []
       let vInd = 0
       faceList.forEach((face) => {
         // Copy Vertices into three.js Vector3 List
@@ -209,6 +249,15 @@ export class ThreeScene {
             face.triangleIndexes[i + 2] + vInd,
           )
         }
+        // Use Vertex Color to label this face's indices for raycast picking
+        const faceMetaData = {
+          id: face.id,
+          colorIndexStart: colors.length,
+        }
+        for (let i = 0; i < face.vertexCoordinates.length; i += 3) {
+          colors.push(1, 1, 1)
+        }
+        globalFaceMetadata.push(faceMetaData)
         vInd += face.vertexCoordinates.length / 3
       })
       // Compile the connected vertices and faces into a model
@@ -223,38 +272,31 @@ export class ThreeScene {
         "normal",
         new THREE.Float32BufferAttribute(normals, 3),
       )
+      geometry.setAttribute(
+        "color",
+        new THREE.Float32BufferAttribute(colors, 3),
+      )
       geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2))
       geometry.setAttribute("uv2", new THREE.Float32BufferAttribute(uvs, 2))
       geometry.computeBoundingSphere()
       geometry.computeBoundingBox()
-      const model: any = new THREE.Mesh(geometry)
-      // model.castShadow = true
-      // model.name = "Model Faces"
-      // model.faceColors = colors
-      // model.globalFaceMetadata = globalFaceMetadata
-      // model.highlightFaceAtFaceIndex = function (index: string | number) {
-      //   const startIndex = this.globalFaceMetadata[index].start
-      //   const endIndex = this.globalFaceMetadata[index].end
-      //   for (let i = 0; i < this.faceColors.length / 4; i++) {
-      //     let colIndex = 4 * i
-      //     this.faceColors[colIndex] =
-      //       colIndex >= startIndex && colIndex <= endIndex ? 1 : 1
-      //     colIndex = 4 * i + 1
-      //     this.faceColors[colIndex] =
-      //       colIndex >= startIndex && colIndex <= endIndex ? 1 : 1
-      //     colIndex = 4 * i + 2
-      //     this.faceColors[colIndex] =
-      //       colIndex >= startIndex && colIndex <= endIndex ? 0 : 1
-      //   }
-      //   this.geometry.setAttribute(
-      //     "color",
-      //     new THREE.Float32BufferAttribute(this.faceColors, 4),
-      //   )
-      //   this.geometry.colorsNeedUpdate = true
-      // }.bind(model)
-      // model.clearHighlights = function () {
-      //   return this.highlightFaceAtFaceIndex(-1)
-      // }.bind(model)
+      const model: any = new THREE.Mesh(geometry, ThreeScene.modelMaterial)
+      model.castShadow = true
+      model.name = "Model Faces"
+      model.faceColors = colors
+      model.globalFaceMetadata = globalFaceMetadata
+      model.highlightFaceAtFaceIndex = function (index: string | number) {
+        const startIndex = this.globalFaceMetadata[index].start
+        this.faceColors[startIndex + 2] = 0
+        this.geometry.setAttribute(
+          "color",
+          new THREE.Float32BufferAttribute(this.faceColors, 3),
+        )
+        this.geometry.colorsNeedUpdate = true
+      }.bind(model)
+      model.clearHighlights = function () {
+        return this.highlightFaceAtFaceIndex(-1)
+      }.bind(model)
 
       this.mainObject.add(model)
     }
@@ -296,9 +338,13 @@ export class ThreeScene {
         "color",
         new THREE.Float32BufferAttribute(lineColors, 3),
       )
-      const line: any = new THREE.LineSegments(lineGeometry)
+      const line: any = new THREE.LineSegments(
+        lineGeometry,
+        ThreeScene.lineMaterial,
+      )
       line.globalEdgeIndices = globalEdgeIndices
       line.name = "Model Edges"
+      line.lineColors = lineColors
       this.mainObject.add(line)
     }
     this.scene.add(this.mainObject)

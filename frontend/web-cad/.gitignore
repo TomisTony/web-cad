@@ -7,6 +7,8 @@
 
 # testing
 /coverage
+*.temp.ts
+output.json
 
 # production
 /build
