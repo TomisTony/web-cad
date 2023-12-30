@@ -164,6 +164,7 @@ class TopoDSShapeConvertor:
                         vertex_coordinates=[],
                     )
                     poly = BRep_Tool().PolygonOnTriangulation(edge, triangulation, location)
+                    # 一条 edge 可能会有多个 node，比如曲线，不然无法近似描述这条 edge
                     edge_nodes = poly.Nodes()                    
                     # 填充 vertex_coordinates
                     for i in range(1, edge_nodes.Length() + 1):

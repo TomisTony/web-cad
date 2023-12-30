@@ -3,7 +3,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 // import { OrbitControls } from "three"
 import { ThreeRaycaster } from "./ThreeRaycaster"
 import { BrCAD, BrCADEdge } from "./types/BrCAD"
-import { FaceMetaData } from "./types/Metadata"
+import { EdgeMetaData, FaceMetaData } from "./types/Metadata"
 
 export class ThreeScene {
   public scene!: THREE.Scene
@@ -233,7 +233,7 @@ export class ThreeScene {
         triangles: number[] = [],
         uvs: number[] = [],
         colors: number[] = []
-      const globalFaceMetadata: FaceMetaData[] = []
+      const globalFaceMetadata: Record<string, FaceMetaData> = {}
       let vInd = 0
       faceList.forEach((face) => {
         // Copy Vertices into three.js Vector3 List
@@ -257,7 +257,7 @@ export class ThreeScene {
         for (let i = 0; i < face.vertexCoordinates.length; i += 3) {
           colors.push(1, 1, 1)
         }
-        globalFaceMetadata.push(faceMetaData)
+        globalFaceMetadata[faceMetaData.id] = faceMetaData
         vInd += face.vertexCoordinates.length / 3
       })
       // Compile the connected vertices and faces into a model
@@ -285,8 +285,8 @@ export class ThreeScene {
       model.name = "Model Faces"
       model.faceColors = colors
       model.globalFaceMetadata = globalFaceMetadata
-      model.highlightFaceAtFaceIndex = function (index: string | number) {
-        const startIndex = this.globalFaceMetadata[index].start
+      model.highlightFaceAtFaceIndex = function (id: string) {
+        const startIndex = this.globalFaceMetadata[id].colorIndexStart
         this.faceColors[startIndex + 2] = 0
         this.geometry.setAttribute(
           "color",
@@ -295,17 +295,33 @@ export class ThreeScene {
         this.geometry.colorsNeedUpdate = true
       }.bind(model)
       model.clearHighlights = function () {
-        return this.highlightFaceAtFaceIndex(-1)
+        // 将 color 全部置为 1
+        for (let i = 0; i < this.faceColors.length; i++) {
+          this.faceColors[i] = 1
+        }
+        this.geometry.setAttribute(
+          "color",
+          new THREE.Float32BufferAttribute(this.faceColors, 3),
+        )
+        this.geometry.colorsNeedUpdate = true
       }.bind(model)
 
       this.mainObject.add(model)
     }
 
     if (edgeList && edgeList.length > 0) {
+      // 以下代码将使用 LineSegment, 其两两一组分割来绘制线段
+      // 一个 edge 可能不止两个 point
       const lineVertices: THREE.Vector3[] = []
-      const globalEdgeIndices: number[] = []
-      let curGlobalEdgeIndex = 0
+      const globalEdgeMetadata: Record<string, EdgeMetaData> = {}
+
+      // 用于记录每个 edge 的起始和结束 index
+      let colorIndexCounter = 0
       edgeList.forEach((edge: BrCADEdge) => {
+        const edgeMetaData = {} as EdgeMetaData
+        edgeMetaData.id = edge.id
+        edgeMetaData.colorIndexStart = colorIndexCounter
+        // 根据 LineSegment 的构造风格，一个 edge 中每两个点构成一条线段
         for (let i = 0; i < edge.vertexCoordinates.length - 3; i += 3) {
           lineVertices.push(
             new THREE.Vector3(
@@ -322,9 +338,10 @@ export class ThreeScene {
               edge.vertexCoordinates[i + 2 + 3],
             ),
           )
-          globalEdgeIndices.push(curGlobalEdgeIndex)
+          colorIndexCounter += 2 * 3
         }
-        curGlobalEdgeIndex++
+        edgeMetaData.colorIndexEnd = colorIndexCounter
+        globalEdgeMetadata[edgeMetaData.id] = edgeMetaData
       })
 
       const lineGeometry = new THREE.BufferGeometry().setFromPoints(
@@ -338,14 +355,40 @@ export class ThreeScene {
         "color",
         new THREE.Float32BufferAttribute(lineColors, 3),
       )
-      const line: any = new THREE.LineSegments(
-        lineGeometry,
-        ThreeScene.lineMaterial,
-      )
-      line.globalEdgeIndices = globalEdgeIndices
+      const line: {
+        name?: string
+        lineColors?: number[]
+        globalEdgeMetadata?: Record<string, EdgeMetaData>
+        highlightEdgeAtLineIndex?: (lineIndex: string) => void
+        getEdgeMetadataAtLineIndex?: (lineIndex: string) => EdgeMetaData
+        clearHighlights?: () => void
+      } = new THREE.LineSegments(lineGeometry, ThreeScene.lineMaterial)
       line.name = "Model Edges"
       line.lineColors = lineColors
-      this.mainObject.add(line)
+      line.globalEdgeMetadata = globalEdgeMetadata
+      line.highlightEdgeAtLineIndex = function (id: string) {
+        const startIndex = this.globalEdgeMetadata[id].colorIndexStart
+        const endIndex = this.globalEdgeMetadata[id].colorIndexEnd
+        for (let i = startIndex; i < endIndex; i++) {
+          this.lineColors[i] = 1
+        }
+        this.geometry.setAttribute(
+          "color",
+          new THREE.Float32BufferAttribute(this.lineColors, 3),
+        )
+        this.geometry.colorsNeedUpdate = true
+      }.bind(line)
+      line.clearHighlights = function () {
+        for (let i = 0; i < this.lineColors.length; i++) {
+          this.lineColors[i] = 0
+        }
+        this.geometry.setAttribute(
+          "color",
+          new THREE.Float32BufferAttribute(this.lineColors, 3),
+        )
+        this.geometry.colorsNeedUpdate = true
+      }.bind(line)
+      this.mainObject.add(line as any)
     }
     this.scene.add(this.mainObject)
   }
