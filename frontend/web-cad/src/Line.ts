@@ -4,23 +4,22 @@ import { EdgeMetaData } from "./types/Metadata"
 export default class Line extends THREE.LineSegments {
   public lineColors: number[]
   public globalEdgeMetadata: Record<string, EdgeMetaData>
+  public edgeIds: string[]
 
   constructor(
     geometry: THREE.BufferGeometry,
     material: THREE.Material,
     colors: number[],
     globalEdgeMetadata: Record<string, EdgeMetaData>,
+    edgeIds: string[],
   ) {
     super(geometry, material)
 
     this.lineColors = colors
     this.globalEdgeMetadata = globalEdgeMetadata
+    this.edgeIds = edgeIds
 
     this.name = "Model Edges"
-  }
-
-  public getEdgeMetadataAtLineIndex(id: string) {
-    return this.globalEdgeMetadata[id]
   }
 
   public highlightEdgeAtLineIndex(id: string) {

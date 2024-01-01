@@ -4,17 +4,20 @@ import { FaceMetaData } from "./types/Metadata"
 export default class Model extends THREE.Mesh {
   public faceColors: number[]
   public globalFaceMetadata: Record<string, FaceMetaData>
+  public faceIds: string[]
 
   constructor(
     geometry: THREE.BufferGeometry,
     material: THREE.Material,
     colors: number[],
     globalFaceMetadata: Record<string, FaceMetaData>,
+    faceIds: string[],
   ) {
     super(geometry, material)
 
     this.faceColors = colors
     this.globalFaceMetadata = globalFaceMetadata
+    this.faceIds = faceIds
 
     this.castShadow = true
     this.name = "Model"
@@ -22,7 +25,11 @@ export default class Model extends THREE.Mesh {
 
   public highlightFaceAtFaceIndex(id: string) {
     const startIndex = this.globalFaceMetadata[id].colorIndexStart
-    this.faceColors[startIndex + 2] = 0
+    const endIndex = this.globalFaceMetadata[id].colorIndexEnd
+    for (let i = startIndex + 2; i < endIndex; i += 3) {
+      this.faceColors[i] = 0
+    }
+
     this.geometry.setAttribute(
       "color",
       new THREE.Float32BufferAttribute(this.faceColors, 3),

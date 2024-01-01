@@ -20,7 +20,7 @@ export class ThreeScene {
   public obj!: THREE.Group
 
   public highlightedObj: ExtendedShape | null = null
-  public highlightedIndex = 0
+  public highlightedId: string | undefined
 
   constructor() {
     this.init()
@@ -219,15 +219,12 @@ export class ThreeScene {
         const isLine = intersects[0].object.type === "LineSegments"
 
         const intersectsObject: any = intersects[0].object
-        const newIndex = isLine
-          ? intersectsObject.getEdgeMetadataAtLineIndex(intersects[0].index)
-              .localEdgeIndex
-          : intersectsObject.geometry.attributes.color.getW(
-              intersects[0].face?.a,
-            )
+        const newDetectedId: string = isLine
+          ? intersectsObject.edgeIds[intersects[0].index as number]
+          : intersectsObject.faceIds[intersects[0].face?.a as number]
         if (
           this.highlightedObj != intersects[0].object ||
-          this.highlightedIndex !== newIndex
+          this.highlightedId !== newDetectedId
         ) {
           if (this.highlightedObj) {
             ;(this.highlightedObj.material as UsedMeterial).color.setHex(
@@ -242,21 +239,23 @@ export class ThreeScene {
             this.highlightedObj.material as UsedMeterial
           ).color.getHex()
           // this.highlightedObj.material.color.setHex(0xffffff);
-          this.highlightedIndex = newIndex
+          this.highlightedId = newDetectedId
           if (isLine) {
             ;(this.highlightedObj as Line).highlightEdgeAtLineIndex(
-              intersects[0].index,
+              newDetectedId,
             )
             return
           } else {
-            ;(this.highlightedObj as Model).highlightFaceAtFaceIndex(newIndex)
+            ;(this.highlightedObj as Model).highlightFaceAtFaceIndex(
+              newDetectedId,
+            )
             return
           }
         }
 
-        const indexHelper =
-          (isLine ? "Edge" : "Face") + " Index: " + this.highlightedIndex
-        console.log(indexHelper)
+        console.log(
+          (isLine ? "Edge" : "Face") + " Index: " + this.highlightedId,
+        )
       } else {
         if (this.highlightedObj) {
           ;(this.highlightedObj.material as UsedMeterial).color.setHex(

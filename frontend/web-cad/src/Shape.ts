@@ -44,7 +44,7 @@ export class Shape {
     return this._lineMaterial
   }
 
-  public setBrCADInScene(brCAD: BrCAD) {
+  public setBrCADToScene(brCAD: BrCAD) {
     const faceList = brCAD.faces
     const edgeList = brCAD.edges
 
@@ -55,12 +55,17 @@ export class Shape {
         uvs: number[] = [],
         colors: number[] = []
       const globalFaceMetadata: Record<string, FaceMetaData> = {}
+      const faceIds: string[] = [] // 用于按照每个 vertice 在数组里面的排列顺序记录 face 的 id，用于后续的 raycast
       let vInd = 0
       faceList.forEach((face) => {
         // Copy Vertices into three.js Vector3 List
         vertices.push(...face.vertexCoordinates)
         normals.push(...face.normalCoordinates)
         uvs.push(...face.uvCoordinates)
+
+        for (let i = 0; i < face.vertexCoordinates.length / 3; i++) {
+          faceIds.push(face.id)
+        }
 
         // Sort Triangles into a three.js Face List
         for (let i = 0; i < face.triangleIndexes.length; i += 3) {
@@ -74,6 +79,7 @@ export class Shape {
         const faceMetaData = {
           id: face.id,
           colorIndexStart: colors.length,
+          colorIndexEnd: colors.length + face.vertexCoordinates.length,
         }
         for (let i = 0; i < face.vertexCoordinates.length; i += 3) {
           colors.push(1, 1, 1)
@@ -106,6 +112,7 @@ export class Shape {
         Shape.modelMaterial,
         colors,
         globalFaceMetadata,
+        faceIds,
       )
 
       this.mainObject.add(model as THREE.Object3D)
@@ -116,6 +123,7 @@ export class Shape {
       // 一个 edge 可能不止两个 point
       const lineVertices: THREE.Vector3[] = []
       const globalEdgeMetadata: Record<string, EdgeMetaData> = {}
+      const edgeIds: string[] = [] // 用于按照每个 vertice 在数组中的顺序记录 edge 的 id，用于后续的 raycast
 
       // 用于记录每个 edge 的起始和结束 index
       let colorIndexCounter = 0
@@ -140,6 +148,7 @@ export class Shape {
               edge.vertexCoordinates[i + 2 + 3],
             ),
           )
+          edgeIds.push(edge.id, edge.id)
           colorIndexCounter += 2 * 3
         }
         edgeMetaData.colorIndexEnd = colorIndexCounter
@@ -162,6 +171,7 @@ export class Shape {
         Shape.lineMaterial,
         lineColors,
         globalEdgeMetadata,
+        edgeIds,
       )
 
       this.mainObject.add(line as any)
