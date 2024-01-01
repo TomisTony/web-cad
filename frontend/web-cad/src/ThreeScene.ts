@@ -2,8 +2,14 @@ import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 // import { OrbitControls } from "three"
 import { ThreeRaycaster } from "./ThreeRaycaster"
-import { BrCAD, BrCADEdge } from "./types/BrCAD"
-import { EdgeMetaData, FaceMetaData } from "./types/Metadata"
+import Line from "./Line"
+import Model from "./Model"
+
+type ExtendedShape = (Line | Model) & {
+  originHex: number
+}
+
+type UsedMeterial = THREE.MeshPhongMaterial | THREE.LineBasicMaterial
 
 export class ThreeScene {
   public scene!: THREE.Scene
@@ -11,47 +17,15 @@ export class ThreeScene {
   public renderer!: THREE.WebGLRenderer
   public controls!: OrbitControls
   public raycaster!: ThreeRaycaster
-  public mainObject: THREE.Group = new THREE.Group()
+  public obj!: THREE.Group
+
+  public highlightedObj: ExtendedShape | null = null
+  public highlightedIndex = 0
 
   constructor() {
     this.init()
     this.raycaster = new ThreeRaycaster(this.camera)
-  }
-
-  // 权宜之计，material 之后要额外处理
-  private static _modelMaterial: THREE.MeshPhongMaterial = null as any
-  /**
-   * 模型材质
-   */
-  public static get modelMaterial(): THREE.MeshPhongMaterial {
-    if (this._modelMaterial == null) {
-      const loader = new THREE.TextureLoader()
-      loader.setCrossOrigin("")
-      const matcap = loader.load("./dullFrontLitMetal.png")
-      const m: any = new THREE.MeshMatcapMaterial({
-        // color: new THREE.Color(0xf5f5f5),
-        vertexColors: true,
-        matcap: matcap,
-        polygonOffset: true, // Push the mesh back for line drawing
-        polygonOffsetFactor: 2.0,
-        polygonOffsetUnits: 1.0,
-      })
-      this._modelMaterial = m
-    }
-    return this._modelMaterial
-  }
-
-  private static _lineMaterial: THREE.LineBasicMaterial = null as any
-
-  public static get lineMaterial(): THREE.LineBasicMaterial {
-    if (this._lineMaterial == null) {
-      this._lineMaterial = new THREE.LineBasicMaterial({
-        color: 0xffffff,
-        linewidth: 1.5,
-        vertexColors: true,
-      })
-    }
-    return this._lineMaterial
+    this.bindEventListeners()
   }
 
   private init() {
@@ -223,173 +197,77 @@ export class ThreeScene {
     return this.raycaster.getIntersect(event)
   }
 
-  public addBrCADToScene(brCAD: BrCAD) {
-    const faceList = brCAD.faces
-    const edgeList = brCAD.edges
+  public bindEventListeners() {
+    this.renderer.domElement.addEventListener(
+      "mousemove",
+      this.ListenerMouseMove,
+    )
+  }
 
-    if (faceList && faceList.length > 0) {
-      const vertices: number[] = [],
-        normals: number[] = [],
-        triangles: number[] = [],
-        uvs: number[] = [],
-        colors: number[] = []
-      const globalFaceMetadata: Record<string, FaceMetaData> = {}
-      let vInd = 0
-      faceList.forEach((face) => {
-        // Copy Vertices into three.js Vector3 List
-        vertices.push(...face.vertexCoordinates)
-        normals.push(...face.normalCoordinates)
-        uvs.push(...face.uvCoordinates)
+  private ListenerMouseMove = (event: any) => {
+    const mouse = new THREE.Vector2()
 
-        // Sort Triangles into a three.js Face List
-        for (let i = 0; i < face.triangleIndexes.length; i += 3) {
-          triangles.push(
-            face.triangleIndexes[i + 0] + vInd,
-            face.triangleIndexes[i + 1] + vInd,
-            face.triangleIndexes[i + 2] + vInd,
+    mouse.x = (event.offsetX / window.innerWidth) * 2 - 1
+    mouse.y = -(event.offsetY / window.innerHeight) * 2 + 1
+
+    const obj = this.obj
+
+    if (obj) {
+      this.raycaster.raycaster.setFromCamera(mouse, this.camera)
+      const intersects = this.raycaster.raycaster.intersectObjects(obj.children)
+      if (intersects.length > 0) {
+        const isLine = intersects[0].object.type === "LineSegments"
+
+        const intersectsObject: any = intersects[0].object
+        const newIndex = isLine
+          ? intersectsObject.getEdgeMetadataAtLineIndex(intersects[0].index)
+              .localEdgeIndex
+          : intersectsObject.geometry.attributes.color.getW(
+              intersects[0].face?.a,
+            )
+        if (
+          this.highlightedObj != intersects[0].object ||
+          this.highlightedIndex !== newIndex
+        ) {
+          if (this.highlightedObj) {
+            ;(this.highlightedObj.material as UsedMeterial).color.setHex(
+              this.highlightedObj.originHex,
+            )
+            if (this.highlightedObj && this.highlightedObj.clearHighlights) {
+              this.highlightedObj.clearHighlights()
+            }
+          }
+          this.highlightedObj = intersects[0].object as ExtendedShape
+          this.highlightedObj.originHex = (
+            this.highlightedObj.material as UsedMeterial
+          ).color.getHex()
+          // this.highlightedObj.material.color.setHex(0xffffff);
+          this.highlightedIndex = newIndex
+          if (isLine) {
+            ;(this.highlightedObj as Line).highlightEdgeAtLineIndex(
+              intersects[0].index,
+            )
+            return
+          } else {
+            ;(this.highlightedObj as Model).highlightFaceAtFaceIndex(newIndex)
+            return
+          }
+        }
+
+        const indexHelper =
+          (isLine ? "Edge" : "Face") + " Index: " + this.highlightedIndex
+        console.log(indexHelper)
+      } else {
+        if (this.highlightedObj) {
+          ;(this.highlightedObj.material as UsedMeterial).color.setHex(
+            this.highlightedObj.originHex,
           )
+          if (this.highlightedObj.clearHighlights) {
+            this.highlightedObj.clearHighlights()
+          }
         }
-        // Use Vertex Color to label this face's indices for raycast picking
-        const faceMetaData = {
-          id: face.id,
-          colorIndexStart: colors.length,
-        }
-        for (let i = 0; i < face.vertexCoordinates.length; i += 3) {
-          colors.push(1, 1, 1)
-        }
-        globalFaceMetadata[faceMetaData.id] = faceMetaData
-        vInd += face.vertexCoordinates.length / 3
-      })
-      // Compile the connected vertices and faces into a model
-      // And add to the scene
-      const geometry = new THREE.BufferGeometry()
-      geometry.setIndex(triangles)
-      geometry.setAttribute(
-        "position",
-        new THREE.Float32BufferAttribute(vertices, 3),
-      )
-      geometry.setAttribute(
-        "normal",
-        new THREE.Float32BufferAttribute(normals, 3),
-      )
-      geometry.setAttribute(
-        "color",
-        new THREE.Float32BufferAttribute(colors, 3),
-      )
-      geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2))
-      geometry.setAttribute("uv2", new THREE.Float32BufferAttribute(uvs, 2))
-      geometry.computeBoundingSphere()
-      geometry.computeBoundingBox()
-      const model: any = new THREE.Mesh(geometry, ThreeScene.modelMaterial)
-      model.castShadow = true
-      model.name = "Model Faces"
-      model.faceColors = colors
-      model.globalFaceMetadata = globalFaceMetadata
-      model.highlightFaceAtFaceIndex = function (id: string) {
-        const startIndex = this.globalFaceMetadata[id].colorIndexStart
-        this.faceColors[startIndex + 2] = 0
-        this.geometry.setAttribute(
-          "color",
-          new THREE.Float32BufferAttribute(this.faceColors, 3),
-        )
-        this.geometry.colorsNeedUpdate = true
-      }.bind(model)
-      model.clearHighlights = function () {
-        // 将 color 全部置为 1
-        for (let i = 0; i < this.faceColors.length; i++) {
-          this.faceColors[i] = 1
-        }
-        this.geometry.setAttribute(
-          "color",
-          new THREE.Float32BufferAttribute(this.faceColors, 3),
-        )
-        this.geometry.colorsNeedUpdate = true
-      }.bind(model)
-
-      this.mainObject.add(model)
-    }
-
-    if (edgeList && edgeList.length > 0) {
-      // 以下代码将使用 LineSegment, 其两两一组分割来绘制线段
-      // 一个 edge 可能不止两个 point
-      const lineVertices: THREE.Vector3[] = []
-      const globalEdgeMetadata: Record<string, EdgeMetaData> = {}
-
-      // 用于记录每个 edge 的起始和结束 index
-      let colorIndexCounter = 0
-      edgeList.forEach((edge: BrCADEdge) => {
-        const edgeMetaData = {} as EdgeMetaData
-        edgeMetaData.id = edge.id
-        edgeMetaData.colorIndexStart = colorIndexCounter
-        // 根据 LineSegment 的构造风格，一个 edge 中每两个点构成一条线段
-        for (let i = 0; i < edge.vertexCoordinates.length - 3; i += 3) {
-          lineVertices.push(
-            new THREE.Vector3(
-              edge.vertexCoordinates[i],
-              edge.vertexCoordinates[i + 1],
-              edge.vertexCoordinates[i + 2],
-            ),
-          )
-
-          lineVertices.push(
-            new THREE.Vector3(
-              edge.vertexCoordinates[i + 3],
-              edge.vertexCoordinates[i + 1 + 3],
-              edge.vertexCoordinates[i + 2 + 3],
-            ),
-          )
-          colorIndexCounter += 2 * 3
-        }
-        edgeMetaData.colorIndexEnd = colorIndexCounter
-        globalEdgeMetadata[edgeMetaData.id] = edgeMetaData
-      })
-
-      const lineGeometry = new THREE.BufferGeometry().setFromPoints(
-        lineVertices,
-      )
-      const lineColors = []
-      for (let i = 0; i < lineVertices.length; i++) {
-        lineColors.push(0, 0, 0)
+        this.highlightedObj = null
       }
-      lineGeometry.setAttribute(
-        "color",
-        new THREE.Float32BufferAttribute(lineColors, 3),
-      )
-      const line: {
-        name?: string
-        lineColors?: number[]
-        globalEdgeMetadata?: Record<string, EdgeMetaData>
-        highlightEdgeAtLineIndex?: (lineIndex: string) => void
-        getEdgeMetadataAtLineIndex?: (lineIndex: string) => EdgeMetaData
-        clearHighlights?: () => void
-      } = new THREE.LineSegments(lineGeometry, ThreeScene.lineMaterial)
-      line.name = "Model Edges"
-      line.lineColors = lineColors
-      line.globalEdgeMetadata = globalEdgeMetadata
-      line.highlightEdgeAtLineIndex = function (id: string) {
-        const startIndex = this.globalEdgeMetadata[id].colorIndexStart
-        const endIndex = this.globalEdgeMetadata[id].colorIndexEnd
-        for (let i = startIndex; i < endIndex; i++) {
-          this.lineColors[i] = 1
-        }
-        this.geometry.setAttribute(
-          "color",
-          new THREE.Float32BufferAttribute(this.lineColors, 3),
-        )
-        this.geometry.colorsNeedUpdate = true
-      }.bind(line)
-      line.clearHighlights = function () {
-        for (let i = 0; i < this.lineColors.length; i++) {
-          this.lineColors[i] = 0
-        }
-        this.geometry.setAttribute(
-          "color",
-          new THREE.Float32BufferAttribute(this.lineColors, 3),
-        )
-        this.geometry.colorsNeedUpdate = true
-      }.bind(line)
-      this.mainObject.add(line as any)
     }
-    this.scene.add(this.mainObject)
   }
 }
