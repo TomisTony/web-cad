@@ -24,3 +24,23 @@ export interface BrCAD {
   faces: BrCADFace[]
   edges: BrCADEdge[]
 }
+
+export interface BrCADCompareStructureNode {
+  label: string
+  faces: string[]
+  edges: string[]
+  children: (BrCADCompareStructureNode | BrCADNode)[]
+  status: string
+}
+
+export interface BrCADCompare {
+  structure: BrCADCompareStructureNode
+  delete: {
+    face_ids: string[]
+    edge_ids: string[]
+  }
+  add: {
+    faces: BrCADFace[]
+    edges: BrCADEdge[]
+  }
+}

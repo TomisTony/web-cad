@@ -49,9 +49,6 @@ class TopoDSShapeConvertor:
     def __converte(self) -> (List[BrCAD_face], List[BrCAD_edge]):
         face_list: List[BrCAD_face] = []
         edge_list: List[BrCAD_edge] = []
-        # TODO:参考代码中的架构，在本架构中暂不采用，后期考虑删除
-        # edge_hashes = self.__get_edge_hashes(self.topods_shape)
-        # face_hashes = self.__get_face_hashes(self.topods_shape)
         # 开启 mesh 化
         BRepMesh_IncrementalMesh(self.topods_shape, self.max_deviation, False, self.max_deviation * 5, False)
         
@@ -70,8 +67,6 @@ class TopoDSShapeConvertor:
                 continue
             
             brcad_face: BrCAD_face = BrCAD_face(
-                # 这里的 id 需要注意
-                id=str(face.HashCode(MAX_SAFE_INT)),
                 vertex_coordinates=[],
                 uv_coordinates=[],
                 normal_coordinates=[],
@@ -147,13 +142,15 @@ class TopoDSShapeConvertor:
                 brcad_face.triangle_indexes.append(node3 - 1)
                 validFaceTriangleCount += 1
             brcad_face.number_of_triangles = validFaceTriangleCount
-
+            # 计算 hash 作为 id
+            brcad_face.calculate_hash()
             face_list.append(brcad_face)
             
             # 在每一个面中遍历所有 edge，这些边可能是三角化之后新产生的
             edgeExp = TopExp_Explorer(face, TopAbs_EDGE, TopAbs_SHAPE)
             while edgeExp.More():
                 edge = edgeExp.Current()
+                # OCC 的 hash 跟内存地址相关，但是由于我们这里的使用是在单次程序中，所以可以认为是唯一标识符
                 hash = edge.HashCode(MAX_SAFE_INT)
                 # 为什么这里是 in 而不是 not in 呢
                 # 因为我们在三角化 face 之后会产生很多边，而这些新产生的边是我们不要的
@@ -161,7 +158,6 @@ class TopoDSShapeConvertor:
                 # 所以能够被二次探测的边才是我们要的边
                 if hash in complete_edge_set:
                     brcad_edge = BrCAD_edge(
-                        id=str(hash),
                         vertex_coordinates=[],
                     )
                     poly = BRep_Tool().PolygonOnTriangulation(edge, triangulation, location)
@@ -173,6 +169,7 @@ class TopoDSShapeConvertor:
                         brcad_edge.vertex_coordinates.append(brcad_face.vertex_coordinates[(vertex_index - 1) * 3 + 0])
                         brcad_edge.vertex_coordinates.append(brcad_face.vertex_coordinates[(vertex_index - 1) * 3 + 1])
                         brcad_edge.vertex_coordinates.append(brcad_face.vertex_coordinates[(vertex_index - 1) * 3 + 2])
+                    brcad_edge.calculate_hash()
                     edge_list.append(brcad_edge)
                 else:
                     complete_edge_set.add(hash)
@@ -183,6 +180,7 @@ class TopoDSShapeConvertor:
         edgeExp = TopExp_Explorer(self.topods_shape, TopAbs_EDGE, TopAbs_SHAPE) 
         while edgeExp.More():
             edge = edgeExp.Current()
+             # OCC 的 hash 跟内存地址相关，但是由于我们这里的使用是在单次程序中，所以可以认为是唯一标识符
             hash = edge.HashCode(MAX_SAFE_INT)
             if hash not in complete_edge_set:
                 brcad_edge = BrCAD_edge(
@@ -199,34 +197,8 @@ class TopoDSShapeConvertor:
                     brcad_edge.vertex_coordinates.append(vertex.Y())
                     brcad_edge.vertex_coordinates.append(vertex.Z())
                 complete_edge_set.add(hash)
+                brcad_edge.calculate_hash()
                 edge_list.append(brcad_edge)
             edgeExp.Next() 
                    
-        return face_list, edge_list
-    
-    # TODO:参考代码中的架构，在本架构中暂不采用，后期考虑删除
-    # def __get_edge_hashes(self, shape: TopoDS_Shape) -> Dict[str, int]:
-    #     edge_hashes = {}
-    #     edge_index = 0
-    #     edgeExp = TopExp_Explorer(shape, TopAbs_EDGE, TopAbs_SHAPE)
-    #     while edgeExp.More():
-    #         edge = edgeExp.Current()
-    #         hash = edge.HashCode(MAX_SAFE_INT)
-    #         if hash not in edge_hashes:
-    #             edge_hashes[hash] = edge_index
-    #             edge_index += 1
-    #         edgeExp.Next()
-    #     return edge_hashes
-    
-    # TODO:参考代码中的架构，在本架构中暂不采用，后期考虑删除
-    # def __get_face_hashes(self, shape: TopoDS_Shape) -> Dict[str, int]:
-    #     face_hashes = {}
-    #     face_index = 0
-    #     faceExp = TopExp_Explorer(shape, TopAbs_EDGE, TopAbs_SHAPE)
-    #     while faceExp.More():
-    #         face = faceExp.Current()
-    #         hash = face.HashCode(MAX_SAFE_INT)
-    #         face_hashes[hash] = face_index
-    #         face_index += 1
-    #         faceExp.Next()
-    #     return face_hashes  
+        return face_list, edge_list 

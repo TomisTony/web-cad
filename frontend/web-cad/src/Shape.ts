@@ -1,6 +1,12 @@
 import * as THREE from "three"
 import { ThreeApp } from "./ThreeApp"
-import { BrCAD, BrCADEdge } from "./types/BrCAD"
+import {
+  BrCAD,
+  BrCADCompare,
+  BrCADCompareStructureNode,
+  BrCADEdge,
+  BrCADNode,
+} from "./types/BrCAD"
 import { EdgeMetaData, FaceMetaData } from "./types/Metadata"
 import Model from "./Model"
 import Line from "./Line"
@@ -178,5 +184,52 @@ export class Shape {
     }
     ThreeApp.threeScene.obj = this.mainObject
     ThreeApp.threeScene.scene.add(this.mainObject)
+  }
+
+  private applyDiffToBrCADStructureNode(
+    originNode: BrCADNode,
+    diffNode: BrCADCompareStructureNode,
+  ) {
+    if (diffNode.status === "unchanged") return
+    if (diffNode.status === "children_change") {
+      // children_change 确保了 children 的节点顺序不会变，也没有新增的节点
+      // 因此我们使用 index 遍历 children
+      for (let i = 0; i < diffNode.children.length; i++) {
+        this.applyDiffToBrCADStructureNode(
+          originNode.children[i],
+          diffNode.children[i] as BrCADCompareStructureNode,
+        )
+      }
+    }
+    if (diffNode.status === "changed") {
+      originNode.label = diffNode.label
+      originNode.faces = diffNode.faces
+      originNode.edges = diffNode.edges
+      originNode.children = diffNode.children as BrCADNode[]
+    }
+  }
+
+  public applyDiffToBrCAD(brCAD: BrCAD, diff: BrCADCompare) {
+    // 更改 structure
+    const structureNode = diff.structure
+    this.applyDiffToBrCADStructureNode(brCAD.structure, structureNode)
+    // 删除
+    const deleteFaceIds = diff.delete.face_ids
+    const deleteEdgeIds = diff.delete.edge_ids
+    const deleteFaceIdsSet = new Set(deleteFaceIds)
+    const deleteEdgeIdsSet = new Set(deleteEdgeIds)
+    brCAD.faces = brCAD.faces.filter((face) => {
+      return !deleteFaceIdsSet.has(face.id)
+    })
+    console.log(brCAD.faces.length)
+    brCAD.edges = brCAD.edges.filter((edge) => {
+      return !deleteEdgeIdsSet.has(edge.id)
+    })
+    console.log(brCAD.edges.length)
+    // 添加
+    const addFaces = diff.add.faces
+    const addEdges = diff.add.edges
+    brCAD.faces = brCAD.faces.concat(addFaces)
+    brCAD.edges = brCAD.edges.concat(addEdges)
   }
 }

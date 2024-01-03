@@ -133,21 +133,21 @@ class BrCADCompare:
         added_faces = []
         added_edges = []
         for face_id in self.added_faces_id:
-            added_faces.append(self.new_model.faces[face_id])
+            for face in self.new_model.faces:
+                if face.id == face_id:
+                  added_faces.append(face)
         for edge_id in self.added_edges_id:
-            added_edges.append(self.new_model.edges[edge_id])
+            for edge in self.new_model.edges:
+                if edge.id == edge_id:
+                  added_edges.append(edge)
         return {
             "structure": self.structure_diff.to_dict(),
             "delete":{
-                "faces": self.deleted_faces_id,
-                "edges": self.deleted_edges_id,
+                "face_ids": self.deleted_faces_id,
+                "edge_ids": self.deleted_edges_id,
             },
             "add":{
-                "faces": added_faces,
-                "edges": added_edges,
+                "faces": [face.to_dict() for face in added_faces],
+                "edges": [edge.to_dict() for edge in added_edges],
             },
         }
-    
-    def get_json_diff(self) -> str:
-        import json
-        return json.dumps(self.get_diff())

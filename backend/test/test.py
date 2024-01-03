@@ -42,8 +42,19 @@ shape = fillet.Shape()
 import sys
 sys.path.insert(0, 'C:/USERS/GXLYQ_AIR/DESKTOP/WEB-CAD/BACKEND')
 from BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
-converter = TopoDSShapeConvertor(box)
-converter.get_BrCAD().to_json("output.json")
+converter_1 = TopoDSShapeConvertor(box)
+br_cad_1 = converter_1.get_BrCAD()
+# br_cad_1.to_json("output.json")
+
+converter_2 = TopoDSShapeConvertor(shape)
+br_cad_2 = converter_2.get_BrCAD()
+
+from BrCAD.BrCAD_compare import BrCADCompare
+br_cad_compare = BrCADCompare(br_cad_1, br_cad_2)
+
+import json
+with open("output.json", "w") as f:
+    json.dump(br_cad_compare.get_diff(), f)
 
 
 
