@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List
 
 from OCC.Core.TopoDS import TopoDS_Shape
 from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_FACE, TopAbs_SHAPE
@@ -25,7 +25,7 @@ class TopoDSShapeConvertor:
         self.max_deviation = max_deviation
         self.faces: List[BrCAD_face] = []
         self.edges: List[BrCAD_edge] = []
-        self.faces, self.edges = self._converte()
+        self.faces, self.edges = self.__converte()
 
     def get_faces(self):
         return self.faces
@@ -46,11 +46,12 @@ class TopoDSShapeConvertor:
             edges=self.edges,
         )
 
-    def _converte(self) -> (List[BrCAD_face], List[BrCAD_edge]):
+    def __converte(self) -> (List[BrCAD_face], List[BrCAD_edge]):
         face_list: List[BrCAD_face] = []
         edge_list: List[BrCAD_edge] = []
-        # edge_hashes = self._get_edge_hashes(self.topods_shape)
-        # face_hashes = self._get_face_hashes(self.topods_shape)
+        # TODO:参考代码中的架构，在本架构中暂不采用，后期考虑删除
+        # edge_hashes = self.__get_edge_hashes(self.topods_shape)
+        # face_hashes = self.__get_face_hashes(self.topods_shape)
         # 开启 mesh 化
         BRepMesh_IncrementalMesh(self.topods_shape, self.max_deviation, False, self.max_deviation * 5, False)
         
@@ -202,28 +203,30 @@ class TopoDSShapeConvertor:
             edgeExp.Next() 
                    
         return face_list, edge_list
-
-    def _get_edge_hashes(self, shape: TopoDS_Shape) -> Dict[str, int]:
-        edge_hashes = {}
-        edge_index = 0
-        edgeExp = TopExp_Explorer(shape, TopAbs_EDGE, TopAbs_SHAPE)
-        while edgeExp.More():
-            edge = edgeExp.Current()
-            hash = edge.HashCode(MAX_SAFE_INT)
-            if hash not in edge_hashes:
-                edge_hashes[hash] = edge_index
-                edge_index += 1
-            edgeExp.Next()
-        return edge_hashes
     
-    def _get_face_hashes(self, shape: TopoDS_Shape) -> Dict[str, int]:
-        face_hashes = {}
-        face_index = 0
-        faceExp = TopExp_Explorer(shape, TopAbs_EDGE, TopAbs_SHAPE)
-        while faceExp.More():
-            face = faceExp.Current()
-            hash = face.HashCode(MAX_SAFE_INT)
-            face_hashes[hash] = face_index
-            face_index += 1
-            faceExp.Next()
-        return face_hashes  
+    # TODO:参考代码中的架构，在本架构中暂不采用，后期考虑删除
+    # def __get_edge_hashes(self, shape: TopoDS_Shape) -> Dict[str, int]:
+    #     edge_hashes = {}
+    #     edge_index = 0
+    #     edgeExp = TopExp_Explorer(shape, TopAbs_EDGE, TopAbs_SHAPE)
+    #     while edgeExp.More():
+    #         edge = edgeExp.Current()
+    #         hash = edge.HashCode(MAX_SAFE_INT)
+    #         if hash not in edge_hashes:
+    #             edge_hashes[hash] = edge_index
+    #             edge_index += 1
+    #         edgeExp.Next()
+    #     return edge_hashes
+    
+    # TODO:参考代码中的架构，在本架构中暂不采用，后期考虑删除
+    # def __get_face_hashes(self, shape: TopoDS_Shape) -> Dict[str, int]:
+    #     face_hashes = {}
+    #     face_index = 0
+    #     faceExp = TopExp_Explorer(shape, TopAbs_EDGE, TopAbs_SHAPE)
+    #     while faceExp.More():
+    #         face = faceExp.Current()
+    #         hash = face.HashCode(MAX_SAFE_INT)
+    #         face_hashes[hash] = face_index
+    #         face_index += 1
+    #         faceExp.Next()
+    #     return face_hashes  

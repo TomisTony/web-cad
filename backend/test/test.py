@@ -41,7 +41,7 @@ from OCC.Core.TopAbs import TopAbs_COMPOUND, TopAbs_COMPSOLID, TopAbs_SOLID, Top
 
 import sys
 sys.path.insert(0, 'C:/USERS/GXLYQ_AIR/DESKTOP/WEB-CAD/BACKEND')
-from BrCAD.TopoDSShapeConvertor import TopoDSShapeConvertor
+from BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
 converter = TopoDSShapeConvertor(shape)
 converter.get_BrCAD().to_json("output.json")
 
