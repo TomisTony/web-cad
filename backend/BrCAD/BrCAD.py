@@ -14,6 +14,12 @@ class BrCAD_node:
         self.faces = faces
         self.edges = edges
         self.children = children
+    
+    # eq 比较不包括 children
+    def __eq__(self, __value: object) -> bool:
+        if isinstance(__value, BrCAD_node):
+            return self.label == __value.label and self.faces == __value.faces and self.edges == __value.edges
+        return False
 
     def to_dict(self) -> Dict:
         return {
