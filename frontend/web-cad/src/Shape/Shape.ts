@@ -1,13 +1,13 @@
 import * as THREE from "three"
-import { ThreeApp } from "./ThreeApp"
+import { ThreeApp } from "../Three/ThreeApp"
 import {
   BrCAD,
   BrCADCompare,
   BrCADCompareStructureNode,
   BrCADEdge,
   BrCADNode,
-} from "./types/BrCAD"
-import { EdgeMetaData, FaceMetaData } from "./types/Metadata"
+} from "../types/BrCAD"
+import { EdgeMetaData, FaceMetaData } from "../types/Metadata"
 import Model from "./Model"
 import Line from "./Line"
 

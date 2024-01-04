@@ -1,6 +1,6 @@
 import React, { useEffect } from "react"
-import { ThreeApp } from "./ThreeApp"
-import { Shape } from "./Shape"
+import { ThreeApp } from "../Three/ThreeApp"
+import { Shape } from "../Shape/Shape"
 
 import { Button } from "antd"
 

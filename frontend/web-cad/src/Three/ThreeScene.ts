@@ -2,8 +2,8 @@ import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 // import { OrbitControls } from "three"
 import { ThreeRaycaster } from "./ThreeRaycaster"
-import Line from "./Line"
-import Model from "./Model"
+import Line from "../Shape/Line"
+import Model from "../Shape/Model"
 
 type ExtendedShape = (Line | Model) & {
   originHex: number
