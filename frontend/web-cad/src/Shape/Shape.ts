@@ -1,5 +1,5 @@
 import * as THREE from "three"
-import { ThreeApp } from "../Three/ThreeApp"
+import { ThreeApp } from "../three/threeApp"
 import {
   BrCAD,
   BrCADCompare,
@@ -8,8 +8,8 @@ import {
   BrCADNode,
 } from "../types/BrCAD"
 import { EdgeMetaData, FaceMetaData } from "../types/Metadata"
-import Model from "./Model"
-import Line from "./Line"
+import Model from "./model"
+import Line from "./line"
 
 export class Shape {
   public mainObject: THREE.Group = new THREE.Group()

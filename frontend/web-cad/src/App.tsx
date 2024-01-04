@@ -1,10 +1,10 @@
 import React, { useEffect } from "react"
-import { ThreeApp } from "../Three/ThreeApp"
-import { Shape } from "../Shape/Shape"
+import { ThreeApp } from "./three/threeApp"
+import { Shape } from "./shape/shape"
 
 import { Button } from "antd"
 
-import { getOutput, getDiff } from "./output.temp"
+import { getOutput, getDiff } from "./features/model/output.temp"
 
 function App() {
   const threeApp = ThreeApp.getInstance()
