@@ -6,14 +6,12 @@ import {
   BrCADCompareStructureNode,
   BrCADEdge,
   BrCADNode,
-} from "../types/BrCAD"
-import { EdgeMetaData, FaceMetaData } from "../types/Metadata"
+} from "@/types/BrCAD"
+import { EdgeMetaData, FaceMetaData } from "@/types/Metadata"
 import Model from "./model"
 import Line from "./line"
 
 export class Shape {
-  public mainObject: THREE.Group = new THREE.Group()
-
   // 权宜之计，material 之后要额外处理
   private static _modelMaterial: THREE.MeshPhongMaterial = null as any
   /**
@@ -50,7 +48,8 @@ export class Shape {
     return this._lineMaterial
   }
 
-  public setBrCADToScene(brCAD: BrCAD) {
+  public static setBrCADToScene(brCAD: BrCAD) {
+    const mainObject = new THREE.Group()
     const faceList = brCAD.faces
     const edgeList = brCAD.edges
 
@@ -121,7 +120,7 @@ export class Shape {
         faceIds,
       )
 
-      this.mainObject.add(model as THREE.Object3D)
+      mainObject.add(model as THREE.Object3D)
     }
 
     if (edgeList && edgeList.length > 0) {
@@ -180,56 +179,69 @@ export class Shape {
         edgeIds,
       )
 
-      this.mainObject.add(line as any)
+      mainObject.add(line as any)
     }
-    ThreeApp.threeScene.obj = this.mainObject
-    ThreeApp.threeScene.scene.add(this.mainObject)
+    ThreeApp.threeScene.obj = mainObject
+    ThreeApp.threeScene.scene.add(mainObject)
   }
 
-  private applyDiffToBrCADStructureNode(
+  private static applyDiffToBrCADStructureNode(
     originNode: BrCADNode,
     diffNode: BrCADCompareStructureNode,
-  ) {
-    if (diffNode.status === "unchanged") return
+  ): BrCADNode {
+    if (diffNode.status === "unchanged") return { ...originNode }
     if (diffNode.status === "children_change") {
       // children_change 确保了 children 的节点顺序不会变，也没有新增的节点
-      // 因此我们使用 index 遍历 children
-      for (let i = 0; i < diffNode.children.length; i++) {
-        this.applyDiffToBrCADStructureNode(
-          originNode.children[i],
-          diffNode.children[i] as BrCADCompareStructureNode,
+      // 因此我们可以使用 index 指定 children
+      const children = originNode.children.map((child, index) => {
+        return Shape.applyDiffToBrCADStructureNode(
+          child,
+          diffNode.children[index] as BrCADCompareStructureNode,
         )
-      }
+      })
+
+      // 创建并返回一个新的节点，替代原始节点
+      return { ...originNode, children: children }
     }
     if (diffNode.status === "changed") {
-      originNode.label = diffNode.label
-      originNode.faces = diffNode.faces
-      originNode.edges = diffNode.edges
-      originNode.children = diffNode.children as BrCADNode[]
+      return {
+        ...originNode,
+        label: diffNode.label,
+        faces: diffNode.faces,
+        edges: diffNode.edges,
+        children: diffNode.children as BrCADNode[],
+      }
     }
+    // 不存在其他状态了，理论上不会触发
+    throw new Error("Invalid diffNode status")
   }
 
-  public applyDiffToBrCAD(brCAD: BrCAD, diff: BrCADCompare) {
+  public static applyDiffToBrCAD(brCAD: BrCAD, diff: BrCADCompare): BrCAD {
     // 更改 structure
     const structureNode = diff.structure
-    this.applyDiffToBrCADStructureNode(brCAD.structure, structureNode)
+    const newStructure = Shape.applyDiffToBrCADStructureNode(
+      brCAD.structure,
+      structureNode,
+    )
     // 删除
     const deleteFaceIds = diff.delete.face_ids
     const deleteEdgeIds = diff.delete.edge_ids
     const deleteFaceIdsSet = new Set(deleteFaceIds)
     const deleteEdgeIdsSet = new Set(deleteEdgeIds)
-    brCAD.faces = brCAD.faces.filter((face) => {
+    const newFaces = brCAD.faces.filter((face) => {
       return !deleteFaceIdsSet.has(face.id)
     })
-    console.log(brCAD.faces.length)
-    brCAD.edges = brCAD.edges.filter((edge) => {
+    const newEdges = brCAD.edges.filter((edge) => {
       return !deleteEdgeIdsSet.has(edge.id)
     })
-    console.log(brCAD.edges.length)
     // 添加
     const addFaces = diff.add.faces
     const addEdges = diff.add.edges
-    brCAD.faces = brCAD.faces.concat(addFaces)
-    brCAD.edges = brCAD.edges.concat(addEdges)
+
+    return {
+      structure: newStructure,
+      faces: [...newFaces, ...addFaces],
+      edges: [...newEdges, ...addEdges],
+    } as BrCAD
   }
 }

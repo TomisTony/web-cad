@@ -1,5 +1,5 @@
 import * as THREE from "three"
-import { FaceMetaData } from "../types/Metadata"
+import { FaceMetaData } from "@/types/Metadata"
 
 export default class Model extends THREE.Mesh {
   public faceColors: number[]

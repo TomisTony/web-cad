@@ -1,28 +1,21 @@
-import React, { useEffect } from "react"
+import React from "react"
+import { useAppDispatch } from "./app/hooks"
+
 import { ThreeApp } from "./three/threeApp"
-import { Shape } from "./shape/shape"
 
 import { Button } from "antd"
-
-import { getOutput, getDiff } from "./features/model/output.temp"
+import { loadModelAsync, loadDiffAsync } from "./features/model/modelSlice"
 
 function App() {
+  // 确保创建了ThreeApp实例
   const threeApp = ThreeApp.getInstance()
+
+  const dispatch = useAppDispatch()
   const loadModel = () => {
-    getOutput().then((output) => {
-      new Shape().setBrCADToScene(output)
-    })
+    dispatch(loadModelAsync())
   }
   const loadDiff = () => {
-    getOutput().then((output) => {
-      getDiff().then((diff) => {
-        console.log("origin", output)
-        console.log("diff", diff)
-        new Shape().applyDiffToBrCAD(output, diff)
-        // console.log("fixed", output)
-        new Shape().setBrCADToScene(output)
-      })
-    })
+    dispatch(loadDiffAsync())
   }
   return (
     <>
@@ -35,16 +28,5 @@ function App() {
     </>
   )
 }
-
-// import output from "./output.temp"
-
-// function App() {
-//   useEffect(() => {
-//     const scene = new ThreeScene()
-//     scene.addBrCADToScene(output)
-//   }, [])
-
-//   return <></>
-// }
 
 export default App

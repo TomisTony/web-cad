@@ -1,5 +1,5 @@
 import * as THREE from "three"
-import { EdgeMetaData } from "../types/Metadata"
+import { EdgeMetaData } from "@/types/Metadata"
 
 export default class Line extends THREE.LineSegments {
   public lineColors: number[]

@@ -2,8 +2,8 @@ import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 // import { OrbitControls } from "three"
 import { ThreeRaycaster } from "./threeRaycaster"
-import Line from "../shape/line"
-import Model from "../shape/model"
+import Line from "@/shape/line"
+import Model from "@/shape/model"
 
 type ExtendedShape = (Line | Model) & {
   originHex: number
@@ -268,5 +268,9 @@ export class ThreeScene {
         this.highlightedObj = null
       }
     }
+  }
+
+  public clearScene() {
+    this.scene.remove(this.obj)
   }
 }

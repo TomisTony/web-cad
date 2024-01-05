@@ -21,7 +21,10 @@
     "strictFunctionTypes": false,// 不允许函数参数双向协变
     "downlevelIteration": true,// 降级遍历器实现，如果目标源是es3/5，那么遍历器会有降级的实现
     "noFallthroughCasesInSwitch": true,// 防止switch语句贯穿(即如果没有break语句后面不会执行)
-    "baseUrl": "." // 解析非相对模块的基地址，默认是当前目录
+    "baseUrl": ".", // 解析非相对模块的基地址，默认是当前目录
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["./node_modules", "**/*.js", "**/*.jsx"],
