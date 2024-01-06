@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit"
-import { getDiff, getOutput } from "./output.temp"
+import apis from "@/apis"
 import { BrCAD } from "@/types/BrCAD"
 import { RootState } from "@/app/store"
 import { Shape } from "@/shape/shape"
@@ -30,14 +30,14 @@ export const counterSlice = createSlice({
 const { loadModel, loadDiff } = counterSlice.actions
 
 export const loadModelAsync = () => (dispatch: any) => {
-  getOutput().then((model) => {
+  apis.getModel().then((model) => {
     ThreeApp.getInstance().clearScene()
     Shape.setBrCADToScene(model)
     dispatch(loadModel(model))
   })
 }
 export const loadDiffAsync = () => (dispatch: any, getState: any) => {
-  getDiff().then((diff) => {
+  apis.getDiff().then((diff) => {
     ThreeApp.getInstance().clearScene()
     let model = getState().model.model
     model = Shape.applyDiffToBrCAD(model, diff)
