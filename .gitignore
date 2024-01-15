@@ -2,3 +2,4 @@ __pycache__
 *.stp
 *.step
 output.json
+db.sqlite3
