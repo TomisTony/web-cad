@@ -4,6 +4,6 @@ export function getModel() {
   return request.get("/mytest/loadModel")
 }
 
-export function getDiff() {
-  return request.get("/mytest/loadDiff")
+export function getDiff(lastOperationId: string) {
+  return request.get("/mytest/loadDiff?lastOperationId=" + lastOperationId)
 }

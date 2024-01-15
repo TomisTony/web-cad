@@ -7,10 +7,12 @@ import { ThreeApp } from "@/three/threeApp"
 
 interface ModelState {
   model: BrCAD
+  operations: any[]
 }
 
 const initialState: ModelState = {
   model: {} as BrCAD,
+  operations: [],
 }
 
 export const counterSlice = createSlice({
@@ -18,10 +20,12 @@ export const counterSlice = createSlice({
   initialState,
   reducers: {
     loadModel: (state, action) => {
-      state.model = action.payload
+      state.model = action.payload.model
+      state.operations.push(action.payload.oprationId)
     },
     loadDiff: (state, action) => {
-      state.model = action.payload
+      state.model = action.payload.model
+      state.operations.push(action.payload.oprationId)
     },
   },
 })
@@ -30,19 +34,21 @@ export const counterSlice = createSlice({
 const { loadModel, loadDiff } = counterSlice.actions
 
 export const loadModelAsync = () => (dispatch: any) => {
-  apis.getModel().then((model) => {
+  apis.getModel().then((data) => {
     ThreeApp.getInstance().clearScene()
-    Shape.setBrCADToScene(model)
-    dispatch(loadModel(model))
+    Shape.setBrCADToScene(data.model)
+    dispatch(loadModel(data))
   })
 }
 export const loadDiffAsync = () => (dispatch: any, getState: any) => {
-  apis.getDiff().then((diff) => {
+  const lastOperationId =
+    getState().model.operations[getState().model.operations.length - 1]
+  apis.getDiff(lastOperationId).then((data) => {
     ThreeApp.getInstance().clearScene()
     let model = getState().model.model
-    model = Shape.applyDiffToBrCAD(model, diff)
+    model = Shape.applyDiffToBrCAD(model, data.diff)
     Shape.setBrCADToScene(model)
-    dispatch(loadDiff(model))
+    dispatch(loadDiff({ oprationId: data.oprationId, model }))
   })
 }
 export const selectModel = (state: RootState) => state.model.model

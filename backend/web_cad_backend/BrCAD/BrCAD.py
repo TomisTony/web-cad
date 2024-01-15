@@ -113,6 +113,5 @@ class BrCAD:
             "edges": [edge.to_dict() for edge in self.edges],
         }
 
-    def to_json(self, path: str) -> None:
-        with open(path, "w") as f:
-            json.dump(self.to_dict(), f)
+    def to_json(self) -> None:
+        return json.dumps(self.to_dict())
