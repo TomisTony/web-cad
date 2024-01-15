@@ -7,8 +7,9 @@ import pickle
 from BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
 from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_SHAPE
 from OCC.Core.TopExp import TopExp_Explorer
-from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
 from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet
+from OCC.Core.BRepTools import breptools_WriteToString, breptools_ReadFromString
+    
 
 @api_view(['GET'])
 def hello(request):
@@ -17,7 +18,6 @@ def hello(request):
 @api_view(['GET'])
 def loadModel(request):
     from OCC.Extend.DataExchange import read_step_file
-
     # 读取 STEP 文件
     step_filename = 'c:\\users\\GXLYQ_AIR\\Desktop\\web-cad\\backend\\test\\as1-oc-214-mat.stp'
     shape = read_step_file(step_filename)
@@ -33,7 +33,6 @@ def loadModel(request):
 def loadDiff(request):
     lastOperationId = request.GET.get("lastOperationId")
     last_shape = pickle.loads(Operation.objects.get(id=lastOperationId).topods_shape)
-    
     # 创建一个倒角生成器,并设置倒角半径
     fillet = BRepFilletAPI_MakeFillet(last_shape)
     edge_exp = TopExp_Explorer(last_shape, TopAbs_EDGE, TopAbs_SHAPE)
@@ -43,14 +42,14 @@ def loadDiff(request):
         break
     shape = fillet.Shape()
     converter_1 = TopoDSShapeConvertor(last_shape)
-    br_cad_1 = converter_1.get_BrCAD()
+    brcad_1 = converter_1.get_BrCAD()
     converter_2 = TopoDSShapeConvertor(shape)
-    br_cad_2 = converter_2.get_BrCAD()
+    brcad_2 = converter_2.get_BrCAD()
     from BrCAD.BrCAD_compare import BrCADCompare
-    br_cad_compare = BrCADCompare(br_cad_1, br_cad_2)
+    brcad_compare = BrCADCompare(brcad_1, brcad_2)
     
     # 保存操作
-    operation = Operation(type="fillet", brcad=br_cad_2.to_json(), topods_shape=pickle.dumps(shape))
+    operation = Operation(type="fillet", brcad=brcad_2.to_json(), topods_shape=pickle.dumps(shape))
     operation.save()
     
-    return ApiResponse({"oprationId": operation.id, "diff": br_cad_compare.get_diff()})
+    return ApiResponse({"oprationId": operation.id, "diff": brcad_compare.get_diff()})

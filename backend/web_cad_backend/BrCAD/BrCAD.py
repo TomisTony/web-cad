@@ -46,18 +46,25 @@ class BrCAD_face:
         self.normal_coordinates: List[float] = normal_coordinates
         self.triangle_indexes: List[int] = triangle_indexes
         self.number_of_triangles: int = number_of_triangles
+        
+    def _format(self):
+        self.vertex_coordinates = list(map(lambda x: round(x, 4), self.vertex_coordinates))
+        self.uv_coordinates = list(map(lambda x: round(x, 4), self.uv_coordinates))
+        self.normal_coordinates = list(map(lambda x: round(x, 4), self.normal_coordinates))
 
     def to_dict(self) -> Dict:
         return {
             "id": str(self.id),
-            "vertexCoordinates": list(map(lambda x: round(x, 4), self.vertex_coordinates)),
-            "uvCoordinates": list(map(lambda x: round(x, 4), self.uv_coordinates)),
-            "normalCoordinates": list(map(lambda x: round(x, 4), self.normal_coordinates)),
+            "vertexCoordinates": self.vertex_coordinates,
+            "uvCoordinates": self.uv_coordinates,
+            "normalCoordinates": self.normal_coordinates,
             "triangleIndexes": self.triangle_indexes,
             "numberOfTriangles": self.number_of_triangles,
         }
     
     def calculate_hash(self):
+        # 由于每次读取 TopoDS_Shape 重新计算时可能会带来高精度上的变化，因此需要对数据进行格式化，减少小数位数
+        self._format()
         attributes = []
 
         attributes.extend(self.vertex_coordinates)
@@ -77,14 +84,19 @@ class BrCAD_edge:
     def __init__(self, vertex_coordinates: []):
         self.id: str = None
         self.vertex_coordinates: List[float] = vertex_coordinates
+        
+    def _format(self):
+        self.vertex_coordinates = list(map(lambda x: round(x, 4), self.vertex_coordinates))
 
     def to_dict(self) -> Dict:
         return {
             "id": str(self.id),
-            "vertexCoordinates": list(map(lambda x: round(x, 4), self.vertex_coordinates)),
+            "vertexCoordinates": self.vertex_coordinates,
         }
     
     def calculate_hash(self):
+        # 由于每次读取 TopoDS_Shape 重新计算时可能会带来高精度上的变化，因此需要对数据进行格式化，减少小数位数
+        self._format()
         attributes = []
         
         attributes.extend(self.vertex_coordinates)
