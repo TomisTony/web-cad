@@ -15,13 +15,6 @@ def hello(request):
 def loadModel(request):
     # 新建一个长方体
     box = BRepPrimAPI_MakeBox(10., 20., 30.).Shape()
-    # 创建一个倒角生成器,并设置倒角半径
-    fillet = BRepFilletAPI_MakeFillet(box)
-    edge_exp = TopExp_Explorer(box, TopAbs_EDGE, TopAbs_SHAPE)
-    while edge_exp.More():
-        edge = edge_exp.Current()
-        fillet.Add(2.0, edge)
-        break
     converter = TopoDSShapeConvertor(box)
     br_cad = converter.get_BrCAD()
     return ApiResponse(br_cad.to_dict())

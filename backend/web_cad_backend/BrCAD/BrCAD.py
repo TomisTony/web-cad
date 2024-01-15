@@ -50,9 +50,9 @@ class BrCAD_face:
     def to_dict(self) -> Dict:
         return {
             "id": str(self.id),
-            "vertexCoordinates": self.vertex_coordinates,
-            "uvCoordinates": self.uv_coordinates,
-            "normalCoordinates": self.normal_coordinates,
+            "vertexCoordinates": list(map(lambda x: round(x, 4), self.vertex_coordinates)),
+            "uvCoordinates": list(map(lambda x: round(x, 4), self.uv_coordinates)),
+            "normalCoordinates": list(map(lambda x: round(x, 4), self.normal_coordinates)),
             "triangleIndexes": self.triangle_indexes,
             "numberOfTriangles": self.number_of_triangles,
         }
@@ -81,7 +81,7 @@ class BrCAD_edge:
     def to_dict(self) -> Dict:
         return {
             "id": str(self.id),
-            "vertexCoordinates": self.vertex_coordinates,
+            "vertexCoordinates": list(map(lambda x: round(x, 4), self.vertex_coordinates)),
         }
     
     def calculate_hash(self):
