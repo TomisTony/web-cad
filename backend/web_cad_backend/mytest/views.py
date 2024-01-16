@@ -8,7 +8,6 @@ from BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
 from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_SHAPE
 from OCC.Core.TopExp import TopExp_Explorer
 from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet
-from OCC.Core.BRepTools import breptools_WriteToString, breptools_ReadFromString
     
 
 @api_view(['GET'])

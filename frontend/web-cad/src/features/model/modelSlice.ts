@@ -35,7 +35,7 @@ const { loadModel, loadDiff } = counterSlice.actions
 
 export const loadModelAsync = () => (dispatch: any) => {
   apis.getModel().then((data) => {
-    ThreeApp.getInstance().clearScene()
+    ThreeApp.getScene().clearScene()
     Shape.setBrCADToScene(data.model)
     dispatch(loadModel(data))
   })
@@ -44,7 +44,7 @@ export const loadDiffAsync = () => (dispatch: any, getState: any) => {
   const lastOperationId =
     getState().model.operations[getState().model.operations.length - 1]
   apis.getDiff(lastOperationId).then((data) => {
-    ThreeApp.getInstance().clearScene()
+    ThreeApp.getScene().clearScene()
     let model = getState().model.model
     model = Shape.applyDiffToBrCAD(model, data.diff)
     Shape.setBrCADToScene(model)

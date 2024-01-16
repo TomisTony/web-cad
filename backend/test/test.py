@@ -2,7 +2,20 @@ from OCC.Extend.DataExchange import read_step_file
 
 # 读取 STEP 文件
 step_filename = 'c:\\users\\GXLYQ_AIR\\Desktop\\web-cad\\backend\\test\\as1-oc-214-mat.stp'
-# shape = read_step_file(step_filename)
+shape = read_step_file(step_filename)
+
+from OCC.Core.BRepTools import breptools_WriteToString
+
+# 将模型转换为字符串
+shape_str = breptools_WriteToString(shape)
+with open("output.txt", "w") as f:
+    f.write(shape_str)
+    
+import pickle
+# 将模型转换为字节流
+shape_bytes = pickle.dumps(shape)
+with open("output.bytes", "wb") as f:
+    f.write(shape_bytes)
 
 # from OCC.Core.TopExp import TopExp_Explorer
 from OCC.Core.TopoDS import TopoDS_Iterator
@@ -13,21 +26,21 @@ from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
 from OCC.Core import TopoDS
 from OCC.Core.TopAbs import TopAbs_COMPOUND, TopAbs_COMPSOLID, TopAbs_SOLID, TopAbs_SHELL, TopAbs_FACE, TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_SHAPE, TopAbs_FORWARD
 
-# 新建一个长方体
-from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
-box = BRepPrimAPI_MakeBox(10., 20., 30.).Shape()
-# 创建一个倒角生成器,并设置倒角半径
-from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet
-fillet = BRepFilletAPI_MakeFillet(box)
+# # 新建一个长方体
+# from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
+# box = BRepPrimAPI_MakeBox(10., 20., 30.).Shape()
+# # 创建一个倒角生成器,并设置倒角半径
+# from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet
+# fillet = BRepFilletAPI_MakeFillet(box)
 
-edge_exp = TopExp_Explorer(box, TopAbs_EDGE, TopAbs_SHAPE)
-while edge_exp.More():
-    edge = edge_exp.Current()
-    fillet.Add(2.0, edge)
-    break
+# edge_exp = TopExp_Explorer(box, TopAbs_EDGE, TopAbs_SHAPE)
+# while edge_exp.More():
+#     edge = edge_exp.Current()
+#     fillet.Add(2.0, edge)
+#     break
 
-# 建立倒角后的形状
-shape = fillet.Shape()
+# # 建立倒角后的形状
+# shape = fillet.Shape()
 
 # from OCC.Display.SimpleGui import init_display
 
@@ -39,22 +52,22 @@ shape = fillet.Shape()
 # # 启动渲染循环
 # start_display()
 
-import sys
-sys.path.insert(0, 'C:/USERS/GXLYQ_AIR/DESKTOP/WEB-CAD/BACKEND')
-from BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
-converter_1 = TopoDSShapeConvertor(box)
-br_cad_1 = converter_1.get_BrCAD()
-# br_cad_1.to_json("output.json")
+# import sys
+# sys.path.insert(0, 'C:/USERS/GXLYQ_AIR/DESKTOP/WEB-CAD/BACKEND')
+# from BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
+# converter_1 = TopoDSShapeConvertor(box)
+# br_cad_1 = converter_1.get_BrCAD()
+# # br_cad_1.to_json("output.json")
 
-converter_2 = TopoDSShapeConvertor(shape)
-br_cad_2 = converter_2.get_BrCAD()
+# converter_2 = TopoDSShapeConvertor(shape)
+# br_cad_2 = converter_2.get_BrCAD()
 
-from BrCAD.BrCAD_compare import BrCADCompare
-br_cad_compare = BrCADCompare(br_cad_1, br_cad_2)
+# from BrCAD.BrCAD_compare import BrCADCompare
+# br_cad_compare = BrCADCompare(br_cad_1, br_cad_2)
 
-import json
-with open("output.json", "w") as f:
-    json.dump(br_cad_compare.get_diff(), f)
+# import json
+# with open("output.json", "w") as f:
+#     json.dump(br_cad_compare.get_diff(), f)
 
 
 

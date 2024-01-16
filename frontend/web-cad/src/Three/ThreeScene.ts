@@ -1,6 +1,5 @@
 import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
-// import { OrbitControls } from "three"
 import { ThreeRaycaster } from "./threeRaycaster"
 import Line from "@/shape/line"
 import Model from "@/shape/model"
@@ -28,6 +27,12 @@ export class ThreeScene {
     this.bindEventListeners()
   }
 
+  public setSizeFromDomElement(e: HTMLElement) {
+    this.renderer.setSize(e.clientWidth, e.clientHeight)
+    this.camera.aspect = e.clientWidth / e.clientHeight
+    this.camera.updateProjectionMatrix()
+  }
+
   private init() {
     this.initScene()
     this.initRenderer()
@@ -39,9 +44,11 @@ export class ThreeScene {
     //this.setCamera();
   }
   private onWindowResize = () => {
-    this.camera.aspect = window.innerWidth / window.innerHeight
+    const width = this.renderer.domElement.width ?? window.innerWidth
+    const height = this.renderer.domElement.height ?? window.innerHeight
+    this.camera.aspect = width / height
     this.camera.updateProjectionMatrix()
-    this.renderer.setSize(window.innerWidth, window.innerHeight)
+    this.renderer.setSize(width, height)
   }
   /**
    * 场景
@@ -69,7 +76,7 @@ export class ThreeScene {
   private initCamera() {
     this.camera = new THREE.PerspectiveCamera(
       45,
-      window.innerWidth / window.innerHeight,
+      this.renderer.domElement.width / this.renderer.domElement.height ?? 1,
       0.1,
       10000,
     )
@@ -85,10 +92,6 @@ export class ThreeScene {
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
     })
-    this.renderer.setSize(window.innerWidth, window.innerHeight)
-    //renderer.shadowMap.enabled = true;
-    //renderer.setClearColor(0xdddddd);
-    document.body.appendChild(this.renderer.domElement)
   }
 
   private initLight() {
@@ -155,7 +158,12 @@ export class ThreeScene {
    */
   private render() {
     //设置主场景视区大小
-    this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight)
+    this.renderer.setViewport(
+      0,
+      0,
+      this.renderer.domElement.width ?? window.innerWidth,
+      this.renderer.domElement.height ?? window.innerHeight,
+    )
     this.renderer.render(this.scene, this.camera)
   }
 
@@ -206,9 +214,11 @@ export class ThreeScene {
 
   private ListenerMouseMove = (event: any) => {
     const mouse = new THREE.Vector2()
+    const width = this.renderer.domElement.width ?? window.innerWidth
+    const height = this.renderer.domElement.height ?? window.innerHeight
 
-    mouse.x = (event.offsetX / window.innerWidth) * 2 - 1
-    mouse.y = -(event.offsetY / window.innerHeight) * 2 + 1
+    mouse.x = (event.offsetX / width) * 2 - 1
+    mouse.y = -(event.offsetY / height) * 2 + 1
 
     const obj = this.obj
 

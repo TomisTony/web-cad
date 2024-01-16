@@ -5,7 +5,7 @@ export class ThreeApp {
 
   constructor() {}
 
-  static getInstance() {
+  static getScene() {
     if (!ThreeApp.threeScene) {
       ThreeApp.threeScene = new ThreeScene()
     }
