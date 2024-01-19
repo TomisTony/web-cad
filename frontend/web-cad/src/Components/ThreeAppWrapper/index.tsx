@@ -2,7 +2,11 @@ import React, { useEffect, useRef } from "react"
 import { ThreeApp } from "@/three/threeApp"
 import { ThreeScene } from "@/three/threeScene"
 
-function ThreeAppWrapper() {
+interface ThreeAppWrapperProps {
+  className?: string
+}
+
+function ThreeAppWrapper(props: ThreeAppWrapperProps) {
   const containerRef = useRef() as React.MutableRefObject<HTMLDivElement>
   const threeSceneRef = useRef() as React.MutableRefObject<ThreeScene>
 
@@ -19,7 +23,7 @@ function ThreeAppWrapper() {
     }
   }, [])
 
-  return <div ref={containerRef} className="w-[1600px] h-[800px]" />
+  return <div ref={containerRef} className={props.className} />
 }
 
 export default ThreeAppWrapper

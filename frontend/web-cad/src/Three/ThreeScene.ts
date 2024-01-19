@@ -44,8 +44,8 @@ export class ThreeScene {
     //this.setCamera();
   }
   private onWindowResize = () => {
-    const width = this.renderer.domElement.width ?? window.innerWidth
-    const height = this.renderer.domElement.height ?? window.innerHeight
+    const width = this.renderer.domElement.clientWidth ?? window.innerWidth
+    const height = this.renderer.domElement.clientHeight ?? window.innerHeight
     this.camera.aspect = width / height
     this.camera.updateProjectionMatrix()
     this.renderer.setSize(width, height)
@@ -76,7 +76,7 @@ export class ThreeScene {
   private initCamera() {
     this.camera = new THREE.PerspectiveCamera(
       45,
-      this.renderer.domElement.width / this.renderer.domElement.height ?? 1,
+      this.renderer.domElement.clientWidth / this.renderer.domElement.clientHeight ?? 1,
       0.1,
       10000,
     )
@@ -161,8 +161,8 @@ export class ThreeScene {
     this.renderer.setViewport(
       0,
       0,
-      this.renderer.domElement.width ?? window.innerWidth,
-      this.renderer.domElement.height ?? window.innerHeight,
+      this.renderer.domElement.clientWidth ?? window.innerWidth,
+      this.renderer.domElement.clientHeight ?? window.innerHeight,
     )
     this.renderer.render(this.scene, this.camera)
   }
@@ -214,8 +214,8 @@ export class ThreeScene {
 
   private ListenerMouseMove = (event: any) => {
     const mouse = new THREE.Vector2()
-    const width = this.renderer.domElement.width ?? window.innerWidth
-    const height = this.renderer.domElement.height ?? window.innerHeight
+    const width = this.renderer.domElement.clientWidth ?? window.innerWidth
+    const height = this.renderer.domElement.clientHeight ?? window.innerHeight
 
     mouse.x = (event.offsetX / width) * 2 - 1
     mouse.y = -(event.offsetY / height) * 2 + 1
