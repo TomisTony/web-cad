@@ -28,7 +28,7 @@ export class ThreeScene {
   }
 
   public setSizeFromDomElement(e: HTMLElement) {
-    this.renderer.setSize(e.clientWidth, e.clientHeight)
+    this.renderer.setSize(e.clientWidth, e.clientHeight, false)
     this.camera.aspect = e.clientWidth / e.clientHeight
     this.camera.updateProjectionMatrix()
   }
@@ -39,16 +39,18 @@ export class ThreeScene {
     this.initCamera()
     this.initLight()
     this.initControls()
-    window.addEventListener("resize", this.onWindowResize, false)
+    window.addEventListener("resize", this.onWindowResize)
     this.animate()
     //this.setCamera();
   }
   private onWindowResize = () => {
-    const width = this.renderer.domElement.clientWidth ?? window.innerWidth
-    const height = this.renderer.domElement.clientHeight ?? window.innerHeight
+    const width =
+      this.renderer.domElement.parentElement?.clientWidth ?? window.innerWidth
+    const height =
+      this.renderer.domElement.parentElement?.clientHeight ?? window.innerHeight
     this.camera.aspect = width / height
     this.camera.updateProjectionMatrix()
-    this.renderer.setSize(width, height)
+    this.renderer.setSize(width, height, false)
   }
   /**
    * 场景
@@ -76,7 +78,8 @@ export class ThreeScene {
   private initCamera() {
     this.camera = new THREE.PerspectiveCamera(
       45,
-      this.renderer.domElement.clientWidth / this.renderer.domElement.clientHeight ?? 1,
+      this.renderer.domElement.clientWidth /
+        this.renderer.domElement.clientHeight ?? 1,
       0.1,
       10000,
     )
