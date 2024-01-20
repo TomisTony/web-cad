@@ -1,17 +1,84 @@
-const operationList = [
+import loadDiff from "@/assets/operations/loadDiff.png"
+import loadModel from "@/assets/operations/loadModel.png"
+
+import { loadModelAsync, loadDiffAsync } from "@/features/model/modelSlice"
+
+interface Operation {
+  label: string
+  img: string
+  action: () => any
+}
+
+const operationList: Operation[] = [
   {
     label: "loadModel",
-    img: "load_model.png",
-    onClick: () => {
-      console.log("loadModel")
-    },
+    img: loadModel,
+    action: loadModelAsync,
   },
   {
     label: "loadDiff",
-    img: "load_diff.png",
-    onClick: () => {
-      console.log("loadDiff")
-    },
+    img: loadDiff,
+    action: loadDiffAsync,
+  },
+  {
+    label: "loadModel",
+    img: loadModel,
+    action: loadModelAsync,
+  },
+  {
+    label: "loadDiff",
+    img: loadDiff,
+    action: loadDiffAsync,
+  },
+  {
+    label: "loadModel",
+    img: loadModel,
+    action: loadModelAsync,
+  },
+  {
+    label: "loadDiff",
+    img: loadDiff,
+    action: loadDiffAsync,
+  },
+  {
+    label: "loadModel",
+    img: loadModel,
+    action: loadModelAsync,
+  },
+  {
+    label: "loadDiff",
+    img: loadDiff,
+    action: loadDiffAsync,
+  },
+  {
+    label: "loadModel",
+    img: loadModel,
+    action: loadModelAsync,
+  },
+  {
+    label: "loadDiff",
+    img: loadDiff,
+    action: loadDiffAsync,
+  },
+  {
+    label: "loadModel",
+    img: loadModel,
+    action: loadModelAsync,
+  },
+  {
+    label: "loadDiff",
+    img: loadDiff,
+    action: loadDiffAsync,
+  },
+  {
+    label: "loadModel",
+    img: loadModel,
+    action: loadModelAsync,
+  },
+  {
+    label: "loadDiff",
+    img: loadDiff,
+    action: loadDiffAsync,
   },
 ]
 

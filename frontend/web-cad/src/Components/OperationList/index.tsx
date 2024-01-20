@@ -10,8 +10,8 @@ function OperationList(props: OperationListProps) {
   return (
     <div
       className={
-        "px-4 py-2 bg-slate-300 flex justify-start space-x-4 " +
-          props.className ?? ""
+        "px-4 py-2 bg-slate-300 flex justify-start space-x-1 bg-opacity-50 " +
+        (props.className ?? "")
       }
     >
       {operationList.map((operation) => {
