@@ -3,8 +3,8 @@ import { BrCAD } from "@/types/BrCAD"
 import { RootState } from "@/app/store"
 
 interface ModelState {
-  model: BrCAD
-  operations: any[]
+  model: BrCAD // 储存当前的模型
+  operations: any[] // 操作历史记录
 }
 
 const initialState: ModelState = {
