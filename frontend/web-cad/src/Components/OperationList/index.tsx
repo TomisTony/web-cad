@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React from "react"
 import operationList from "@/operations/operationList"
 import OperationButton from "./components/OperationButton"
 

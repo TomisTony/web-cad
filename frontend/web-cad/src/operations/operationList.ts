@@ -1,7 +1,7 @@
 import loadDiff from "@/assets/operations/loadDiff.png"
 import loadModel from "@/assets/operations/loadModel.png"
 
-import { loadModelAsync, loadDiffAsync } from "@/features/model/modelSlice"
+import { loadModelAsync, loadDiffAsync } from "@/store/model/modelActions"
 
 interface Operation {
   label: string
