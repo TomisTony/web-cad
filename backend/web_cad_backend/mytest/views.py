@@ -1,4 +1,5 @@
 from rest_framework.decorators import api_view
+from rest_framework import status
 from utils.api_response import ApiResponse
 from mytest.models import Operation
 from django.conf import settings
@@ -48,10 +49,13 @@ def uploadFile(request: HttpRequest):
       # 先查看文件是否已经保存下来了,如果保存下来了,则删除
       if os.path.exists(filename):
           os.remove(filename)
-      return ApiResponse("server error", data_status=500)
+      return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @api_view(['GET'])
 def downloadFile(request: HttpRequest):
+    # 在 media 新建一个 timestamp 命名的文件夹
+    timestamp = str(int(time.time()))
+    os.makedirs(os.path.join(settings.MEDIA_ROOT, timestamp), exist_ok=True)
     try:
       lastOperationId = request.GET.get("lastOperationId")
       fileFormat = request.GET.get("fileFormat")
@@ -61,9 +65,6 @@ def downloadFile(request: HttpRequest):
           '.step': 'application/vnd.ms-pki.stl',
           '.stl': 'application/vnd.ms-pki.stl',
       }
-      # 在 media 新建一个 timestamp 命名的文件夹
-      timestamp = str(int(time.time()))
-      os.makedirs(os.path.join(settings.MEDIA_ROOT, timestamp), exist_ok=True)
       # 保存文件
       filename = os.path.join(settings.MEDIA_ROOT, timestamp, f"model{fileFormat}")
       if fileFormat == ".step":
@@ -77,23 +78,10 @@ def downloadFile(request: HttpRequest):
       response = FileResponse(file)
       response['Content-Type'] = MIME_TYPES[fileFormat]
       response['Content-Disposition'] = f'attachment;filename="model{fileFormat}"'
-      return response
     except Exception as e:
-      return ApiResponse("server error", data_status=500)
-    
+      response = ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# @api_view(['GET'])
-# def loadModel(request: HttpRequest):
-#     # 读取 STEP 文件
-#     step_filename = 'c:\\users\\GXLYQ_AIR\\Desktop\\web-cad\\backend\\test\\as1-oc-214-mat.stp'
-#     shape = read_step_file(step_filename)
-#     converter = TopoDSShapeConvertor(shape)
-#     br_cad = converter.get_BrCAD()
-#     # 保存操作
-#     operation = Operation(type="load", brcad=br_cad.to_json(), topods_shape=pickle.dumps(shape))
-#     operation.save()
-    
-#     return ApiResponse({"oprationId": operation.id, "model": br_cad.to_dict()})
+    return response
 
 @api_view(['GET'])
 def fillet(request: HttpRequest):
