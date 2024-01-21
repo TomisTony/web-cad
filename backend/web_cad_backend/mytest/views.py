@@ -1,35 +1,102 @@
 from rest_framework.decorators import api_view
 from utils.api_response import ApiResponse
 from mytest.models import Operation
+from django.conf import settings
+from django.http import HttpRequest, FileResponse
 
 import pickle
+import os
+import time
 
 from BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
 from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_SHAPE
 from OCC.Core.TopExp import TopExp_Explorer
 from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet
+from OCC.Extend.DataExchange import read_step_file
+from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_StepModelType
+from OCC.Extend.DataExchange import write_stl_file
     
 
 @api_view(['GET'])
 def hello(request):
     return ApiResponse("Hello, world!")
 
-@api_view(['GET'])
-def loadModel(request):
-    from OCC.Extend.DataExchange import read_step_file
-    # 读取 STEP 文件
-    step_filename = 'c:\\users\\GXLYQ_AIR\\Desktop\\web-cad\\backend\\test\\as1-oc-214-mat.stp'
-    shape = read_step_file(step_filename)
-    converter = TopoDSShapeConvertor(shape)
-    br_cad = converter.get_BrCAD()
-    # 保存操作
-    operation = Operation(type="load", brcad=br_cad.to_json(), topods_shape=pickle.dumps(shape))
-    operation.save()
+@api_view(['POST'])
+def uploadFile(request: HttpRequest):
+    file = request.FILES.get("file", None)
+    if file is None:
+        return ApiResponse("No file is uploaded", data_status=400)
+    filename = os.path.join(settings.MEDIA_ROOT, file.name)
     
-    return ApiResponse({"oprationId": operation.id, "model": br_cad.to_dict()})
+    try:     
+      # 确保文件夹存在
+      os.makedirs(os.path.join(settings.MEDIA_ROOT), exist_ok=True)
+      with open(os.path.join(settings.MEDIA_ROOT, file.name), "wb") as f:
+          for chunk in file.chunks():
+              f.write(chunk)
+      # 读取文件
+      shape = read_step_file(filename)
+      converter = TopoDSShapeConvertor(shape)
+      br_cad = converter.get_BrCAD()
+      # 保存操作
+      operation = Operation(type="import", brcad=br_cad.to_json(), topods_shape=pickle.dumps(shape))
+      operation.save()
+      # 删除文件
+      os.remove(filename)
+      return ApiResponse({"oprationId": operation.id, "model": br_cad.to_dict()})
+    except Exception as e:
+      # 先查看文件是否已经保存下来了,如果保存下来了,则删除
+      if os.path.exists(filename):
+          os.remove(filename)
+      return ApiResponse("server error", data_status=500)
+    
+@api_view(['GET'])
+def downloadFile(request: HttpRequest):
+    try:
+      lastOperationId = request.GET.get("lastOperationId")
+      fileFormat = request.GET.get("fileFormat")
+      last_shape = pickle.loads(Operation.objects.get(id=lastOperationId).topods_shape)
+      # 一个存储文件后缀名和对应 MIME 类型的字典
+      MIME_TYPES = {
+          '.step': 'application/vnd.ms-pki.stl',
+          '.stl': 'application/vnd.ms-pki.stl',
+      }
+      # 在 media 新建一个 timestamp 命名的文件夹
+      timestamp = str(int(time.time()))
+      os.makedirs(os.path.join(settings.MEDIA_ROOT, timestamp), exist_ok=True)
+      # 保存文件
+      filename = os.path.join(settings.MEDIA_ROOT, timestamp, f"model{fileFormat}")
+      if fileFormat == ".step":
+          step_writer = STEPControl_Writer()
+          step_writer.Transfer(last_shape, STEPControl_StepModelType.STEPControl_AsIs)
+          step_writer.Write(filename)
+      elif fileFormat == ".stl":
+          write_stl_file(last_shape, filename)
+      # 传递文件给前端
+      file = open(filename, 'rb')
+      response = FileResponse(file)
+      response['Content-Type'] = MIME_TYPES[fileFormat]
+      response['Content-Disposition'] = f'attachment;filename="model{fileFormat}"'
+      return response
+    except Exception as e:
+      return ApiResponse("server error", data_status=500)
+    
+
+# @api_view(['GET'])
+# def loadModel(request: HttpRequest):
+#     # 读取 STEP 文件
+#     step_filename = 'c:\\users\\GXLYQ_AIR\\Desktop\\web-cad\\backend\\test\\as1-oc-214-mat.stp'
+#     shape = read_step_file(step_filename)
+#     converter = TopoDSShapeConvertor(shape)
+#     br_cad = converter.get_BrCAD()
+#     # 保存操作
+#     operation = Operation(type="load", brcad=br_cad.to_json(), topods_shape=pickle.dumps(shape))
+#     operation.save()
+    
+#     return ApiResponse({"oprationId": operation.id, "model": br_cad.to_dict()})
 
 @api_view(['GET'])
-def loadDiff(request):
+def fillet(request: HttpRequest):
     lastOperationId = request.GET.get("lastOperationId")
     last_shape = pickle.loads(Operation.objects.get(id=lastOperationId).topods_shape)
     # 创建一个倒角生成器,并设置倒角半径

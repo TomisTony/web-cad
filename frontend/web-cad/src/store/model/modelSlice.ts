@@ -16,11 +16,11 @@ export const modelSlice = createSlice({
   name: "model",
   initialState,
   reducers: {
-    loadModel: (state, action) => {
+    importFile: (state, action) => {
       state.model = action.payload.model
       state.operations.push(action.payload.oprationId)
     },
-    loadDiff: (state, action) => {
+    fillet: (state, action) => {
       state.model = action.payload.model
       state.operations.push(action.payload.oprationId)
     },
