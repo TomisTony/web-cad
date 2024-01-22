@@ -3,10 +3,9 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 import { ThreeRaycaster } from "./threeRaycaster"
 import Line from "@/shape/line"
 import Model from "@/shape/model"
+import { ExtendedShape } from "@/types/Extended"
 
-type ExtendedShape = (Line | Model) & {
-  originHex: number
-}
+import store from "@/app/store"
 
 type UsedMeterial = THREE.MeshPhongMaterial | THREE.LineBasicMaterial
 
@@ -213,8 +212,39 @@ export class ThreeScene {
       "mousemove",
       this.ListenerMouseMove,
     )
+    this.renderer.domElement.addEventListener(
+      "mousedown",
+      this.ListenerMousedown,
+    )
   }
 
+  private dispatchChooseEvent(choosedId: string, type: string) {
+    store.dispatch({
+      type: "model/setChoosedInfo",
+      payload: {
+        index: 0,
+        id: choosedId,
+        type: type,
+      },
+    })
+  }
+
+  private dispatchUnchooseEvent(choosedId: string) {
+    store.dispatch({
+      type: "model/unchoose",
+      payload: {
+        id: choosedId,
+      },
+    })
+  }
+
+  private dispatchClearChoosedInfoEvent() {
+    store.dispatch({
+      type: "model/clearChoosedInfo",
+    })
+  }
+
+  // 鼠标滑过某个对象，黄色高亮
   private ListenerMouseMove = (event: any) => {
     const mouse = new THREE.Vector2()
     const width = this.renderer.domElement.clientWidth ?? window.innerWidth
@@ -240,30 +270,11 @@ export class ThreeScene {
           this.highlightedId !== newDetectedId
         ) {
           if (this.highlightedObj) {
-            ;(this.highlightedObj.material as UsedMeterial).color.setHex(
-              this.highlightedObj.originHex,
-            )
-            if (this.highlightedObj && this.highlightedObj.clearHighlights) {
-              this.highlightedObj.clearHighlights()
-            }
+            this.highlightedObj.clearHighlights()
           }
           this.highlightedObj = intersects[0].object as ExtendedShape
-          this.highlightedObj.originHex = (
-            this.highlightedObj.material as UsedMeterial
-          ).color.getHex()
-          // this.highlightedObj.material.color.setHex(0xffffff);
           this.highlightedId = newDetectedId
-          if (isLine) {
-            ;(this.highlightedObj as Line).highlightEdgeAtLineIndex(
-              newDetectedId,
-            )
-            return
-          } else {
-            ;(this.highlightedObj as Model).highlightFaceAtFaceIndex(
-              newDetectedId,
-            )
-            return
-          }
+          this.highlightedObj.highlightAtIndex(newDetectedId)
         }
 
         console.log(
@@ -271,14 +282,65 @@ export class ThreeScene {
         )
       } else {
         if (this.highlightedObj) {
-          ;(this.highlightedObj.material as UsedMeterial).color.setHex(
-            this.highlightedObj.originHex,
-          )
-          if (this.highlightedObj.clearHighlights) {
-            this.highlightedObj.clearHighlights()
-          }
+          this.highlightedObj.clearHighlights()
         }
         this.highlightedObj = null
+      }
+    }
+  }
+
+  // 选择某个对象，红色高亮
+  // TODO: 目前函数只支持单选，可以在 redux 里面新增一个 多选模式，这样的话就开启多选逻辑
+  private ListenerMousedown = (event: any) => {
+    // 仅响应左键
+    if (event.button !== 0) return
+
+    const mouse = new THREE.Vector2()
+    const width = this.renderer.domElement.clientWidth ?? window.innerWidth
+    const height = this.renderer.domElement.clientHeight ?? window.innerHeight
+
+    mouse.x = (event.offsetX / width) * 2 - 1
+    mouse.y = -(event.offsetY / height) * 2 + 1
+
+    const obj = this.obj
+
+    if (obj) {
+      const children = obj.children
+      this.raycaster.raycaster.setFromCamera(mouse, this.camera)
+      const intersects = this.raycaster.raycaster.intersectObjects(children)
+      if (intersects.length > 0) {
+        const type =
+          intersects[0].object.type === "LineSegments" ? "edge" : "face"
+
+        const intersectsObject: any = intersects[0].object
+        const newDetectedId: string =
+          type === "edge"
+            ? intersectsObject.edgeIds[intersects[0].index as number]
+            : intersectsObject.faceIds[intersects[0].face?.a as number]
+
+        // 单选情况下的特殊代码: 此时 choosedIdList 里面只有一个元素
+        // 选择前先将之前选择的置回原色
+        const choosedIdList = store.getState().model.choosedIdList
+        const lastId = choosedIdList[0]
+        if (lastId) {
+          children.forEach((child: any) => {
+            child.toggleChoosedHighlightAtIndex(choosedIdList[0])
+          })
+        }
+
+        // 反转当前选择的选择高亮色, 高亮变不亮，不亮变高亮
+        children.forEach((child: any) => {
+          child.toggleChoosedHighlightAtIndex(newDetectedId)
+        })
+        console.log(type + " Index: " + newDetectedId + " clicked.")
+        // 更新 store
+        // 查看是否已经被选择了，因为二次点击是取消选择
+        const hasChoosed = choosedIdList.includes(newDetectedId)
+        if (hasChoosed) {
+          this.dispatchUnchooseEvent(newDetectedId)
+        } else {
+          this.dispatchChooseEvent(newDetectedId, type)
+        }
       }
     }
   }
