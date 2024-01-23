@@ -1,5 +1,6 @@
 import React from "react"
-import { useAppDispatch } from "@/app/hooks"
+import { useAppDispatch, useAppSelector } from "@/app/hooks"
+import { setOperationPanel } from "@/store/globalStatus/globalStatusAction"
 
 interface OperationButtonProps {
   className?: string
@@ -11,7 +12,14 @@ interface OperationButtonProps {
 
 function OperationButton(props: OperationButtonProps) {
   const dispatch = useAppDispatch()
+  const operationPanel = useAppSelector(
+    (state) => state.globalStatus.operationPanel,
+  )
   const onClick = () => {
+    if (operationPanel === props.label) {
+      dispatch(setOperationPanel(""))
+      return
+    }
     dispatch(props.action())
   }
   return (
@@ -19,7 +27,9 @@ function OperationButton(props: OperationButtonProps) {
       className={
         "flex flex-col items-center justify-center  w-16 p-2 select-none" +
         " rounded-lg border border-black border-solid border-opacity-0 " +
-        "hover:bg-gray-800 hover:text-white hover:cursor-pointer active:bg-gray-700 transition duration-300" +
+        "hover:bg-gray-800 hover:text-white hover:cursor-pointer " +
+        "active:bg-gray-700 active:text-white transition duration-300 " +
+        (operationPanel === props.label ? "bg-gray-700 text-white" : " ") +
         (props.className ?? "")
       }
       onClick={onClick}

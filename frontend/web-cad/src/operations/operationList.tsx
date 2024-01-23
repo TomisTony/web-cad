@@ -1,4 +1,5 @@
 import React from "react"
+import { OperationSetting } from "@/components/OperationPanel"
 
 import fillet from "@/assets/operations/fillet.png"
 
@@ -6,7 +7,10 @@ import { UploadOutlined, ExportOutlined } from "@ant-design/icons"
 
 import store from "@/app/store"
 
-import { setModal } from "@/store/globalStatus/globalStatusAction"
+import {
+  setModal,
+  setOperationPanel,
+} from "@/store/globalStatus/globalStatusAction"
 import { filletAsync } from "@/store/model/modelActions"
 
 interface Operation {
@@ -14,6 +18,7 @@ interface Operation {
   img?: string
   icon?: (className: any) => React.ReactNode
   action: () => any
+  operationSetting?: OperationSetting
   isDelimiter?: boolean
 }
 
@@ -39,7 +44,24 @@ const operationList: Operation[] = [
   {
     label: "Fillet",
     img: fillet,
-    action: filletAsync,
+    action: () => store.dispatch(setOperationPanel("Fillet")),
+    operationSetting: {
+      operationName: "Fillet",
+      chooseCount: 1,
+      chooseLabelList: ["Edge"],
+      chooseTypeList: ["edge"],
+      props: [
+        {
+          type: "input",
+          label: "Radius",
+          info: "Radius",
+          defaultValue: 0.1,
+        },
+      ],
+      onSubmit: (values) => {
+        store.dispatch(filletAsync(values))
+      },
+    },
   },
 ]
 

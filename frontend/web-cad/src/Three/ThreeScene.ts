@@ -1,13 +1,9 @@
 import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 import { ThreeRaycaster } from "./threeRaycaster"
-import Line from "@/shape/line"
-import Model from "@/shape/model"
 import { ExtendedShape } from "@/types/Extended"
 
 import store from "@/app/store"
-
-type UsedMeterial = THREE.MeshPhongMaterial | THREE.LineBasicMaterial
 
 export class ThreeScene {
   public scene!: THREE.Scene

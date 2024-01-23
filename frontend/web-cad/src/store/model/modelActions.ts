@@ -15,7 +15,7 @@ export const importFile = (data: { model: BrCAD }) => (dispatch: any) => {
   dispatch(importFileAction(data))
   dispatch(setOperationExecuting(false))
 }
-export const filletAsync = () => (dispatch: any, getState: any) => {
+export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
   dispatch(setOperationExecuting(true))
 
   const lastOperationId =
