@@ -8,6 +8,7 @@ import Modals from "./components/Modals"
 import { useAppSelector } from "./app/hooks"
 
 import operationList from "./operations/operationList"
+import Message from "./components/Message"
 
 function App() {
   const operationPanel = useAppSelector(
@@ -16,6 +17,7 @@ function App() {
 
   return (
     <div className="w-[100vw] h-[100vh]">
+      <Message />
       <div className="absolute z-50 left-0 right-0">
         <OperationList />
         {operationPanel && (
@@ -27,7 +29,6 @@ function App() {
           />
         )}
       </div>
-
       <ThreeAppWrapper className="w-full h-full" />
       <Modals />
     </div>

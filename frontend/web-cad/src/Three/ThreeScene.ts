@@ -272,10 +272,6 @@ export class ThreeScene {
           this.highlightedId = newDetectedId
           this.highlightedObj.highlightAtIndex(newDetectedId)
         }
-
-        console.log(
-          (isLine ? "Edge" : "Face") + " Index: " + this.highlightedId,
-        )
       } else {
         if (this.highlightedObj) {
           this.highlightedObj.clearHighlights()

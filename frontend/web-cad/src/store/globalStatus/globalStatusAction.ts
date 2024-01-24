@@ -1,3 +1,8 @@
 import { globalStatusSlice } from "./globalStatusSlice"
 
-export const { setOperationExecuting, setModal, setOperationPanel } = globalStatusSlice.actions
+export const {
+  setOperationExecuting,
+  setModal,
+  setOperationPanel,
+  setMessage,
+} = globalStatusSlice.actions

@@ -53,8 +53,8 @@ const operationList: Operation[] = [
       props: [
         {
           type: "input",
-          label: "Radius",
-          info: "Radius",
+          label: "radius",
+          info: "radius",
           defaultValue: 0.1,
         },
       ],

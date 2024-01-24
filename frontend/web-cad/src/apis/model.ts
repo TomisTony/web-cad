@@ -4,8 +4,8 @@ import request from "@/utils/request"
 //   return request.get("/mytest/loadModel")
 // }
 
-export function fillet(lastOperationId: string) {
-  return request.get("/mytest/fillet?lastOperationId=" + lastOperationId)
+export function fillet(data: any) {
+  return request.post("/mytest/fillet", data)
 }
 
 export function getUploadFileUrl() {

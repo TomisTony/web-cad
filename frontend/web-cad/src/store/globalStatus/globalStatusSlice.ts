@@ -4,12 +4,20 @@ interface GlobalStatusState {
   operationExecuting: boolean // 是否有操作正在执行
   modal: string // 空字符串表示没有 Modal 触发，否则为 Modal 的名称
   operationPanel: string // 空字符串表示没有 OperationPanel 触发，否则为 OperationPanel 的名称
+  message: {
+    type: "success" | "error" | "info" | "warning" | undefined
+    content: string
+  }
 }
 
 const initialState: GlobalStatusState = {
   operationExecuting: false,
   modal: "",
   operationPanel: "",
+  message: {
+    type: undefined,
+    content: "",
+  },
 }
 
 export const globalStatusSlice = createSlice({
@@ -24,6 +32,9 @@ export const globalStatusSlice = createSlice({
     },
     setOperationPanel: (state, action) => {
       state.operationPanel = action.payload
+    },
+    setMessage: (state, action) => {
+      state.message = action.payload
     },
   },
 })

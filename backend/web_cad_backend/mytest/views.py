@@ -8,10 +8,11 @@ from django.http import HttpRequest, FileResponse
 import pickle
 import os
 import time
+import json
 
 from BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
-from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_SHAPE
-from OCC.Core.TopExp import TopExp_Explorer
+from BrCAD.BrCAD_compare import BrCADCompare
+
 from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet
 from OCC.Extend.DataExchange import read_step_file
 from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_StepModelType
@@ -83,26 +84,31 @@ def downloadFile(request: HttpRequest):
 
     return response
 
-@api_view(['GET'])
+@api_view(['POST'])
 def fillet(request: HttpRequest):
-    lastOperationId = request.GET.get("lastOperationId")
-    last_shape = pickle.loads(Operation.objects.get(id=lastOperationId).topods_shape)
-    # 创建一个倒角生成器,并设置倒角半径
-    fillet = BRepFilletAPI_MakeFillet(last_shape)
-    edge_exp = TopExp_Explorer(last_shape, TopAbs_EDGE, TopAbs_SHAPE)
-    while edge_exp.More():
-        edge = edge_exp.Current()
-        fillet.Add(2.0, edge)
-        break
-    shape = fillet.Shape()
+    # step1: 获取参数
+    params = json.loads(request.body)
+    last_operation_id = params.get("lastOperationId")
+    data = params.get("data")
+    choosed_id_list = data.get("choosedIdList")
+    choosedId = choosed_id_list[0]
+    props = data.get("props")
+    radius = props.get("radius")
+    # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map
+    last_shape = pickle.loads(Operation.objects.get(id=last_operation_id).topods_shape)
     converter_1 = TopoDSShapeConvertor(last_shape)
     brcad_1 = converter_1.get_BrCAD()
+    id_map = converter_1.get_id_TopoDS_Shape_map()
+    # step3: 执行对应操作
+    # 创建一个倒角生成器,并设置倒角半径
+    fillet = BRepFilletAPI_MakeFillet(last_shape)
+    fillet.Add(float(radius), id_map[choosedId])
+    shape = fillet.Shape()
+    # step4: 生成新的 BrCAD 对象进行比较
     converter_2 = TopoDSShapeConvertor(shape)
     brcad_2 = converter_2.get_BrCAD()
-    from BrCAD.BrCAD_compare import BrCADCompare
     brcad_compare = BrCADCompare(brcad_1, brcad_2)
-    
-    # 保存操作
+    # step5: 保存操作
     operation = Operation(type="fillet", brcad=brcad_2.to_json(), topods_shape=pickle.dumps(shape))
     operation.save()
     

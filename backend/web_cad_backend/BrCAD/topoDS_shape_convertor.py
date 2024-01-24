@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 from OCC.Core.TopoDS import TopoDS_Shape
 from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_FACE, TopAbs_SHAPE
@@ -25,6 +25,7 @@ class TopoDSShapeConvertor:
         self.max_deviation = max_deviation
         self.faces: List[BrCAD_face] = []
         self.edges: List[BrCAD_edge] = []
+        self.id_TopoDS_Shape_map: Dict[str, TopoDS_Shape] = {}
         self.faces, self.edges = self.__converte()
 
     def get_faces(self):
@@ -45,6 +46,9 @@ class TopoDSShapeConvertor:
             faces=self.faces,
             edges=self.edges,
         )
+    
+    def get_id_TopoDS_Shape_map(self):
+        return self.id_TopoDS_Shape_map
 
     def __converte(self) -> (List[BrCAD_face], List[BrCAD_edge]):
         face_list: List[BrCAD_face] = []
@@ -144,6 +148,7 @@ class TopoDSShapeConvertor:
             brcad_face.number_of_triangles = validFaceTriangleCount
             # 计算 hash 作为 id
             brcad_face.calculate_hash()
+            self.id_TopoDS_Shape_map[brcad_face.id] = face
             face_list.append(brcad_face)
             
             # 在每一个面中遍历所有 edge，这些边可能是三角化之后新产生的
@@ -170,6 +175,7 @@ class TopoDSShapeConvertor:
                         brcad_edge.vertex_coordinates.append(brcad_face.vertex_coordinates[(vertex_index - 1) * 3 + 1])
                         brcad_edge.vertex_coordinates.append(brcad_face.vertex_coordinates[(vertex_index - 1) * 3 + 2])
                     brcad_edge.calculate_hash()
+                    self.id_TopoDS_Shape_map[brcad_edge.id] = edge
                     edge_list.append(brcad_edge)
                 else:
                     complete_edge_set.add(hash)
@@ -198,6 +204,7 @@ class TopoDSShapeConvertor:
                     brcad_edge.vertex_coordinates.append(vertex.Z())
                 complete_edge_set.add(hash)
                 brcad_edge.calculate_hash()
+                self.id_TopoDS_Shape_map[brcad_edge.id] = edge
                 edge_list.append(brcad_edge)
             edgeExp.Next() 
                    
