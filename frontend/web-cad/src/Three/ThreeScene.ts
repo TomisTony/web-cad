@@ -39,6 +39,18 @@ export class ThreeScene {
     //this.setCamera();
   }
   private onWindowResize = () => {
+    console.log("onWindowResize")
+    const width =
+      this.renderer.domElement.parentElement?.clientWidth ?? window.innerWidth
+    const height =
+      this.renderer.domElement.parentElement?.clientHeight ?? window.innerHeight
+    this.camera.aspect = width / height
+    this.camera.updateProjectionMatrix()
+    this.renderer.setSize(width, height, false)
+  }
+  // 用于在父级元素大小变化时，更新渲染器大小
+  public onParentDomResize = () => {
+    console.log("onParentDomResize")
     const width =
       this.renderer.domElement.parentElement?.clientWidth ?? window.innerWidth
     const height =

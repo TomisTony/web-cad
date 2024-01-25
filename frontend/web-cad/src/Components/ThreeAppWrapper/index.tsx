@@ -20,6 +20,10 @@ function ThreeAppWrapper(props: ThreeAppWrapperProps) {
     threeSceneRef.current = ThreeApp.getScene()
     threeSceneRef.current.setSizeFromDomElement(containerRef.current)
     containerRef.current.appendChild(threeSceneRef.current.renderer.domElement)
+    containerRef.current.addEventListener(
+      "resize",
+      threeSceneRef.current.onParentDomResize,
+    )
 
     return () => {
       containerRef.current?.removeChild(
