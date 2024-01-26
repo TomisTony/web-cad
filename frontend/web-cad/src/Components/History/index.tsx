@@ -8,7 +8,7 @@ interface HistoryProps {
 function History(props: HistoryProps) {
   return (
     <div className={"bg-gray-600 bg-opacity-50 p-1 flex " + props.className}>
-      <div className="flex flex-col h-full flex-1">
+      <div className="flex flex-col flex-1">
         <div className="m-1 text-white font-bold">Operation History</div>
         <HistoryList className="m-1 flex-1" />
       </div>
