@@ -5,5 +5,5 @@ export const {
   setModal,
   setOperationPanel,
   setSidePanelVisible,
-  setMessage,
+  setGlobalMessage,
 } = globalStatusSlice.actions

@@ -4,9 +4,11 @@ import { Drawer } from "antd"
 
 import { useAppSelector, useAppDispatch } from "@/app/hooks"
 
+import { OperationSetting } from "@/types/Operation"
+
 import ThreeAppWrapper from "@/components/ThreeAppWrapper"
 import OperationList from "@/components/OperationList"
-import OperationPanel, { OperationSetting } from "@/components/OperationPanel"
+import OperationPanel from "@/components/OperationPanel"
 import operationList from "@/operations/operationList"
 import History from "@/components/History"
 import SidePanel from "@/components/SidePanel"

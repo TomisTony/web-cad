@@ -1,5 +1,5 @@
 import React from "react"
-import { OperationSetting } from "@/components/OperationPanel"
+import { OperationSetting } from "@/types/Operation"
 
 import fillet from "@/assets/operations/fillet.png"
 

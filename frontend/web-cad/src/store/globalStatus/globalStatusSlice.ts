@@ -5,7 +5,7 @@ interface GlobalStatusState {
   modal: string // 空字符串表示没有 Modal 触发，否则为 Modal 的名称
   operationPanel: string // 空字符串表示没有 OperationPanel 触发，否则为 OperationPanel 的名称
   sidePanelVisible: boolean // 是否显示 SidePanel
-  message: {
+  globalMessage: { // 全局消息提示
     type: "success" | "error" | "info" | "warning" | undefined
     content: string
   }
@@ -16,7 +16,7 @@ const initialState: GlobalStatusState = {
   modal: "",
   operationPanel: "",
   sidePanelVisible: false,
-  message: {
+  globalMessage: {
     type: undefined,
     content: "",
   },
@@ -38,8 +38,8 @@ export const globalStatusSlice = createSlice({
     setSidePanelVisible: (state, action) => {
       state.sidePanelVisible = action.payload
     },
-    setMessage: (state, action) => {
-      state.message = action.payload
+    setGlobalMessage: (state, action) => {
+      state.globalMessage = action.payload
     },
   },
 })

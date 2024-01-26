@@ -14,7 +14,7 @@ function OperationList(props: OperationListProps) {
         (props.className ?? "")
       }
     >
-      {operationList.map((operation, index) => {
+      {operationList.map((operation) => {
         if (operation.isDelimiter)
           return <div key={operation.label} className="w-[2px] h-25 bg-black" />
         return <OperationButton key={operation.label} {...operation} />

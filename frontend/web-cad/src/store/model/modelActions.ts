@@ -5,7 +5,7 @@ import apis from "@/apis"
 import { modelSlice } from "./modelSlice"
 import {
   setOperationExecuting,
-  setMessage,
+  setGlobalMessage,
 } from "../globalStatus/globalStatusAction"
 import { BrCAD } from "@/types/BrCAD"
 
@@ -42,7 +42,7 @@ export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
     })
     .catch((err) => {
       dispatch(
-        setMessage({
+        setGlobalMessage({
           type: "error",
           content: "Error: Server Error! Check the console.",
         }),

@@ -3,7 +3,9 @@ import { useAppSelector, useAppDispatch } from "@/app/hooks"
 import { message } from "antd"
 
 const Message = () => {
-  const messageInfo = useAppSelector((state) => state.globalStatus.message)
+  const messageInfo = useAppSelector(
+    (state) => state.globalStatus.globalMessage,
+  )
   const dispatch = useAppDispatch()
 
   useEffect(() => {
@@ -12,7 +14,7 @@ const Message = () => {
       const content = messageInfo?.content || ""
       message[type](content)
       dispatch({
-        type: "globalStatus/setMessage",
+        type: "globalStatus/setGlobalMessage",
         payload: { type: undefined, content: "" },
       })
     }

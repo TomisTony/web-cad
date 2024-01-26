@@ -1,11 +1,11 @@
 import React from "react"
-import { useAppDispatch } from "@/app/hooks"
+import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { CaretLeftOutlined } from "@ant-design/icons"
 import { Badge } from "antd"
 
 function SidePanelOpenButton(props: { className?: string }) {
   const dispatch = useAppDispatch()
-  const messageCount = 10
+  const messageCount = useAppSelector((state) => state.message.newCount)
 
   return (
     <Badge
