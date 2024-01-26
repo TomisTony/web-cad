@@ -96,7 +96,10 @@ function OperationPanel({ className, operationSetting }: Props) {
       <div className="text-lg font-bold">Choosed Topo</div>
       <div className="text-base">
         {chooseLabelList?.map((label, i) => (
-          <div key={i}>
+          <div
+            key={i}
+            className="whitespace-nowrap overflow-hidden text-ellipsis"
+          >
             {label +
               ": " +
               (choosedList?.[i] === undefined ? "None" : choosedList[i])}
