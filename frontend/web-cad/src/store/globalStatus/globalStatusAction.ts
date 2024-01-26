@@ -4,5 +4,6 @@ export const {
   setOperationExecuting,
   setModal,
   setOperationPanel,
+  setSidePanelVisible,
   setMessage,
 } = globalStatusSlice.actions

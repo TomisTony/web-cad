@@ -81,7 +81,7 @@ function OperationPanel({ className, operationSetting }: Props) {
     <Form
       className={
         "bg-gray-400 bg-opacity-50 w-[20%] h-full p-4 flex flex-col shadow-sm" +
-        " select-none " +
+        " select-none pointer-events-auto " +
         "rounded-lg" +
         "border-solid border border-black" +
         className
