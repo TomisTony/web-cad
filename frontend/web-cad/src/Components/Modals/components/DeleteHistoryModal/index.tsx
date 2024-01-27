@@ -40,7 +40,11 @@ function DeleteHistoryModal() {
             "border-2 border-solid border-black border-t-0 border-l-0 border-r-0"
           }
         >
-          Are you sure to delete this history?
+          Are you sure to <span className="text-red-700">delete</span> this history?
+        </div>
+        <div>
+          <span className="font-bold">Operation: </span>
+          {deleteHistoryInfo.operationName}
         </div>
         <div>
           <span className="font-bold">Operator: </span>
@@ -49,10 +53,6 @@ function DeleteHistoryModal() {
         <div>
           <span className="font-bold">Time: </span>
           {getTimeString(deleteHistoryInfo.time)}
-        </div>
-        <div>
-          <span className="font-bold">Operation: </span>
-          {deleteHistoryInfo.operationName}
         </div>
         <div>
           <span className="font-bold">Operation Settings:</span>
