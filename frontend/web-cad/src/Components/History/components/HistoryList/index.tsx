@@ -22,6 +22,10 @@ function HistoryList(props: HistoryListProps) {
   )
   useEffect(() => {
     apis.getHistory().then((res) => {
+      dispatch({
+        type: "history/setHistoryList",
+        payload: res,
+      })
       const data = res.map((value) => {
         return {
           ...value,
@@ -29,10 +33,6 @@ function HistoryList(props: HistoryListProps) {
             (operation) => operation.label === value.operationName,
           )?.operationSetting,
         }
-      })
-      dispatch({
-        type: "history/setHistoryCount",
-        payload: data.length,
       })
       setHistoryList(data)
     })

@@ -1,19 +1,21 @@
 import React from "react"
 import FunctionalButton from "./FunctionalButton"
-import { useAppSelector } from "@/app/hooks"
+import { useAppSelector, useAppDispatch } from "@/app/hooks"
 
 interface FunctionalButtonListProps {
   className?: string
 }
 
 function FunctionalButtonList(props: FunctionalButtonListProps) {
+  const dispatch = useAppDispatch()
   const choosedHistoryIndex = useAppSelector(
     (state) => state.history.choosedHistoryIndex,
   )
   const nowHistoryIndex = useAppSelector(
     (state) => state.history.nowHistoryIndex,
   )
-  const historyCount = useAppSelector((state) => state.history.historyCount)
+  const historyList = useAppSelector((state) => state.history.historyList)
+  const historyCount = historyList.length
 
   const functionalButtons = [
     {
@@ -25,13 +27,21 @@ function FunctionalButtonList(props: FunctionalButtonListProps) {
     },
     {
       label: "Delete",
-      onClick: () => {},
-      disabled: !(choosedHistoryIndex === historyCount - 1),
+      onClick: () => {
+        dispatch({ type: "globalStatus/setModal", payload: "deleteHistory" })
+      },
+      disabled: !(
+        choosedHistoryIndex === historyCount - 1 && choosedHistoryIndex !== -1
+      ),
     },
     {
       label: "Rollback",
-      onClick: () => {},
-      disabled: !(choosedHistoryIndex !== historyCount - 1),
+      onClick: () => {
+        dispatch({ type: "globalStatus/setModal", payload: "rollbackHistory" })
+      },
+      disabled: !(
+        choosedHistoryIndex !== historyCount - 1 && choosedHistoryIndex !== -1
+      ),
     },
   ]
 

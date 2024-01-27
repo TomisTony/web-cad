@@ -1,4 +1,4 @@
 import { historySlice } from "./historySlice"
 
-export const { setHistoryCount, chooseHistory, setNowHistoryIndex } =
+export const { setHistoryList, chooseHistory, setNowHistoryIndex } =
   historySlice.actions
