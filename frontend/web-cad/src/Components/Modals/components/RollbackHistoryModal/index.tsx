@@ -45,15 +45,15 @@ function RollbackHistoryModal() {
         </div>
         <div>
           <span className="font-bold">Operation: </span>
-          {rollbackHistoryInfo.operationName}
+          {rollbackHistoryInfo?.operationName}
         </div>
         <div>
           <span className="font-bold">Operator: </span>
-          {rollbackHistoryInfo.operator}
+          {rollbackHistoryInfo?.operator}
         </div>
         <div>
           <span className="font-bold">Time: </span>
-          {getTimeString(rollbackHistoryInfo.time)}
+          {getTimeString(rollbackHistoryInfo?.time)}
         </div>
         <div>
           <span className="font-bold">Operation Settings:</span>

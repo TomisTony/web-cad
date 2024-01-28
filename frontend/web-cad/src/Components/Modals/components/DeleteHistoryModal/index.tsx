@@ -44,15 +44,15 @@ function DeleteHistoryModal() {
         </div>
         <div>
           <span className="font-bold">Operation: </span>
-          {deleteHistoryInfo.operationName}
+          {deleteHistoryInfo?.operationName}
         </div>
         <div>
           <span className="font-bold">Operator: </span>
-          {deleteHistoryInfo.operator}
+          {deleteHistoryInfo?.operator}
         </div>
         <div>
           <span className="font-bold">Time: </span>
-          {getTimeString(deleteHistoryInfo.time)}
+          {getTimeString(deleteHistoryInfo?.time)}
         </div>
         <div>
           <span className="font-bold">Operation Settings:</span>
