@@ -1,6 +1,7 @@
 import React from "react"
 import HistoryList from "./components/HistoryList"
 import FunctionalButtonList from "./components/FunctionalButtonList"
+import { CaretUpOutlined } from "@ant-design/icons"
 import { useAppSelector } from "@/app/hooks"
 
 interface HistoryProps {
@@ -21,7 +22,13 @@ function History(props: HistoryProps) {
       }
     >
       <div className="flex flex-col flex-1">
-        <div className="m-1 text-white font-bold">History</div>
+        <div className="m-1 text-white font-bold flex justify-between">
+          {"History"}
+          <div className="text-base">
+            <CaretUpOutlined />
+            {": The History Currently Being Displayed"}
+          </div>
+        </div>
         <HistoryList className="m-1 flex-1" />
       </div>
       <div className="w-[1px] bg-gray-300" />

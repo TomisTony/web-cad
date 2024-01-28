@@ -26,6 +26,10 @@ function HistoryList(props: HistoryListProps) {
         type: "history/setHistoryList",
         payload: res,
       })
+      dispatch({
+        type: "history/chooseHistory",
+        payload: res.length - 1,
+      })
       const data = res.map((value) => {
         return {
           ...value,
