@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { CaretUpOutlined } from "@ant-design/icons"
 
 import { refreshHistoryList } from "@/store/history/historyAction"
+import apis from "@/apis"
 
 interface HistoryListProps {
   className?: string
@@ -21,21 +22,25 @@ function HistoryList(props: HistoryListProps) {
     (state) => state.history.nowHistoryIndex,
   )
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:8000/websocket")
+    // 直接获取最新的 HistoryList
+    apis.getHistoryList(1).then((res) => {
+      dispatch(refreshHistoryList(res))
+    })
+    // websocket 订阅 HistoryList 更新
+    const socket = new WebSocket("ws://localhost:8000/websocket?projectId=1")
     socket.onopen = () => {
       console.log("HistoryList WebSocket Client Connected")
     }
     socket.onmessage = (message) => {
       const data = JSON.parse(message.data)
+      console.log(data)
       if (data.type === "updateHistoryList") {
         const historyList = JSON.parse(data.data)
         dispatch(refreshHistoryList(historyList))
       }
     }
     return () => {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.close()
-      }
+      socket.close()
     }
   }, [])
 

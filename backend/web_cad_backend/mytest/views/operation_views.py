@@ -6,6 +6,8 @@ from mytest.models import Project
 from django.conf import settings
 from django.http import HttpRequest, FileResponse
 
+from mytest.views.channels_views import notify_update_history_list
+
 import pickle
 import os
 import time
@@ -22,7 +24,7 @@ from OCC.Extend.DataExchange import write_stl_file
 
 # Operation "Import"
 @api_view(["POST"])
-def uploadFile(request: HttpRequest):
+def uploadFile(request: HttpRequest, project_id: int):
     file = request.FILES.get("file", None)
     if file is None:
         return ApiResponse("No file is uploaded", data_status=400)
@@ -43,6 +45,7 @@ def uploadFile(request: HttpRequest):
             type="Import",
             project_id=1,
             operator="Br",
+            time=int(time.time() * 1000),
             brcad=br_cad.to_json(),
             topods_shape=pickle.dumps(shape),
         )
@@ -53,6 +56,8 @@ def uploadFile(request: HttpRequest):
         operation_history_ids.append(operation.id)
         project.operation_history_ids = json.dumps(operation_history_ids)
         project.save()
+        # 通知前端更新历史记录
+        notify_update_history_list(project_id)
         # 删除文件
         os.remove(filename)
         return ApiResponse({"oprationId": operation.id, "model": br_cad.to_dict()})
@@ -108,6 +113,7 @@ def fillet(request: HttpRequest):
     # step1: 获取参数
     params = json.loads(request.body)
     last_operation_id = params.get("lastOperationId")
+    project_id = params.get("projectId")
     data = params.get("data")
     choosed_id_list = data.get("choosedIdList")
     choosedId = choosed_id_list[0]
@@ -132,6 +138,7 @@ def fillet(request: HttpRequest):
         type="Fillet",
         project_id=1,
         operator="Br",
+        time=int(time.time() * 1000),
         data=json.dumps(data),
         brcad=brcad_2.to_json(),
         topods_shape=pickle.dumps(shape),
@@ -143,5 +150,7 @@ def fillet(request: HttpRequest):
     operation_history_ids.append(operation.id)
     project.operation_history_ids = json.dumps(operation_history_ids)
     project.save()
+    # step7: 通知前端更新历史记录
+    notify_update_history_list(project_id)
 
     return ApiResponse({"oprationId": operation.id, "diff": brcad_compare.get_diff()})

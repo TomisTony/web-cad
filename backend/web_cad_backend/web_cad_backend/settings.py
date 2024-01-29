@@ -135,3 +135,9 @@ CORS_EXPOSE_HEADERS = ['*']
 MEDIA_ROOT = BASE_DIR / 'media'
 
 ASGI_APPLICATION = 'web_cad_backend.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}

@@ -1,14 +1,29 @@
-from channels.exceptions import StopConsumer
-from channels.generic.websocket import WebsocketConsumer
+from channels.generic.websocket import AsyncWebsocketConsumer
+
+import json
+from urllib.parse import parse_qs
 
 
-class Consumer(WebsocketConsumer):
-    def websocket_connect(self, message):
-        self.accept()
-
-    def websocket_receive(self, message):
-        print(message)
-        self.send("不要")
-
-    def websocket_disconnect(self, message):
-        raise StopConsumer()
+class Consumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+        self.projectId = parse_qs(self.scope["query_string"].decode("utf8"))["projectId"][0]
+        await self.channel_layer.group_add(
+            "project_" + self.projectId,
+            self.channel_name
+        )
+        
+    async def updateHistoryList(self, event):
+        print("updateHistoryList", self.channel_name)
+        await self.send(text_data=json.dumps({
+            "type": "updateHistoryList",
+            "data": event["data"],
+        }))
+        
+        
+    async def disconnect(self, close_code):
+        print("disconnect", self.channel_name)
+        await self.channel_layer.group_discard(
+            "project_" + self.projectId,
+            self.channel_name
+        )

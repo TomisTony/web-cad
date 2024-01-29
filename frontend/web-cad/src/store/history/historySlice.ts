@@ -10,7 +10,7 @@ interface HistoryState {
 const initialState: HistoryState = {
   historyList: [],
   choosedHistoryIndex: -1,
-  nowHistoryIndex: 1,
+  nowHistoryIndex: -1,
 }
 
 export const historySlice = createSlice({

@@ -25,6 +25,7 @@ export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
     getState().model.operations[getState().model.operations.length - 1]
   const params = {
     lastOperationId,
+    projectId: 1,
     data: {
       ...value,
     },

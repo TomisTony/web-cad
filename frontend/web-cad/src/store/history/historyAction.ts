@@ -9,4 +9,8 @@ export const refreshHistoryList = (historyList: any) => (dispatch: any) => {
     type: "history/chooseHistory",
     payload: historyList.length - 1,
   })
+  dispatch({
+    type: "history/setNowHistoryIndex",
+    payload: historyList.length - 1,
+  })
 }

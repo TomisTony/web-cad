@@ -8,8 +8,10 @@ export function fillet(data: any) {
   return request.post("/mytest/operation/fillet", data)
 }
 
-export function getUploadFileUrl() {
-  return request.baseConfig.baseURL + "/mytest/operation/uploadFile"
+export function getUploadFileUrl(projectId: number) {
+  return (
+    request.baseConfig.baseURL + "/mytest/operation/uploadFile/" + projectId
+  )
 }
 
 export function getDownloadUrl(lastOperationId: string, fileFormat: string) {

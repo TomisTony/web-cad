@@ -20,7 +20,7 @@ function ImportModal() {
   const props: UploadProps = {
     name: "file",
     accept: ".step,.stp",
-    action: apis.getUploadFileUrl(),
+    action: apis.getUploadFileUrl(1),
     onChange(info: any) {
       const { status } = info.file
       if (status !== "uploading") {
