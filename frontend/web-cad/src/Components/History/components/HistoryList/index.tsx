@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo } from "react"
 import { History } from "@/types/History"
 import { Popover } from "antd"
-import { socket } from "@/utils/socket"
 import operationList from "@/operations/operationList"
 import { getTimeString } from "@/utils/time"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { CaretUpOutlined } from "@ant-design/icons"
-import { on } from "events"
+
+import { refreshHistoryList } from "@/store/history/historyAction"
 
 interface HistoryListProps {
   className?: string
@@ -21,15 +21,21 @@ function HistoryList(props: HistoryListProps) {
     (state) => state.history.nowHistoryIndex,
   )
   useEffect(() => {
-    function onHistoryChange(historyList: History[]) {
-      dispatch({
-        type: "history/setHistoryList",
-        payload: historyList,
-      })
+    const socket = new WebSocket("ws://localhost:8000/websocket")
+    socket.onopen = () => {
+      console.log("HistoryList WebSocket Client Connected")
     }
-    socket.on("historyChange", onHistoryChange)
+    socket.onmessage = (message) => {
+      const data = JSON.parse(message.data)
+      if (data.type === "updateHistoryList") {
+        const historyList = JSON.parse(data.data)
+        dispatch(refreshHistoryList(historyList))
+      }
+    }
     return () => {
-      socket.off("historyChange", onHistoryChange)
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.close()
+      }
     }
   }, [])
 

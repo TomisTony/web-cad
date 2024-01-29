@@ -5,7 +5,8 @@ interface GlobalStatusState {
   modal: string // 空字符串表示没有 Modal 触发，否则为 Modal 的名称
   operationPanel: string // 空字符串表示没有 OperationPanel 触发，否则为 OperationPanel 的名称
   sidePanelVisible: boolean // 是否显示 SidePanel
-  globalMessage: { // 全局消息提示
+  globalMessage: {
+    // 全局消息提示
     type: "success" | "error" | "info" | "warning" | undefined
     content: string
   }

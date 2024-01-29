@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
+    'channels',
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
@@ -131,3 +133,5 @@ CORS_ALLOW_HEADERS = ['*']
 CORS_EXPOSE_HEADERS = ['*']
 
 MEDIA_ROOT = BASE_DIR / 'media'
+
+ASGI_APPLICATION = 'web_cad_backend.asgi.application'

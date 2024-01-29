@@ -141,8 +141,6 @@ def fillet(request: HttpRequest):
     project = Project.objects.get(id=1)
     operation_history_ids = json.loads(project.operation_history_ids)
     operation_history_ids.append(operation.id)
-    print(operation.id)
-    print(operation_history_ids)
     project.operation_history_ids = json.dumps(operation_history_ids)
     project.save()
 
