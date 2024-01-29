@@ -1,4 +1,3 @@
-import { message } from "antd"
 import { Shape } from "@/shape/shape"
 import { ThreeApp } from "@/three/threeApp"
 import apis from "@/apis"

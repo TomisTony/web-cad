@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo } from "react"
 import { History } from "@/types/History"
 import { Popover } from "antd"
-import apis from "@/apis"
+import { socket } from "@/utils/socket"
 import operationList from "@/operations/operationList"
 import { getTimeString } from "@/utils/time"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { CaretUpOutlined } from "@ant-design/icons"
+import { on } from "events"
 
 interface HistoryListProps {
   className?: string
@@ -20,16 +21,16 @@ function HistoryList(props: HistoryListProps) {
     (state) => state.history.nowHistoryIndex,
   )
   useEffect(() => {
-    apis.getHistory().then((res) => {
+    function onHistoryChange(historyList: History[]) {
       dispatch({
         type: "history/setHistoryList",
-        payload: res,
+        payload: historyList,
       })
-      dispatch({
-        type: "history/chooseHistory",
-        payload: res.length - 1,
-      })
-    })
+    }
+    socket.on("historyChange", onHistoryChange)
+    return () => {
+      socket.off("historyChange", onHistoryChange)
+    }
   }, [])
 
   const historyListFromRedux = useAppSelector(
