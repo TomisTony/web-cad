@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useMemo } from "react"
+import { History } from "@/types/History"
 import { Popover } from "antd"
 import apis from "@/apis"
-import { History } from "@/types/History"
 import operationList from "@/operations/operationList"
 import { getTimeString } from "@/utils/time"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
@@ -12,7 +12,6 @@ interface HistoryListProps {
 }
 
 function HistoryList(props: HistoryListProps) {
-  const [historyList, setHistoryList] = useState<History[]>([])
   const dispatch = useAppDispatch()
   const choosedHistoryIndex = useAppSelector(
     (state) => state.history.choosedHistoryIndex,
@@ -30,17 +29,22 @@ function HistoryList(props: HistoryListProps) {
         type: "history/chooseHistory",
         payload: res.length - 1,
       })
-      const data = res.map((value) => {
-        return {
-          ...value,
-          operationSetting: operationList.find(
-            (operation) => operation.label === value.operationName,
-          )?.operationSetting,
-        }
-      })
-      setHistoryList(data)
     })
   }, [])
+
+  const historyListFromRedux = useAppSelector(
+    (state) => state.history.historyList,
+  )
+  const historyList: History[] = useMemo(() => {
+    return historyListFromRedux.map((value) => {
+      return {
+        ...value,
+        operationSetting: operationList.find(
+          (operation) => operation.label === value.operationName,
+        )?.operationSetting,
+      }
+    })
+  }, [historyListFromRedux])
 
   return (
     <div

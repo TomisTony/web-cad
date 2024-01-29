@@ -20,11 +20,6 @@ from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_StepModelType
 from OCC.Extend.DataExchange import write_stl_file
 
 
-@api_view(["GET"])
-def hello(request):
-    return ApiResponse("Hello, world!")
-
-
 # Operation "Import"
 @api_view(["POST"])
 def uploadFile(request: HttpRequest):
@@ -45,18 +40,25 @@ def uploadFile(request: HttpRequest):
         br_cad = converter.get_BrCAD()
         # 保存操作
         operation = Operation(
-            type="import",
+            type="Import",
             project_id=1,
             operator="Br",
             brcad=br_cad.to_json(),
             topods_shape=pickle.dumps(shape),
         )
         operation.save()
+        # 更新 project 的 operation_history_ids
+        project = Project.objects.get(id=1)
+        operation_history_ids = json.loads(project.operation_history_ids)
+        operation_history_ids.append(operation.id)
+        project.operation_history_ids = json.dumps(operation_history_ids)
+        project.save()
         # 删除文件
         os.remove(filename)
         return ApiResponse({"oprationId": operation.id, "model": br_cad.to_dict()})
     except Exception as e:
         # 先查看文件是否已经保存下来了,如果保存下来了,则删除
+        print(e)
         if os.path.exists(filename):
             os.remove(filename)
         return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -127,10 +129,10 @@ def fillet(request: HttpRequest):
     brcad_compare = BrCADCompare(brcad_1, brcad_2)
     # step5: 保存操作
     operation = Operation(
-        type="fillet",
+        type="Fillet",
         project_id=1,
         operator="Br",
-        data=pickle.dumps(data),
+        data=json.dumps(data),
         brcad=brcad_2.to_json(),
         topods_shape=pickle.dumps(shape),
     )
@@ -139,6 +141,8 @@ def fillet(request: HttpRequest):
     project = Project.objects.get(id=1)
     operation_history_ids = json.loads(project.operation_history_ids)
     operation_history_ids.append(operation.id)
+    print(operation.id)
+    print(operation_history_ids)
     project.operation_history_ids = json.dumps(operation_history_ids)
     project.save()
 
