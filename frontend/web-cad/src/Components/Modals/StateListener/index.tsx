@@ -6,7 +6,11 @@ function StateListener() {
   const nowHistoryIndex = useAppSelector(
     (state) => state.history.nowHistoryIndex,
   )
+  const choosedHistoryIndex = useAppSelector(
+    (state) => state.history.choosedHistoryIndex,
+  )
   const historyList = useAppSelector((state) => state.history.historyList)
+  const rollbackMap = useAppSelector((state) => state.history.rollbackMap)
 
   // 自动设置 historyChecking
   useEffect(() => {
@@ -16,6 +20,33 @@ function StateListener() {
       dispatch({ type: "history/setHistoryChecking", payload: true })
     }
   }, [nowHistoryIndex, historyList])
+
+  // 自动设置 rollbackHighlightIndex
+  useEffect(() => {
+    // 当 choosedHistoryIndex 是 rollback 操作时，设置 rollbackHighlightIndex
+    if (historyList[choosedHistoryIndex]?.operationName === "Rollback") {
+      dispatch({
+        type: "history/setRollbackHighlightIndex",
+        payload: rollbackMap[historyList[choosedHistoryIndex].operationId],
+      })
+    } else {
+      dispatch({
+        type: "history/setRollbackHighlightIndex",
+        payload: -1,
+      })
+    }
+  }, [choosedHistoryIndex, historyList, rollbackMap])
+
+  // 自动设置 rollbackMap
+  useEffect(() => {
+    const rollbackMap: { [key: number]: number } = {}
+    historyList.forEach((history) => {
+      if (history.operationName !== "Rollback") return
+      rollbackMap[history.operationId] =
+        history.operationSubmitValues?.props?.rollbackId
+    })
+    dispatch({ type: "history/setRollbackMap", payload: rollbackMap })
+  }, [historyList])
 
   return <></>
 }

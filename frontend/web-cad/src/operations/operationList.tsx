@@ -3,7 +3,11 @@ import { OperationSetting } from "@/types/Operation"
 
 import fillet from "@/assets/operations/fillet.png"
 
-import { UploadOutlined, ExportOutlined } from "@ant-design/icons"
+import {
+  UploadOutlined,
+  ExportOutlined,
+  RollbackOutlined,
+} from "@ant-design/icons"
 
 import store from "@/app/store"
 
@@ -20,7 +24,9 @@ interface Operation {
   action: () => any
   operationSetting?: OperationSetting
   isDelimiter?: boolean
-  ableInHistoryChecking?: boolean
+  abled?: boolean
+  unvisibleInOperationList?: boolean // 在 OperationList 中不可见，但是本身仍然属于 Operation
+  hoverContent?: JSX.Element // 自定义悬浮展示内容
 }
 
 const operationList: Operation[] = [
@@ -28,12 +34,13 @@ const operationList: Operation[] = [
     label: "Import",
     icon: (className) => <UploadOutlined className={className} />,
     action: () => store.dispatch(setModal("import")),
+    abled: store.getState().globalStatus.historyChecking === false,
   },
   {
     label: "Export",
     icon: (className) => <ExportOutlined className={className} />,
     action: () => store.dispatch(setModal("export")),
-    ableInHistoryChecking: true,
+    abled: true,
   },
   {
     label: "delimiter",
@@ -47,6 +54,7 @@ const operationList: Operation[] = [
     label: "Fillet",
     img: fillet,
     action: () => store.dispatch(setOperationPanel("Fillet")),
+    abled: store.getState().globalStatus.historyChecking === false,
     operationSetting: {
       operationName: "Fillet",
       chooseCount: 1,
@@ -64,6 +72,20 @@ const operationList: Operation[] = [
         store.dispatch(filletAsync(values))
       },
     },
+  },
+  {
+    label: "Rollback",
+    icon: (className) => <RollbackOutlined className={className} />,
+    action: () => {
+      console.log("It cannot happen! how can you did it!")
+    },
+    unvisibleInOperationList: true,
+    hoverContent: (
+      <div>
+        Rollback to the previous operation
+        <br /> which with blue outline.
+      </div>
+    ),
   },
 ]
 

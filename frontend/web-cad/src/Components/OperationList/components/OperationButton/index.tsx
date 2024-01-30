@@ -8,7 +8,7 @@ interface OperationButtonProps {
   img?: string
   icon?: (className: any) => React.ReactNode
   label: string
-  ableInHistoryChecking?: boolean
+  abled?: boolean
 }
 
 function OperationButton(props: OperationButtonProps) {
@@ -16,15 +16,12 @@ function OperationButton(props: OperationButtonProps) {
   const operationPanel = useAppSelector(
     (state) => state.globalStatus.operationPanel,
   )
-  const isHistoryChecking = useAppSelector(
-    (state) => state.globalStatus.historyChecking,
-  )
   const onClick = () => {
     if (operationPanel === props.label) {
       dispatch(setOperationPanel(""))
       return
     }
-    dispatch(props.action())
+    props.action()
   }
   return (
     <div
@@ -33,11 +30,8 @@ function OperationButton(props: OperationButtonProps) {
         " rounded-lg border border-black border-solid border-opacity-0 " +
         "hover:bg-gray-800 hover:text-white hover:cursor-pointer " +
         "active:bg-gray-700 active:text-white transition duration-300 " +
-        (operationPanel === props.label ? "bg-gray-700 text-white" : " ") +
-        " " +
-        (isHistoryChecking && !props.ableInHistoryChecking
-          ? "opacity-40 pointer-events-none "
-          : " ") +
+        (operationPanel === props.label ? "bg-gray-700 text-white " : " ") +
+        (!props.abled ? "opacity-40 pointer-events-none " : " ") +
         (props.className ?? "")
       }
       onClick={onClick}

@@ -160,3 +160,46 @@ def fillet(request: HttpRequest):
     notify_update_history_list(project_id)
 
     return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
+
+# Operation "Rollback"
+@api_view(["POST"])
+def rollback_with_concatenation_mode(request: HttpRequest):
+    # step1: 获取参数
+    params = json.loads(request.body)
+    last_operation_id = params.get("lastOperationId")
+    project_id = params.get("projectId")
+    data = params.get("data")
+    props = data.get("props")
+    rollback_operation_id = props.get("rollbackId")
+    # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map
+    last_shape = pickle.loads(Operation.objects.get(id=last_operation_id).topods_shape)
+    converter_1 = TopoDSShapeConvertor(last_shape)
+    brcad_1 = converter_1.get_BrCAD()
+    # step3: 执行对应操作
+    rollback_shape = pickle.loads(Operation.objects.get(id=rollback_operation_id).topods_shape)
+    # step4: 生成新的 BrCAD 对象进行比较
+    converter_2 = TopoDSShapeConvertor(rollback_shape)
+    brcad_2 = converter_2.get_BrCAD()
+    brcad_compare = BrCADCompare(brcad_1, brcad_2)
+    # step5: 保存操作
+    operation = Operation(
+        type="Rollback",
+        project_id=1,
+        operator="Br",
+        time=int(time.time() * 1000),
+        data=json.dumps(data),
+        brcad=brcad_2.to_json(),
+        topods_shape=pickle.dumps(rollback_shape),
+    )
+    operation.save()
+    # step6: 更新 project 的 operation_history_ids
+    project = Project.objects.get(id=1)
+    operation_history_ids = json.loads(project.operation_history_ids)
+    operation_history_ids.append(operation.id)
+    project.operation_history_ids = json.dumps(operation_history_ids)
+    project.save()
+    # step7: 通知前端更新历史记录
+    notify_update_history_list(project_id)
+    
+    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
+    

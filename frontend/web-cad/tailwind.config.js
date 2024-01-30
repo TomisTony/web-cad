@@ -6,6 +6,7 @@ module.exports = {
       boxShadow: {
         "outline-white": "0 0 0 3px #fff",
         "outline-yellow": "0 0 0 2px #fbbf24",
+        "outline-blue": "0 0 0 2px #3b82f6",
       },
     },
   },

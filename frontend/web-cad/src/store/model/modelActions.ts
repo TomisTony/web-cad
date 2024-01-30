@@ -9,7 +9,7 @@ import {
 import { BrCAD } from "@/types/BrCAD"
 import {
   operationDoneUpdateHistoryChooseAndNowIndex,
-  setNowHistoryIndexAndHistoryCheckingByOperationId,
+  setNowHistoryIndexByOperationId,
 } from "../history/historyAction"
 
 // 每个 case reducer 函数会生成对应的 Action creators
@@ -58,6 +58,52 @@ export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
     })
 }
 
+export const rollbackAsync = (value: any) => (dispatch: any, getState: any) => {
+  dispatch(setOperationExecuting(true))
+  const historyList = getState().history.historyList
+  const lastOperationId = historyList[historyList.length - 1].operationId
+  const historyListLength = historyList.length
+  apis
+    .rollback({
+      lastOperationId,
+      projectId: 1,
+      data: {
+        choosedIdList: [],
+        choosedTypeList: [],
+        props: {
+          rollbackId: value.rollbackId,
+        },
+      },
+    })
+    .then((res) => {
+      const { diff } = res
+      ThreeApp.getScene().clearScene()
+      let model = getState().model.model
+      model = Shape.applyDiffToBrCAD(model, diff)
+      Shape.setBrCADToScene(model)
+      dispatch(setModel(model))
+      dispatch({
+        type: "history/setNowHistoryIndex",
+        payload: historyListLength,
+      })
+      dispatch({
+        type: "history/chooseHistory",
+        payload: historyListLength,
+      })
+    })
+    .catch((err) => {
+      dispatch(
+        setGlobalMessage({
+          type: "error",
+          content: "Error: Server Error! Check the console.",
+        }),
+      )
+    })
+    .finally(() => {
+      dispatch(setOperationExecuting(false))
+    })
+}
+
 export const setSceneToOperationModalAsync =
   (operationId: number) => (dispatch: any) => {
     dispatch(setOperationExecuting(true))
@@ -66,6 +112,6 @@ export const setSceneToOperationModalAsync =
       Shape.setBrCADToScene(data.model)
       dispatch(setModel(data.model))
     })
-    dispatch(setNowHistoryIndexAndHistoryCheckingByOperationId(operationId))
+    dispatch(setNowHistoryIndexByOperationId(operationId))
     dispatch(setOperationExecuting(false))
   }

@@ -5,12 +5,16 @@ interface HistoryState {
   historyList: History[]
   choosedHistoryIndex: number // 被选中的历史记录的索引
   nowHistoryIndex: number // 当前所在的历史记录的索引
+  rollbackMap: { [key: number]: number } // 回滚的映射表，key 为 operationId，value 为回滚到的历史记录的 operationId
+  rollbackHighlightIndex: number // 由于回滚而被高亮的索引
 }
 
 const initialState: HistoryState = {
   historyList: [],
   choosedHistoryIndex: -1,
   nowHistoryIndex: -1,
+  rollbackMap: {},
+  rollbackHighlightIndex: -1,
 }
 
 export const historySlice = createSlice({
@@ -32,6 +36,12 @@ export const historySlice = createSlice({
     },
     chooseNowHistory: (state) => {
       state.choosedHistoryIndex = state.nowHistoryIndex
+    },
+    setRollbackMap: (state, action) => {
+      state.rollbackMap = action.payload
+    },
+    setRollbackHighlightIndex: (state, action) => {
+      state.rollbackHighlightIndex = action.payload
     },
   },
 })

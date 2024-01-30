@@ -23,6 +23,9 @@ function HistoryList(props: HistoryListProps) {
   const nowHistoryIndex = useAppSelector(
     (state) => state.history.nowHistoryIndex,
   )
+  const rollbackHighlightIndex = useAppSelector(
+    (state) => state.history.rollbackHighlightIndex,
+  )
   useEffect(() => {
     // 直接获取最新的 HistoryList
     apis.getHistoryList(1).then((res) => {
@@ -93,14 +96,15 @@ function HistoryList(props: HistoryListProps) {
             <div>
               {defaultContent}
               <div className="flex flex-col mt-2 pt-1 border-black border-solid border-t-2 border-b-0 border-l-0 border-r-0">
-                {Object.keys(value.operationSubmitValues.props).map((key) => {
-                  return (
-                    <div key={key} className="flex justify-between">
-                      <div className="font-bold">{key}</div>
-                      <div>{value?.operationSubmitValues?.props[key]}</div>
-                    </div>
-                  )
-                })}
+                {setting?.hoverContent ||
+                  Object.keys(value.operationSubmitValues.props).map((key) => {
+                    return (
+                      <div key={key} className="flex justify-between">
+                        <div className="font-bold">{key}</div>
+                        <div>{value?.operationSubmitValues?.props[key]}</div>
+                      </div>
+                    )
+                  })}
               </div>
             </div>
           )
@@ -118,7 +122,12 @@ function HistoryList(props: HistoryListProps) {
                 className={
                   "flex-1 flex flex-col items-center justify-center bg-gray-600 bg-opacity-50 rounded-md px-1 " +
                   "border-2 border-white border-solid border-opacity-15 hover:border-opacity-70 " +
-                  (choosedHistoryIndex === index ? "shadow-outline-yellow" : "")
+                  (choosedHistoryIndex === index
+                    ? "shadow-outline-yellow "
+                    : " ") +
+                  (rollbackHighlightIndex === value.operationId
+                    ? "shadow-outline-blue "
+                    : " ")
                 }
                 onClick={() => {
                   dispatch({

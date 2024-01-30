@@ -15,6 +15,7 @@ function OperationList(props: OperationListProps) {
       }
     >
       {operationList.map((operation) => {
+        if (operation.unvisibleInOperationList) return null
         if (operation.isDelimiter)
           return <div key={operation.label} className="w-[2px] h-25 bg-black" />
         return <OperationButton key={operation.label} {...operation} />

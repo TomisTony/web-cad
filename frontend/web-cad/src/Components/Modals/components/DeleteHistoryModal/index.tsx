@@ -3,9 +3,7 @@ import { Modal } from "antd"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import operationList from "@/operations/operationList"
 import { getTimeString } from "@/utils/time"
-import apis from "@/apis"
-import { setGlobalMessage } from "@/store/globalStatus/globalStatusAction"
-import { setSceneToOperationModalAsync } from "@/store/model/modelActions"
+import { deleteLastHistoryAsync } from "@/store/history/historyAction"
 
 function DeleteHistoryModal() {
   const dispatch = useAppDispatch()
@@ -27,24 +25,7 @@ function DeleteHistoryModal() {
   const deleteHistoryInfo = historyList[choosedHistoryIndex]
 
   const onOk = () => {
-    apis
-      .deleteProjectHistory({
-        operationId: deleteHistoryInfo?.operationId,
-        projectId: 1,
-        data: {},
-      })
-      .then((res) => {
-        dispatch(setGlobalMessage({ content: res, type: "success" }))
-        dispatch({
-          type: "history/chooseHistory",
-          payload: choosedHistoryIndex - 1,
-        })
-        dispatch(
-          setSceneToOperationModalAsync(
-            historyList[choosedHistoryIndex - 1].operationId,
-          ),
-        )
-      })
+    dispatch(deleteLastHistoryAsync(deleteHistoryInfo?.operationId))
     dispatch({ type: "globalStatus/setModal", payload: "" })
   }
   return (

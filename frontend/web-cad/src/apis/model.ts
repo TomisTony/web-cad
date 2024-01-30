@@ -23,3 +23,7 @@ export function getDownloadUrl(lastOperationId: number, fileFormat: string) {
     fileFormat
   )
 }
+
+export function rollback(data: any){
+  return request.post("/mytest/operation/rollback", data)
+}

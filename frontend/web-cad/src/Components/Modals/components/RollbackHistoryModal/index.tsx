@@ -4,9 +4,8 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import operationList from "@/operations/operationList"
 import { getTimeString } from "@/utils/time"
 import { QuestionCircleFilled } from "@ant-design/icons"
-import apis from "@/apis"
-import { setGlobalMessage } from "@/store/globalStatus/globalStatusAction"
-import { setSceneToOperationModalAsync } from "@/store/model/modelActions"
+import { rollbackAsync } from "@/store/model/modelActions"
+import { deleteProjectHistoryAsync } from "@/store/history/historyAction"
 
 function RollbackHistoryModal() {
   const dispatch = useAppDispatch()
@@ -31,33 +30,17 @@ function RollbackHistoryModal() {
   })
   const rollbackHistoryInfo = historyList[choosedHistoryIndex]
 
-  const rollbackWithConcatenationMode = () => {}
+  const rollbackWithConcatenationMode = () => {
+    dispatch(rollbackAsync({ rollbackId: rollbackHistoryInfo?.operationId }))
+  }
 
   const rollbackWithNonConcatenationMode = () => {
     // 删除当前历史记录之后的所有历史记录
-    apis
-      .deleteProjectHistory({
-        operationId: historyList[choosedHistoryIndex + 1].operationId,
-        projectId: 1,
-        data: {},
-      })
-      .then((res) => {
-        dispatch(
-          setGlobalMessage({
-            content: "Rollback with no Concatenation Mode success",
-            type: "success",
-          }),
-        )
-        dispatch({
-          type: "history/chooseHistory",
-          payload: choosedHistoryIndex,
-        })
-        dispatch(
-          setSceneToOperationModalAsync(
-            historyList[choosedHistoryIndex].operationId,
-          ),
-        )
-      })
+    dispatch(
+      deleteProjectHistoryAsync(
+        historyList[choosedHistoryIndex + 1]?.operationId,
+      ),
+    )
   }
 
   const onOk = () => {
