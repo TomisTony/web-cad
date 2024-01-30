@@ -24,11 +24,11 @@ def getProjectHistory(request: HttpRequest):
             operation_data =  {
                     "operationId": operation.id,
                     "time": operation.time,
-                    "operatior": operation.operator,
+                    "operator": operation.operator,
                     "operationName": operation.type,
                 }
             if operation.data is not None:
-                operation_data["data"] = json.loads(operation.data)
+                operation_data["operationSubmitValues"] = json.loads(operation.data)
             data.append(operation_data)
         return ApiResponse(data)
     except Exception as e:
