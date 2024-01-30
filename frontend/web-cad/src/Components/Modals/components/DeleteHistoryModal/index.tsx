@@ -3,6 +3,9 @@ import { Modal } from "antd"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import operationList from "@/operations/operationList"
 import { getTimeString } from "@/utils/time"
+import apis from "@/apis"
+import { setGlobalMessage } from "@/store/globalStatus/globalStatusAction"
+import { setSceneToOperationModalAsync } from "@/store/model/modelActions"
 
 function DeleteHistoryModal() {
   const dispatch = useAppDispatch()
@@ -23,12 +26,35 @@ function DeleteHistoryModal() {
   })
   const deleteHistoryInfo = historyList[choosedHistoryIndex]
 
+  const onOk = () => {
+    apis
+      .deleteLastProjectHistory({
+        lastOperationId: deleteHistoryInfo?.operationId,
+        projectId: 1,
+        data: {},
+      })
+      .then((res) => {
+        dispatch(setGlobalMessage({ content: res, type: "success" }))
+        dispatch({
+          type: "history/chooseHistory",
+          payload: choosedHistoryIndex - 1,
+        })
+        dispatch(
+          setSceneToOperationModalAsync(
+            historyList[choosedHistoryIndex - 1].operationId,
+          ),
+        )
+      })
+    dispatch({ type: "globalStatus/setModal", payload: "" })
+  }
   return (
     <Modal
       open={isModalOpen}
       closable
       title={"Delete History"}
       okType="danger"
+      okText="Delete"
+      onOk={onOk}
       onCancel={() => {
         dispatch({ type: "globalStatus/setModal", payload: "" })
       }}
@@ -40,7 +66,8 @@ function DeleteHistoryModal() {
             "border-2 border-solid border-black border-t-0 border-l-0 border-r-0"
           }
         >
-          Are you sure to <span className="text-red-700">delete</span> this history?
+          Are you sure to <span className="text-red-700">delete</span> this
+          history?
         </div>
         <div>
           <span className="font-bold">Operation: </span>
