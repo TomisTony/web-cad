@@ -22,6 +22,9 @@ interface Operation {
   isDelimiter?: boolean
 }
 
+// 在历史记录查看状态下可用的操作
+export const historyCheckingAbledOperationList: string[] = ["Export"]
+
 const operationList: Operation[] = [
   {
     label: "Import",
