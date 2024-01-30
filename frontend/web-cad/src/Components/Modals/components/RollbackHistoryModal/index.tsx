@@ -4,6 +4,9 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import operationList from "@/operations/operationList"
 import { getTimeString } from "@/utils/time"
 import { QuestionCircleFilled } from "@ant-design/icons"
+import apis from "@/apis"
+import { setGlobalMessage } from "@/store/globalStatus/globalStatusAction"
+import { setSceneToOperationModalAsync } from "@/store/model/modelActions"
 
 function RollbackHistoryModal() {
   const dispatch = useAppDispatch()
@@ -28,12 +31,51 @@ function RollbackHistoryModal() {
   })
   const rollbackHistoryInfo = historyList[choosedHistoryIndex]
 
+  const rollbackWithConcatenationMode = () => {}
+
+  const rollbackWithNonConcatenationMode = () => {
+    apis
+      .deleteProjectHistory({
+        operationId: rollbackHistoryInfo?.operationId,
+        projectId: 1,
+        data: {},
+      })
+      .then((res) => {
+        dispatch(
+          setGlobalMessage({
+            content: "rollback with no Concatenation Mode success",
+            type: "success",
+          }),
+        )
+        dispatch({
+          type: "history/chooseHistory",
+          payload: choosedHistoryIndex - 1,
+        })
+        dispatch(
+          setSceneToOperationModalAsync(
+            historyList[choosedHistoryIndex - 1].operationId,
+          ),
+        )
+      })
+  }
+
+  const onOk = () => {
+    if (isConcatenationMode) {
+      rollbackWithConcatenationMode()
+    } else {
+      rollbackWithNonConcatenationMode()
+    }
+    dispatch({ type: "globalStatus/setModal", payload: "" })
+  }
+
   return (
     <Modal
       open={isModalOpen}
       closable
       title={"Rollback History"}
       okType="danger"
+      okText="Rollback"
+      onOk={onOk}
       onCancel={() => {
         dispatch({ type: "globalStatus/setModal", payload: "" })
       }}
