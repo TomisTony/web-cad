@@ -69,7 +69,7 @@ def uploadFile(request: HttpRequest, project_id: int):
         return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# Operation "Export"
+# Operation "Export" - not History
 @api_view(["GET"])
 def downloadFile(request: HttpRequest):
     # 在 media 新建一个 timestamp 命名的文件夹

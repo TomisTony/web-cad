@@ -5,6 +5,7 @@ import operationList from "@/operations/operationList"
 import { getTimeString } from "@/utils/time"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { CaretUpOutlined } from "@ant-design/icons"
+import { Socket } from "@/utils/socket"
 
 import { refreshHistoryList } from "@/store/history/historyAction"
 import apis from "@/apis"
@@ -27,20 +28,23 @@ function HistoryList(props: HistoryListProps) {
       dispatch(refreshHistoryList(res))
     })
     // websocket 订阅 HistoryList 更新
-    const socket = new WebSocket("ws://localhost:8000/websocket?projectId=1")
-    socket.onopen = () => {
-      console.log("HistoryList WebSocket Client Connected")
-    }
-    socket.onmessage = (message) => {
-      const data = JSON.parse(message.data)
-      console.log(data)
-      if (data.type === "updateHistoryList") {
-        const historyList = JSON.parse(data.data)
-        dispatch(refreshHistoryList(historyList))
-      }
-    }
+    const socket = new Socket(
+      "ws://localhost:8000/websocket?projectId=1",
+      (message: any) => {
+        const data = JSON.parse(message.data)
+        console.log(data)
+        if (data.type === "updateHistoryList") {
+          const historyList = JSON.parse(data.data)
+          dispatch(refreshHistoryList(historyList))
+        }
+      },
+      () => {
+        console.log("HistoryList WebSocket Client Connected")
+      },
+    )
+
     return () => {
-      socket.close()
+      socket.manualClose()
     }
   }, [])
 
