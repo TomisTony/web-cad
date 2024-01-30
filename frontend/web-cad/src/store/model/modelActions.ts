@@ -7,7 +7,10 @@ import {
   setGlobalMessage,
 } from "../globalStatus/globalStatusAction"
 import { BrCAD } from "@/types/BrCAD"
-import { setNowHistoryIndexAndHistoryCheckingByOperationId } from "../history/historyAction"
+import {
+  operationDoneUpdateHistoryChooseAndNowIndex,
+  setNowHistoryIndexAndHistoryCheckingByOperationId,
+} from "../history/historyAction"
 
 // 每个 case reducer 函数会生成对应的 Action creators
 const { importFile: importFileAction, fillet, setModel } = modelSlice.actions
@@ -17,7 +20,7 @@ export const importFile = (data: { model: BrCAD }) => (dispatch: any) => {
   ThreeApp.getScene().clearScene()
   Shape.setBrCADToScene(data.model)
   dispatch(importFileAction(data))
-  dispatch({ type: "history/nowHistoryIndexIncrement" })
+  dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
   dispatch(setOperationExecuting(false))
 }
 export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
@@ -40,7 +43,7 @@ export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
       model = Shape.applyDiffToBrCAD(model, diff)
       Shape.setBrCADToScene(model)
       dispatch(fillet({ oprationId, model }))
-      dispatch({ type: "history/nowHistoryIndexIncrement" })
+      dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
     })
     .catch((err) => {
       dispatch(

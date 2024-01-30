@@ -6,6 +6,7 @@ export const {
   chooseHistory,
   setNowHistoryIndex,
   nowHistoryIndexIncrement,
+  chooseNowHistory,
 } = historySlice.actions
 
 export const refreshHistoryList = (historyList: any) => (dispatch: any) => {
@@ -22,4 +23,10 @@ export const setNowHistoryIndexAndHistoryCheckingByOperationId =
       dispatch(setHistoryChecking(true))
     }
     dispatch(setNowHistoryIndex(index))
+  }
+
+export const operationDoneUpdateHistoryChooseAndNowIndex =
+  () => (dispatch: any) => {
+    dispatch(nowHistoryIndexIncrement())
+    dispatch(chooseNowHistory())
   }
