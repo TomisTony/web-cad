@@ -66,7 +66,7 @@ def uploadFile(request: HttpRequest, project_id: int):
         notify_update_history_list(project_id)
         # 删除文件
         os.remove(filename)
-        return ApiResponse({"oprationId": operation.id, "model": br_cad.to_dict()})
+        return ApiResponse({"operationId": operation.id, "model": br_cad.to_dict()})
     except Exception as e:
         # 先查看文件是否已经保存下来了,如果保存下来了,则删除
         print(e)
@@ -159,4 +159,4 @@ def fillet(request: HttpRequest):
     # step7: 通知前端更新历史记录
     notify_update_history_list(project_id)
 
-    return ApiResponse({"oprationId": operation.id, "diff": brcad_compare.get_diff()})
+    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})

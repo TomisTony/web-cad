@@ -37,12 +37,12 @@ export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
   apis
     .fillet(params)
     .then((data) => {
-      const { oprationId, diff } = data
+      const { diff } = data
       ThreeApp.getScene().clearScene()
       let model = getState().model.model
       model = Shape.applyDiffToBrCAD(model, diff)
       Shape.setBrCADToScene(model)
-      dispatch(fillet({ oprationId, model }))
+      dispatch(fillet({ model }))
       dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
     })
     .catch((err) => {

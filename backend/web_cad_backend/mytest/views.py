@@ -54,7 +54,7 @@ def uploadFile(request: HttpRequest):
         operation.save()
         # 删除文件
         os.remove(filename)
-        return ApiResponse({"oprationId": operation.id, "model": br_cad.to_dict()})
+        return ApiResponse({"operationId": operation.id, "model": br_cad.to_dict()})
     except Exception as e:
         # 先查看文件是否已经保存下来了,如果保存下来了,则删除
         if os.path.exists(filename):
@@ -142,4 +142,4 @@ def fillet(request: HttpRequest):
     project.operation_history_ids = json.dumps(operation_history_ids)
     project.save()
 
-    return ApiResponse({"oprationId": operation.id, "diff": brcad_compare.get_diff()})
+    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
