@@ -1,4 +1,3 @@
-import { setHistoryChecking } from "../globalStatus/globalStatusAction"
 import { historySlice } from "./historySlice"
 
 export const {
@@ -19,9 +18,6 @@ export const setNowHistoryIndexAndHistoryCheckingByOperationId =
     const index = historyList.findIndex(
       (item: any) => item.operationId === operationId,
     )
-    if (index !== historyList.length - 1) {
-      dispatch(setHistoryChecking(true))
-    }
     dispatch(setNowHistoryIndex(index))
   }
 
