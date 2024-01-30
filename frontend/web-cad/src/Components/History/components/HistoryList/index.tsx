@@ -39,7 +39,6 @@ function HistoryList(props: HistoryListProps) {
       "ws://localhost:8000/websocket?projectId=1",
       (message: any) => {
         const data = JSON.parse(message.data)
-        console.log(data)
         if (data.type === "updateHistoryList") {
           const historyList = JSON.parse(data.data)
           dispatch(refreshHistoryList(historyList))

@@ -28,8 +28,8 @@ function DeleteHistoryModal() {
 
   const onOk = () => {
     apis
-      .deleteLastProjectHistory({
-        lastOperationId: deleteHistoryInfo?.operationId,
+      .deleteProjectHistory({
+        operationId: deleteHistoryInfo?.operationId,
         projectId: 1,
         data: {},
       })

@@ -1,3 +1,4 @@
+import store from "@/app/store"
 import axios from "axios"
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios"
 
@@ -31,6 +32,16 @@ export class Request {
       (res: AxiosResponse) => {
         // 直接返回res，当然你也可以只返回res.data
         // 系统如果有自定义code也可以在这里处理
+        if (res.data?.code !== 200) {
+          store.dispatch({
+            type: "globalStatus/setGlobalMessage",
+            payload: {
+              type: "error",
+              content: res.data?.data,
+            },
+          })
+          return Promise.reject(res?.data?.data)
+        }
         return res.data?.data
       },
       (err: any) => {
