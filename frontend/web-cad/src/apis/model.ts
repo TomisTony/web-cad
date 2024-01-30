@@ -14,7 +14,7 @@ export function getUploadFileUrl(projectId: number) {
   )
 }
 
-export function getDownloadUrl(lastOperationId: string, fileFormat: string) {
+export function getDownloadUrl(lastOperationId: number, fileFormat: string) {
   return (
     request.baseConfig.baseURL +
     "/mytest/downloadFile?lastOperationId=" +

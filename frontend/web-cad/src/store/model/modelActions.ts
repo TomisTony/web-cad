@@ -7,10 +7,7 @@ import {
   setGlobalMessage,
 } from "../globalStatus/globalStatusAction"
 import { BrCAD } from "@/types/BrCAD"
-import {
-  setNowHistoryIndex,
-  setNowHistoryIndexAndHistoryCheckingByOperationId,
-} from "../history/historyAction"
+import { setNowHistoryIndexAndHistoryCheckingByOperationId } from "../history/historyAction"
 
 // 每个 case reducer 函数会生成对应的 Action creators
 const { importFile: importFileAction, fillet, setModel } = modelSlice.actions
@@ -25,9 +22,8 @@ export const importFile = (data: { model: BrCAD }) => (dispatch: any) => {
 }
 export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
   dispatch(setOperationExecuting(true))
-
-  const lastOperationId =
-    getState().model.operations[getState().model.operations.length - 1]
+  const historyList = getState().history.historyList
+  const lastOperationId = historyList[historyList.length - 1].operationId
   const params = {
     lastOperationId,
     projectId: 1,

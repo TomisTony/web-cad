@@ -6,8 +6,11 @@ import apis from "@/apis"
 
 function ExportModal() {
   const nowModal = useAppSelector((state) => state.globalStatus.modal)
-  const operationList = useAppSelector((state) => state.model.operations)
-  const lastOperationId = operationList[operationList.length - 1]
+  const nowHistoryIndex = useAppSelector(
+    (state) => state.history.nowHistoryIndex,
+  )
+  const historyList = useAppSelector((state) => state.history.historyList)
+  const lastOperationId = historyList[nowHistoryIndex]?.operationId
   const isModalOpen = nowModal === "export"
   const dispatch = useAppDispatch()
   const [format, setFormat] = useState(".step")
