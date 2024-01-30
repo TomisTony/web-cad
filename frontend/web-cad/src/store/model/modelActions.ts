@@ -7,6 +7,7 @@ import {
   setGlobalMessage,
 } from "../globalStatus/globalStatusAction"
 import { BrCAD } from "@/types/BrCAD"
+import { setNowHistoryIndexAndHistoryCheckingByOperationId } from "../history/historyAction"
 
 // 每个 case reducer 函数会生成对应的 Action creators
 const { importFile: importFileAction, fillet, setModel } = modelSlice.actions
@@ -53,7 +54,7 @@ export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
     })
 }
 
-export const getOperationModalAsync =
+export const setSceneToOperationModalAsync =
   (operationId: number) => (dispatch: any) => {
     dispatch(setOperationExecuting(true))
     apis.getModel(operationId).then((data) => {
@@ -61,5 +62,6 @@ export const getOperationModalAsync =
       Shape.setBrCADToScene(data.model)
       dispatch(setModel(data.model))
     })
+    dispatch(setNowHistoryIndexAndHistoryCheckingByOperationId(operationId))
     dispatch(setOperationExecuting(false))
   }

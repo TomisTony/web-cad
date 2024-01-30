@@ -1,6 +1,7 @@
 import React from "react"
 import FunctionalButton from "./FunctionalButton"
 import { useAppSelector, useAppDispatch } from "@/app/hooks"
+import { setSceneToOperationModalAsync } from "@/store/model/modelActions"
 
 interface FunctionalButtonListProps {
   className?: string
@@ -20,7 +21,13 @@ function FunctionalButtonList(props: FunctionalButtonListProps) {
   const functionalButtons = [
     {
       label: "Transfer",
-      onClick: () => {},
+      onClick: () => {
+        dispatch(
+          setSceneToOperationModalAsync(
+            historyList[choosedHistoryIndex].operationId,
+          ),
+        )
+      },
       disabled: !(
         nowHistoryIndex !== choosedHistoryIndex && choosedHistoryIndex !== -1
       ),

@@ -20,10 +20,8 @@ interface Operation {
   action: () => any
   operationSetting?: OperationSetting
   isDelimiter?: boolean
+  ableInHistoryChecking?: boolean
 }
-
-// 在历史记录查看状态下可用的操作
-export const historyCheckingAbledOperationList: string[] = ["Export"]
 
 const operationList: Operation[] = [
   {
@@ -35,6 +33,7 @@ const operationList: Operation[] = [
     label: "Export",
     icon: (className) => <ExportOutlined className={className} />,
     action: () => store.dispatch(setModal("export")),
+    ableInHistoryChecking: true,
   },
   {
     label: "delimiter",

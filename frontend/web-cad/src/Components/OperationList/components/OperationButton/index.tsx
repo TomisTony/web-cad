@@ -1,7 +1,6 @@
 import React from "react"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { setOperationPanel } from "@/store/globalStatus/globalStatusAction"
-import { historyCheckingAbledOperationList } from "@/operations/operationList"
 
 interface OperationButtonProps {
   className?: string
@@ -9,6 +8,7 @@ interface OperationButtonProps {
   img?: string
   icon?: (className: any) => React.ReactNode
   label: string
+  ableInHistoryChecking?: boolean
 }
 
 function OperationButton(props: OperationButtonProps) {
@@ -20,13 +20,6 @@ function OperationButton(props: OperationButtonProps) {
     (state) => state.globalStatus.historyChecking,
   )
   const onClick = () => {
-    // 现在由 CSS 直接指定无法响应鼠标事件
-    // if (
-    //   isHistoryChecking &&
-    //   !historyCheckingAbledOperationList.includes(props.label)
-    // ) {
-    //   return
-    // }
     if (operationPanel === props.label) {
       dispatch(setOperationPanel(""))
       return
@@ -42,8 +35,7 @@ function OperationButton(props: OperationButtonProps) {
         "active:bg-gray-700 active:text-white transition duration-300 " +
         (operationPanel === props.label ? "bg-gray-700 text-white" : " ") +
         " " +
-        (isHistoryChecking &&
-        !historyCheckingAbledOperationList.includes(props.label)
+        (isHistoryChecking && !props.ableInHistoryChecking
           ? "opacity-40 pointer-events-none "
           : " ") +
         (props.className ?? "")
