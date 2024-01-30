@@ -26,6 +26,10 @@ export const historySlice = createSlice({
     setNowHistoryIndex: (state, action) => {
       state.nowHistoryIndex = action.payload
     },
+    // 目前历史记录和 Operation 是错位更新的，所以需要手动更新
+    nowHistoryIndexIncrement: (state) => {
+      state.nowHistoryIndex++
+    }
   },
 })
 
