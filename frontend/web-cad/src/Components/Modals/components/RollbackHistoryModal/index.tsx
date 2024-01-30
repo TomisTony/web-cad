@@ -1,16 +1,21 @@
-import React from "react"
-import { Modal } from "antd"
+import React, { useState } from "react"
+import { Checkbox, CheckboxProps, Modal, Tooltip } from "antd"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import operationList from "@/operations/operationList"
 import { getTimeString } from "@/utils/time"
+import { QuestionCircleFilled } from "@ant-design/icons"
 
 function RollbackHistoryModal() {
   const dispatch = useAppDispatch()
+  const [isConcatenationMode, setIsConcatenationMode] = useState(true)
   const nowModal = useAppSelector((state) => state.globalStatus.modal)
   const isModalOpen = nowModal === "rollbackHistory"
   const choosedHistoryIndex = useAppSelector(
     (state) => state.history.choosedHistoryIndex,
   )
+  const onChange: CheckboxProps["onChange"] = (e) => {
+    setIsConcatenationMode(e.target.checked)
+  }
 
   let historyList = useAppSelector((state) => state.history.historyList)
   historyList = historyList.map((value) => {
@@ -74,6 +79,23 @@ function RollbackHistoryModal() {
             )}
           </div>
         )}
+        <Checkbox
+          className="mt-4"
+          checked={isConcatenationMode}
+          onChange={onChange}
+        >
+          <span className="font-bold">Concatenation Mode</span>
+          <Tooltip
+            title={
+              "This mode creates a new history entry for every rollback operation." +
+              " It preserves the entire history chain for better traceability, " +
+              "automatically locating the latest history record after each rollback."
+            }
+            className="text-center"
+          >
+            <QuestionCircleFilled className="text-sm ml-2" />
+          </Tooltip>
+        </Checkbox>
       </div>
     </Modal>
   )
