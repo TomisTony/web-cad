@@ -34,26 +34,27 @@ function RollbackHistoryModal() {
   const rollbackWithConcatenationMode = () => {}
 
   const rollbackWithNonConcatenationMode = () => {
+    // 删除当前历史记录之后的所有历史记录
     apis
       .deleteProjectHistory({
-        operationId: rollbackHistoryInfo?.operationId,
+        operationId: historyList[choosedHistoryIndex + 1].operationId,
         projectId: 1,
         data: {},
       })
       .then((res) => {
         dispatch(
           setGlobalMessage({
-            content: "rollback with no Concatenation Mode success",
+            content: "Rollback with no Concatenation Mode success",
             type: "success",
           }),
         )
         dispatch({
           type: "history/chooseHistory",
-          payload: choosedHistoryIndex - 1,
+          payload: choosedHistoryIndex,
         })
         dispatch(
           setSceneToOperationModalAsync(
-            historyList[choosedHistoryIndex - 1].operationId,
+            historyList[choosedHistoryIndex].operationId,
           ),
         )
       })
@@ -65,6 +66,8 @@ function RollbackHistoryModal() {
     } else {
       rollbackWithNonConcatenationMode()
     }
+    // 手动重置为默认值
+    setIsConcatenationMode(true)
     dispatch({ type: "globalStatus/setModal", payload: "" })
   }
 
