@@ -21,6 +21,12 @@ from OCC.Extend.DataExchange import read_step_file
 from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_StepModelType
 from OCC.Extend.DataExchange import write_stl_file
 
+# 获得指定 Operation 的模型
+@api_view(["GET"])
+def getOperationModel(request: HttpRequest):
+    operation_id = request.GET.get("operationId")
+    operation = Operation.objects.get(id=operation_id)
+    return ApiResponse({"model": json.loads(operation.brcad)})
 
 # Operation "Import"
 @api_view(["POST"])

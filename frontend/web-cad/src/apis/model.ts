@@ -1,8 +1,8 @@
 import request from "@/utils/request"
 
-// export function getModel() {
-//   return request.get("/mytest/loadModel")
-// }
+export function getModel(operationId: number) {
+  return request.get("/mytest/getOperationModel?operationId=" + operationId)
+}
 
 export function fillet(data: any) {
   return request.post("/mytest/operation/fillet", data)

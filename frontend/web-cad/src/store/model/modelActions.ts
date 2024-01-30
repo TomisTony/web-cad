@@ -9,7 +9,7 @@ import {
 import { BrCAD } from "@/types/BrCAD"
 
 // 每个 case reducer 函数会生成对应的 Action creators
-const { importFile: importFileAction, fillet } = modelSlice.actions
+const { importFile: importFileAction, fillet, setModel } = modelSlice.actions
 
 export const importFile = (data: { model: BrCAD }) => (dispatch: any) => {
   dispatch(setOperationExecuting(true))
@@ -52,3 +52,14 @@ export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
       dispatch(setOperationExecuting(false))
     })
 }
+
+export const getOperationModalAsync =
+  (operationId: number) => (dispatch: any) => {
+    dispatch(setOperationExecuting(true))
+    apis.getModel(operationId).then((data) => {
+      ThreeApp.getScene().clearScene()
+      Shape.setBrCADToScene(data.model)
+      dispatch(setModel(data.model))
+    })
+    dispatch(setOperationExecuting(false))
+  }

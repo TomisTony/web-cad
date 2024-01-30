@@ -48,6 +48,9 @@ export const modelSlice = createSlice({
       state.model = action.payload.model
       state.operations.push(action.payload.oprationId)
     },
+    setModel: (state, action) => {
+      state.model = action.payload
+    },
   },
 })
 

@@ -8,6 +8,7 @@ import { CaretUpOutlined } from "@ant-design/icons"
 import { Socket } from "@/utils/socket"
 
 import { refreshHistoryList } from "@/store/history/historyAction"
+import { getOperationModalAsync } from "@/store/model/modelActions"
 import apis from "@/apis"
 
 interface HistoryListProps {
@@ -26,6 +27,16 @@ function HistoryList(props: HistoryListProps) {
     // 直接获取最新的 HistoryList
     apis.getHistoryList(1).then((res) => {
       dispatch(refreshHistoryList(res))
+      // 加载最新的 History
+      dispatch({
+        type: "history/chooseHistory",
+        payload: res.length - 1,
+      })
+      dispatch({
+        type: "history/setNowHistoryIndex",
+        payload: res.length - 1,
+      })
+      dispatch(getOperationModalAsync(res[res.length - 1].operationId))
     })
     // websocket 订阅 HistoryList 更新
     const socket = new Socket(
