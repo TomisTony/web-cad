@@ -16,11 +16,11 @@ def notify_update_history_list(project_id: int):
             operation_data =  {
                     "operationId": operation.id,
                     "time": operation.time,
-                    "operatior": operation.operator,
+                    "operator": operation.operator,
                     "operationName": operation.type,
                 }
             if operation.data is not None:
-                operation_data["data"] = json.loads(operation.data)
+                operation_data["operationSubmitValues"] = json.loads(operation.data)
             data.append(operation_data)
 
         # 通知前端更新历史记录

@@ -33,10 +33,10 @@ class BrCADCompare:
         self.origin_model = origin_model
         self.new_model = new_model
         self.structure_diff: BrCADCompareStructureNode = None
-        self.deleted_faces_id: List[int] = []
-        self.added_faces_id: List[int] = []
-        self.deleted_edges_id: List[int] = []
-        self.added_edges_id: List[int] = []
+        self.deleted_faces_id: List[str] = []
+        self.added_faces_id: List[str] = []
+        self.deleted_edges_id: List[str] = []
+        self.added_edges_id: List[str] = []
         self.__compare()
 
     def __compare(self):
