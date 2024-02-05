@@ -1,73 +1,55 @@
-from OCC.Extend.DataExchange import read_step_file
+# from OCC.Extend.DataExchange import read_step_file
 
-# 读取 STEP 文件
-step_filename = 'c:\\users\\GXLYQ_AIR\\Desktop\\web-cad\\backend\\test\\as1-oc-214-mat.stp'
-shape = read_step_file(step_filename)
+# # 读取 STEP 文件
+# step_filename = 'c:\\users\\GXLYQ_AIR\\Desktop\\web-cad\\backend\\test\\as1-oc-214-mat.stp'
+# shape = read_step_file(step_filename)
 
-from OCC.Core.BRepTools import breptools_WriteToString
+from OCC.Core.TCollection import TCollection_ExtendedString
 
-# 将模型转换为字符串
-shape_str = breptools_WriteToString(shape)
-with open("output.txt", "w") as f:
-    f.write(shape_str)
-    
-import pickle
-# 将模型转换为字节流
-shape_bytes = pickle.dumps(shape)
-with open("output.bytes", "wb") as f:
-    f.write(shape_bytes)
+from OCC.Core.TDocStd import TDocStd_Document
+from OCC.Core.XCAFDoc import (XCAFDoc_DocumentTool_ShapeTool,
+                              XCAFDoc_DocumentTool_ColorTool,
+                              XCAFDoc_DocumentTool_LayerTool,
+                              XCAFDoc_DocumentTool_MaterialTool)
+from OCC.Core.STEPCAFControl import STEPCAFControl_Reader
+from OCC.Core.IFSelect import IFSelect_RetDone
+from OCC.Core.TDF import TDF_LabelSequence
 
-# from OCC.Core.TopExp import TopExp_Explorer
-from OCC.Core.TopoDS import TopoDS_Iterator
-from OCC.Core.TopLoc import TopLoc_Location
-from OCC.Core.BRep import BRep_Tool
-from OCC.Core.TopExp import TopExp_Explorer
-from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
-from OCC.Core import TopoDS
-from OCC.Core.TopAbs import TopAbs_COMPOUND, TopAbs_COMPSOLID, TopAbs_SOLID, TopAbs_SHELL, TopAbs_FACE, TopAbs_WIRE, TopAbs_EDGE, TopAbs_VERTEX, TopAbs_SHAPE, TopAbs_FORWARD
+from OCC.Display.SimpleGui import init_display
 
-# # 新建一个长方体
-# from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
-# box = BRepPrimAPI_MakeBox(10., 20., 30.).Shape()
-# # 创建一个倒角生成器,并设置倒角半径
-# from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet
-# fillet = BRepFilletAPI_MakeFillet(box)
+filename = 'c:\\users\\GXLYQ_AIR\\Desktop\\web-cad\\backend\\test\\as1-oc-214-mat.stp'
+_shapes = []
 
-# edge_exp = TopExp_Explorer(box, TopAbs_EDGE, TopAbs_SHAPE)
-# while edge_exp.More():
-#     edge = edge_exp.Current()
-#     fillet.Add(2.0, edge)
-#     break
+# create an handle to a document
+doc = TDocStd_Document(TCollection_ExtendedString("pythonocc-doc"))
 
-# # 建立倒角后的形状
-# shape = fillet.Shape()
+# Get root assembly
+shape_tool = XCAFDoc_DocumentTool_ShapeTool(doc.Main())
+l_colors = XCAFDoc_DocumentTool_ColorTool(doc.Main())
+l_layers = XCAFDoc_DocumentTool_LayerTool(doc.Main())
+l_materials = XCAFDoc_DocumentTool_MaterialTool(doc.Main())
 
-# from OCC.Display.SimpleGui import init_display
+step_reader = STEPCAFControl_Reader()
+step_reader.SetColorMode(True)
+step_reader.SetLayerMode(True)
+step_reader.SetNameMode(True)
+step_reader.SetMatMode(True)
 
-# display, start_display, add_menu, add_function_to_menu = init_display()
+status = step_reader.ReadFile(filename)
+if status == IFSelect_RetDone:
+    step_reader.Transfer(doc)
 
-# # 假设你的模型是 filleted_box
-# display.DisplayShape(shape, update=True)
+labels = TDF_LabelSequence()
+color_labels = TDF_LabelSequence()
 
-# # 启动渲染循环
-# start_display()
+shape_tool.GetFreeShapes(labels)
 
-# import sys
-# sys.path.insert(0, 'C:/USERS/GXLYQ_AIR/DESKTOP/WEB-CAD/BACKEND')
-# from BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
-# converter_1 = TopoDSShapeConvertor(box)
-# br_cad_1 = converter_1.get_BrCAD()
-# # br_cad_1.to_json("output.json")
-
-# converter_2 = TopoDSShapeConvertor(shape)
-# br_cad_2 = converter_2.get_BrCAD()
-
-# from BrCAD.BrCAD_compare import BrCADCompare
-# br_cad_compare = BrCADCompare(br_cad_1, br_cad_2)
-
-# import json
-# with open("output.json", "w") as f:
-#     json.dump(br_cad_compare.get_diff(), f)
-
-
+print("Number of shapes at root :%i" % labels.Length())
+for i in range(labels.Length()):
+    sub_shapes_labels = TDF_LabelSequence()
+    print("Is Assembly :", shape_tool.IsAssembly(labels.Value(i+1)))
+    print("Is Component :", shape_tool.IsComponent(labels.Value(i+1)))
+    print(shape_tool.NbComponents(labels.Value(i+1)))
+    sub_shapes = shape_tool.GetSubShapes(labels.Value(i+1), sub_shapes_labels)
+    print("Number of subshapes in the assemly :%i" % sub_shapes_labels.Length())
 
