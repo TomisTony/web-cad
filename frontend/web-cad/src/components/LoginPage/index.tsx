@@ -52,151 +52,160 @@ const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-[100vh] w-[100vw] bg-gradient-to-b from-slate-400 via-blue-200 to-slate-100">
+    <div className="flex h-[100vh] w-[100vw] ">
       {contextHolder}
-      <div className="flex justify-center h-[10%] items-center font-bold text-4xl border-b-2 border-t-0 border-x-0 border-solid border-black">
-        BrCAD
-      </div>
-      <div className="flex-grow relative">
-        <div
-          className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[350px] h-[400px]"
-          style={{ perspective: "1500px" }}
-        >
-          <Card
-            className={
-              "w-[350px] h-[350px] absolute top-0 left-0 shadow-lg cursor-auto select-none " +
-              "backface-hidden transform transition-all duration-500"
-            }
-            title="Login"
-            hoverable
-            headStyle={{
-              fontSize: "16px",
-            }}
-            ref={loginCardRef}
+      <div className="flex-grow bg-gradient-to-r from-slate-700 via-blue-400 to-slate-200"></div>
+      <div
+        className={
+          "w-[400px] bg-slate-200 flex flex-col " +
+          "border-2 border-black border-opacity-10 border-t-0 border-b-0"
+        }
+      >
+        <div className="flex pt-[5%] justify-center h-[10%] items-center font-bold text-6xl">
+          BrCAD
+        </div>
+        <div className="flex-grow relative">
+          <div
+            className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[350px] h-[400px]"
+            style={{ perspective: "1500px" }}
           >
-            <Form name="login" onFinish={onLoginFinish}>
-              <Form.Item
-                name="username"
-                rules={[{ required: true, message: "Please enter username" }]}
-              >
-                <Input
-                  prefix={<UserOutlined className="site-form-item-icon" />}
-                  placeholder="Username"
-                />
-              </Form.Item>
-              <Form.Item
-                name="password"
-                rules={[{ required: true, message: "Please enter password" }]}
-              >
-                <Input
-                  prefix={<LockOutlined className="site-form-item-icon" />}
-                  type="password"
-                  placeholder="Password"
-                />
-              </Form.Item>
+            <Card
+              className={
+                "w-[350px] h-[350px] absolute top-0 left-0 shadow-lg cursor-auto select-none " +
+                "backface-hidden transform transition-all duration-500"
+              }
+              title="Login"
+              hoverable
+              headStyle={{
+                fontSize: "16px",
+              }}
+              ref={loginCardRef}
+            >
+              <Form name="login" onFinish={onLoginFinish}>
+                <Form.Item
+                  name="username"
+                  rules={[{ required: true, message: "Please enter username" }]}
+                >
+                  <Input
+                    prefix={<UserOutlined className="site-form-item-icon" />}
+                    placeholder="Username"
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="password"
+                  rules={[{ required: true, message: "Please enter password" }]}
+                >
+                  <Input
+                    prefix={<LockOutlined className="site-form-item-icon" />}
+                    type="password"
+                    placeholder="Password"
+                  />
+                </Form.Item>
 
-              <Form.Item className="mt-8">
-                <Button type="primary" htmlType="submit" className="w-full">
-                  Login
+                <Form.Item className="mt-8">
+                  <Button type="primary" htmlType="submit" className="w-full">
+                    Login
+                  </Button>
+                </Form.Item>
+              </Form>
+              <div className="flex justify-center items-center">
+                <span>don't have account?</span>
+                <Button
+                  className="p-0 pl-2"
+                  type="link"
+                  onClick={displayRegisterCard}
+                >
+                  Go register
                 </Button>
-              </Form.Item>
-            </Form>
-            <div className="flex justify-center items-center">
-              <span>don't have account?</span>
-              <Button
-                className="p-0 pl-2"
-                type="link"
-                onClick={displayRegisterCard}
-              >
-                Go register
-              </Button>
-            </div>
-          </Card>
+              </div>
+            </Card>
 
-          <Card
-            className={
-              "w-[350px] h-[400px] shadow-lg cursor-auto select-none " +
-              "absolute top-0 left-0 " +
-              "backface-hidden transform rotate-flip transition-all duration-500"
-            }
-            title="Register"
-            hoverable
-            headStyle={{
-              fontSize: "16px",
-            }}
-            ref={registerCardRef}
-          >
-            <Form name="register" onFinish={onRegisterFinish} form={form}>
-              <Form.Item
-                name="email"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter correct email address",
-                    type: "email",
-                  },
-                ]}
-              >
-                <Input
-                  prefix={<UserOutlined className="site-form-item-icon" />}
-                  placeholder="Email"
-                />
-              </Form.Item>
-              <Form.Item
-                name="username"
-                rules={[
-                  {
-                    required: true,
-                    message: "Username must no less than 6 bytes",
-                    min: 6,
-                  },
-                ]}
-              >
-                <Input
-                  prefix={<UserOutlined className="site-form-item-icon" />}
-                  placeholder="Username"
-                />
-              </Form.Item>
-              <Form.Item
-                name="password"
-                rules={[
-                  {
-                    required: true,
-                    message: "Password must no less than 6 bytes",
-                    min: 6,
-                  },
-                ]}
-              >
-                <Input
-                  prefix={<LockOutlined className="site-form-item-icon" />}
-                  type="password"
-                  placeholder="Password"
-                />
-              </Form.Item>
+            <Card
+              className={
+                "w-[350px] h-[400px] shadow-lg cursor-auto select-none " +
+                "absolute top-0 left-0 " +
+                "backface-hidden transform rotate-flip transition-all duration-500"
+              }
+              title="Register"
+              hoverable
+              headStyle={{
+                fontSize: "16px",
+              }}
+              ref={registerCardRef}
+            >
+              <Form name="register" onFinish={onRegisterFinish} form={form}>
+                <Form.Item
+                  name="email"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter correct email address",
+                      type: "email",
+                    },
+                  ]}
+                >
+                  <Input
+                    prefix={<UserOutlined className="site-form-item-icon" />}
+                    placeholder="Email"
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="username"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Username must no less than 6 bytes",
+                      min: 6,
+                    },
+                  ]}
+                >
+                  <Input
+                    prefix={<UserOutlined className="site-form-item-icon" />}
+                    placeholder="Username"
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="password"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Password must no less than 6 bytes",
+                      min: 6,
+                    },
+                  ]}
+                >
+                  <Input
+                    prefix={<LockOutlined className="site-form-item-icon" />}
+                    type="password"
+                    placeholder="Password"
+                  />
+                </Form.Item>
 
-              <Form.Item className="mt-8">
-                <Button type="primary" htmlType="submit" className="w-full">
-                  Register
+                <Form.Item className="mt-8">
+                  <Button type="primary" htmlType="submit" className="w-full">
+                    Register
+                  </Button>
+                </Form.Item>
+              </Form>
+              <div className="flex justify-center items-center">
+                <span>have an account?</span>
+                <Button
+                  className="p-0 pl-2"
+                  type="link"
+                  onClick={displayLoginCard}
+                >
+                  Go Login
                 </Button>
-              </Form.Item>
-            </Form>
-            <div className="flex justify-center items-center">
-              <span>have an account?</span>
-              <Button
-                className="p-0 pl-2"
-                type="link"
-                onClick={displayLoginCard}
-              >
-                Go Login
-              </Button>
-            </div>
-          </Card>
+              </div>
+            </Card>
+          </div>
+        </div>
+        <div className="flex flex-col justify-center h-[10%] items-center text-sm text-gray-400">
+          <span>Copyright © 2023-2024 BrCAD</span>
+          <span>Br All Rights Reserved.</span>
         </div>
       </div>
-      <div className="flex flex-col justify-center h-[10%] items-center text-sm text-gray-400">
-        <span>Copyright © 2023-2024 BrCAD</span>
-        <span>Br All Rights Reserved.</span>
-      </div>
+      <div className="flex-grow bg-gradient-to-l from-slate-700 via-blue-400 to-slate-200"></div>
     </div>
   )
 }
