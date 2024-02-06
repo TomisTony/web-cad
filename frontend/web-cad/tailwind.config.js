@@ -8,6 +8,10 @@ module.exports = {
         "outline-yellow": "0 0 0 2px #fbbf24",
         "outline-blue": "0 0 0 2px #3b82f6",
       },
+      rotate: {
+        flip: "-180deg",
+      },
+      backfaceVisibility: ["visible", "hidden"],
     },
   },
   plugins: [],
