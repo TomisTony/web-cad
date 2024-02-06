@@ -6,12 +6,12 @@ import { useAppSelector, useAppDispatch } from "@/app/hooks"
 
 import { OperationSetting } from "@/types/Operation"
 
-import ThreeAppWrapper from "@/components/ThreeAppWrapper"
-import OperationList from "@/components/OperationList"
-import OperationPanel from "@/components/OperationPanel"
+import ThreeAppWrapper from "@/components/CADPage/components/ThreeAppWrapper"
+import OperationList from "@/components/CADPage/components/OperationList"
+import OperationPanel from "@/components/CADPage/components/OperationPanel"
 import operationList from "@/operations/operationList"
-import History from "@/components/History"
-import SidePanel from "@/components/SidePanel"
+import History from "@/components/CADPage/components/History"
+import SidePanel from "@/components/CADPage/components/SidePanel"
 import SidePanelOpenButton from "../SidePanelOpenButton"
 
 function MainContent() {

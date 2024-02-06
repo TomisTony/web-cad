@@ -1,19 +1,16 @@
 import React from "react"
+import { createBrowserRouter, RouterProvider } from "react-router-dom"
 
-import MainContent from "./components/MainContent"
-import Modals from "./components/Modals"
-import Message from "./components/Message"
-import StateListener from "./components/Modals/StateListener"
+import CADPage from "@/components/CADPage"
+import LoginPage from "@/components/LoginPage"
+
+const router = createBrowserRouter([
+  { path: "/cad", element: <CADPage /> },
+  { path: "/login", element: <LoginPage /> },
+])
 
 function App() {
-  return (
-    <div>
-      <MainContent />
-      <Message />
-      <Modals />
-      <StateListener />
-    </div>
-  )
+  return <RouterProvider router={router} />
 }
 
 export default App
