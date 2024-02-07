@@ -4,7 +4,8 @@ import { LockOutlined, UserOutlined } from "@ant-design/icons"
 import { Button, Form, Input, Card, message } from "antd"
 
 const LoginPage: React.FC = () => {
-  const [form] = Form.useForm()
+  const [registerForm] = Form.useForm()
+  const [loginForm] = Form.useForm()
   const [messageApi, contextHolder] = message.useMessage()
   const loginCardRef = useRef<HTMLDivElement>(null)
   const registerCardRef = useRef<HTMLDivElement>(null)
@@ -14,6 +15,7 @@ const LoginPage: React.FC = () => {
       loginCardRef.current.style.transform = "rotateY(180deg)"
     if (registerCardRef.current)
       registerCardRef.current.style.transform = "rotateY(0deg)"
+    loginForm.resetFields()
   }
 
   const displayLoginCard = () => {
@@ -21,34 +23,39 @@ const LoginPage: React.FC = () => {
       loginCardRef.current.style.transform = "rotateY(0deg)"
     if (registerCardRef.current)
       registerCardRef.current.style.transform = "rotateY(-180deg)"
+    registerForm.resetFields()
   }
 
   const onLoginFinish = async (values: any) => {
-    // const res = await signIn('login', {
-    //   redirect: false,
-    //   username: values.username,
-    //   password: values.password,
-    //   callbackUrl,
-    // })
-    // if (!res?.error) {
-    //   router.push(callbackUrl)
-    // } else {
-    //   messageApi.error('用户名或密码错误')
-    // }
+    apis
+      .login({
+        username: values.username,
+        password: values.password,
+      })
+      .then((res) => {
+        if (res?.success) {
+          messageApi.success(res?.message)
+        } else {
+          messageApi.error(res?.message)
+        }
+      })
   }
 
   const onRegisterFinish = async (values: any) => {
-    // const res = await apis.register(
-    //   values.email,
-    //   values.username,
-    //   values.password,
-    // )
-    // if (res?.success) {
-    //   messageApi.success('注册成功')
-    //   form.resetFields()
-    // } else {
-    //   messageApi.error('注册失败，' + res.error)
-    // }
+    apis
+      .register({
+        username: values.username,
+        password: values.password,
+        email: values.email,
+      })
+      .then((res) => {
+        if (res?.success) {
+          messageApi.success(res?.message)
+          displayLoginCard()
+        } else {
+          messageApi.error(res?.message)
+        }
+      })
   }
 
   return (
@@ -81,7 +88,7 @@ const LoginPage: React.FC = () => {
               }}
               ref={loginCardRef}
             >
-              <Form name="login" onFinish={onLoginFinish}>
+              <Form form={loginForm} name="login" onFinish={onLoginFinish}>
                 <Form.Item
                   name="username"
                   rules={[{ required: true, message: "Please enter username" }]}
@@ -133,7 +140,11 @@ const LoginPage: React.FC = () => {
               }}
               ref={registerCardRef}
             >
-              <Form name="register" onFinish={onRegisterFinish} form={form}>
+              <Form
+                name="register"
+                onFinish={onRegisterFinish}
+                form={registerForm}
+              >
                 <Form.Item
                   name="email"
                   rules={[

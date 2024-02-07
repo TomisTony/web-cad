@@ -5,37 +5,41 @@ from django.http import HttpRequest
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
 
+import json
+
 @api_view(["POST"])
 def register_user(request: HttpRequest):
-    username = request.POST.get("username", None)
-    password = request.POST.get("password", None)
-    email = request.POST.get("email", None)
+    params = json.loads(request.body)
+    username = params.get("username", None)
+    password = params.get("password", None)
+    email = params.get("email", None)
     if username is None or password is None or email is None:
         return ApiResponse("params miss", data_status=status.HTTP_400_BAD_REQUEST)
     try:
         # 确保用户名和邮箱唯一
         if User.objects.filter(username=username).exists():
-            return ApiResponse("username already exists", data_status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse({"success": False, "message": "username already exists"})
         if User.objects.filter(email=email).exists():
-            return ApiResponse("email already exists", data_status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse({"success": False, "message": "email already exists"})
         user = User.objects.create_user(username, email, password)
         user.save()
-        return ApiResponse("register success")
+        return ApiResponse({"success": True, "message": "register success"})
     except Exception as e:
         return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["POST"])
 def login_user(request: HttpRequest):
-    username = request.POST.get("username", None)
-    password = request.POST.get("password", None)
+    params = json.loads(request.body)
+    username = params.get("username", None)
+    password = params.get("password", None)
     if username is None or password is None:
         return ApiResponse("params miss", data_status=status.HTTP_400_BAD_REQUEST)
     user = authenticate(username=username, password=password)
     if user is not None:
         login(request, user)
-        return ApiResponse("login success")
+        return ApiResponse({"success": True, "message": "login success"})
     else:
-        return ApiResponse("login failed", data_status=status.HTTP_400_BAD_REQUEST)
+        return ApiResponse({"success": False, "message": "username or password is wrong"})
     
 @api_view(["GET"])
 def logout_user(request: HttpRequest):
@@ -50,7 +54,7 @@ def get_user_info(request: HttpRequest):
     try:
         user = User.objects.get(id=user_id)
         return ApiResponse({
-            "id": user.id,
+            "id": user_id,
             "username": user.username,
             "email": user.email,
             "join_time": user.date_joined.strftime("%Y-%m-%d %H:%M:%S"),
@@ -61,9 +65,10 @@ def get_user_info(request: HttpRequest):
 
 @api_view(["POST"])
 def update_user_info(request: HttpRequest):
-    user_id = request.POST.get("userId", None)
-    username = request.POST.get("username", None)
-    email = request.POST.get("email", None)
+    params = json.loads(request.body)
+    user_id = params.get("userId", None)
+    username = params.get("username", None)
+    email = params.get("email", None)
     if user_id is None or username is None or email is None:
         return ApiResponse("params miss", data_status=status.HTTP_400_BAD_REQUEST)
     try:
@@ -77,9 +82,10 @@ def update_user_info(request: HttpRequest):
     
 @api_view(["POST"])
 def update_user_password(request: HttpRequest):
-    user_id = request.POST.get("userId", None)
-    old_password = request.POST.get("oldPassword", None)
-    new_password = request.POST.get("newPassword", None)
+    params = json.loads(request.body)
+    user_id = params.get("userId", None)
+    old_password = params.get("oldPassword", None)
+    new_password = params.get("newPassword", None)
     if user_id is None or old_password is None or new_password is None:
         return ApiResponse("params miss", data_status=status.HTTP_400_BAD_REQUEST)
     try:
