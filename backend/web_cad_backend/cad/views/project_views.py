@@ -1,11 +1,11 @@
 from rest_framework.decorators import api_view
 from rest_framework import status
 from utils.api_response import ApiResponse
-from mytest.models import Operation
-from mytest.models import Project
+from cad.models import Operation
+from cad.models import Project
 from django.http import HttpRequest
 
-from mytest.views.channels_views import notify_update_history_list
+from cad.views.channels_views import notify_update_history_list
 
 import pickle
 import json

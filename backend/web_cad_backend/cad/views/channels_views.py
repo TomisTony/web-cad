@@ -1,5 +1,5 @@
-from mytest.models import Operation
-from mytest.models import Project
+from cad.models import Operation
+from cad.models import Project
 
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
