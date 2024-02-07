@@ -35,7 +35,9 @@ function HistoryList(props: HistoryListProps) {
         type: "history/chooseHistory",
         payload: res.length - 1,
       })
-      dispatch(setSceneToOperationModalAsync(res[res.length - 1].operationId))
+      if (res.length > 0) {
+        dispatch(setSceneToOperationModalAsync(res[res.length - 1].operationId))
+      }
     })
     // websocket 订阅 HistoryList 更新
     const socket = new Socket(
