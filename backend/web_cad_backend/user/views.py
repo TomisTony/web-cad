@@ -4,10 +4,14 @@ from utils.api_response import ApiResponse
 from django.http import HttpRequest
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import permission_classes
 
 import json
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def register_user(request: HttpRequest):
     params = json.loads(request.body)
     username = params.get("username", None)
@@ -28,6 +32,7 @@ def register_user(request: HttpRequest):
         return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def login_user(request: HttpRequest):
     params = json.loads(request.body)
     username = params.get("username", None)
@@ -37,7 +42,8 @@ def login_user(request: HttpRequest):
     user = authenticate(username=username, password=password)
     if user is not None:
         login(request, user)
-        return ApiResponse({"success": True, "message": "login success"})
+        token = TokenObtainPairSerializer.get_token(user)
+        return ApiResponse({"success": True, "message": "login success", "token": str(token)})
     else:
         return ApiResponse({"success": False, "message": "username or password is wrong"})
     

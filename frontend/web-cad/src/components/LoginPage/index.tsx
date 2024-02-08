@@ -35,6 +35,8 @@ const LoginPage: React.FC = () => {
       .then((res) => {
         if (res?.success) {
           messageApi.success(res?.message)
+          const token = res?.token
+          localStorage.setItem("token", token)
         } else {
           messageApi.error(res?.message)
         }
