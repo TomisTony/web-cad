@@ -4,7 +4,7 @@ from utils.api_response import ApiResponse
 from django.http import HttpRequest
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import permission_classes
 
@@ -42,7 +42,7 @@ def login_user(request: HttpRequest):
     user = authenticate(username=username, password=password)
     if user is not None:
         login(request, user)
-        token = TokenObtainPairSerializer.get_token(user)
+        token = RefreshToken.for_user(user).access_token
         return ApiResponse({"success": True, "message": "login success", "token": str(token)})
     else:
         return ApiResponse({"success": False, "message": "username or password is wrong"})
