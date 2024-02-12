@@ -19,6 +19,17 @@ export class Request {
     this.instance.interceptors.request.use(
       async (config) => {
         // 一般会请求拦截里面加token，用于后端的验证
+        try {
+          const userDataJson = localStorage.getItem("userData")
+          if (userDataJson) {
+            const token = JSON.parse(userDataJson)?.token
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            config.headers!.Authorization = `Bearer ${token}`
+          }
+        } catch (err) {
+          console.log(err)
+        }
+
         return config
       },
       (err: any) => {

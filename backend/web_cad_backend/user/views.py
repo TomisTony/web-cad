@@ -3,12 +3,13 @@ from rest_framework import status
 from utils.api_response import ApiResponse
 from django.http import HttpRequest
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth import authenticate, login, logout
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import permission_classes
 
 import json
+
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -31,6 +32,7 @@ def register_user(request: HttpRequest):
     except Exception as e:
         return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login_user(request: HttpRequest):
@@ -43,14 +45,26 @@ def login_user(request: HttpRequest):
     if user is not None:
         login(request, user)
         token = RefreshToken.for_user(user).access_token
-        return ApiResponse({"success": True, "message": "login success", "token": str(token)})
+        # 获取 user 对应的 id
+        
+        return ApiResponse(
+            {
+                "success": True,
+                "message": "login success",
+                "userData": {"token": str(token), "name": user.get_username(), "id": },
+            }
+        )
     else:
-        return ApiResponse({"success": False, "message": "username or password is wrong"})
-    
+        return ApiResponse(
+            {"success": False, "message": "username or password is wrong"}
+        )
+
+
 @api_view(["GET"])
 def logout_user(request: HttpRequest):
     logout(request)
     return ApiResponse("logout success")
+
 
 @api_view(["GET"])
 def get_user_info(request: HttpRequest):
@@ -59,15 +73,22 @@ def get_user_info(request: HttpRequest):
         return ApiResponse("params miss", data_status=status.HTTP_400_BAD_REQUEST)
     try:
         user = User.objects.get(id=user_id)
-        return ApiResponse({
-            "id": user_id,
-            "username": user.username,
-            "email": user.email,
-            "join_time": user.date_joined.strftime("%Y-%m-%d %H:%M:%S"),
-            "last_login": user.last_login.strftime("%Y-%m-%d %H:%M:%S") if user.last_login is not None else None,
-        })
+        return ApiResponse(
+            {
+                "id": user_id,
+                "username": user.username,
+                "email": user.email,
+                "join_time": user.date_joined.strftime("%Y-%m-%d %H:%M:%S"),
+                "last_login": (
+                    user.last_login.strftime("%Y-%m-%d %H:%M:%S")
+                    if user.last_login is not None
+                    else None
+                ),
+            }
+        )
     except Exception as e:
         return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(["POST"])
 def update_user_info(request: HttpRequest):
@@ -85,7 +106,8 @@ def update_user_info(request: HttpRequest):
         return ApiResponse("update success")
     except Exception as e:
         return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+
 @api_view(["POST"])
 def update_user_password(request: HttpRequest):
     params = json.loads(request.body)
@@ -97,7 +119,9 @@ def update_user_password(request: HttpRequest):
     try:
         user = User.objects.get(id=user_id)
         if not user.check_password(old_password):
-            return ApiResponse("old password is wrong", data_status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse(
+                "old password is wrong", data_status=status.HTTP_400_BAD_REQUEST
+            )
         user.set_password(new_password)
         user.save()
         return ApiResponse("update password success")

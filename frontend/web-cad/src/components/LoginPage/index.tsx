@@ -27,16 +27,18 @@ const LoginPage: React.FC = () => {
   }
 
   const onLoginFinish = async (values: any) => {
+    // 清除原用户信息, 避免登录请求带 token
+    localStorage.removeItem("userData")
     apis
       .login({
         username: values.username,
         password: values.password,
       })
-      .then((res) => {
+      .then((res: any) => {
         if (res?.success) {
           messageApi.success(res?.message)
-          const token = res?.token
-          localStorage.setItem("token", token)
+          const userData = res?.userData
+          localStorage.setItem("userData", JSON.stringify(userData))
         } else {
           messageApi.error(res?.message)
         }
