@@ -19,3 +19,7 @@ export function updateUserInfo(data: any) {
 export function updateUserPassword(data: any) {
   return request.post("/user/updateUserPassword", data)
 }
+
+export function getProjectList(userId: number) {
+  return request.get("/user/getProjectList?userId=" + userId)
+}

@@ -8,4 +8,5 @@ urlpatterns = [
     path("getUserInfo", views.get_user_info, name="getUserInfo"),
     path("updateUserInfo", views.update_user_info, name="updateUserInfo"),
     path("updateUserPassword", views.update_user_password, name="updateUserPassword"),
+    path("getProjectList", views.get_project_list, name="getProjectList"),
 ]

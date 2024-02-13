@@ -3,11 +3,11 @@ from rest_framework import status
 from utils.api_response import ApiResponse
 from cad.models import Operation
 from cad.models import Project
+from django.contrib.auth.models import User
 from django.http import HttpRequest
 
 from cad.views.channels_views import notify_update_history_list
 
-import pickle
 import json
 
 @api_view(["GET"])
@@ -21,10 +21,12 @@ def getProjectHistory(request: HttpRequest):
         operations = Operation.objects.filter(id__in=operation_ids)
         data = []
         for operation in operations:
+            operator_id = operation.operator_id
+            operator = User.objects.get(id=operator_id).get_username()
             operation_data =  {
                     "operationId": operation.id,
                     "time": operation.time,
-                    "operator": operation.operator,
+                    "operator": operator,
                     "operationName": operation.type,
                 }
             if operation.data is not None:
@@ -32,6 +34,7 @@ def getProjectHistory(request: HttpRequest):
             data.append(operation_data)
         return ApiResponse(data)
     except Exception as e:
+        print(e)
         return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # 删除某个 operationId 之后项目的所有 History    

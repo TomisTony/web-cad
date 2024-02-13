@@ -50,7 +50,7 @@ def uploadFile(request: HttpRequest, project_id: int):
         operation = Operation(
             type="Import",
             project_id=1,
-            operator="Br",
+            operator_id=1,
             time=int(time.time() * 1000),
             brcad=br_cad.to_json(),
             topods_shape=pickle.dumps(shape),
@@ -143,7 +143,7 @@ def fillet(request: HttpRequest):
     operation = Operation(
         type="Fillet",
         project_id=1,
-        operator="Br",
+        operator_id=1,
         time=int(time.time() * 1000),
         data=json.dumps(data),
         brcad=brcad_2.to_json(),
@@ -185,7 +185,7 @@ def rollback_with_concatenation_mode(request: HttpRequest):
     operation = Operation(
         type="Rollback",
         project_id=1,
-        operator="Br",
+        operator_id=1,
         time=int(time.time() * 1000),
         data=json.dumps(data),
         brcad=brcad_2.to_json(),

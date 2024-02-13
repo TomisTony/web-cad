@@ -7,6 +7,7 @@ import MainPage from "./components/MainPage"
 import UserPage from "./components/UserPage"
 import Home from "./components/UserPage/components/Home"
 import User from "./components/UserPage/components/User"
+import Project from "./components/UserPage/components/Project"
 
 const router = createBrowserRouter([
   { path: "/cad", element: <CADPage /> },
@@ -22,7 +23,7 @@ const router = createBrowserRouter([
       },
       {
         path: "project",
-        element: <div>project</div>,
+        element: <Project />,
       },
       {
         path: "user",

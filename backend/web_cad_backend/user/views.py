@@ -3,10 +3,12 @@ from rest_framework import status
 from utils.api_response import ApiResponse
 from django.http import HttpRequest
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import permission_classes
+
+from cad.models import Project
 
 import json
 
@@ -120,4 +122,28 @@ def update_user_password(request: HttpRequest):
         user.save()
         return ApiResponse({"success": True})
     except Exception as e:
+        return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(["GET"])
+def get_project_list(request: HttpRequest):
+    user_id = request.GET.get("userId", None)
+    if user_id is None:
+        return ApiResponse("params miss", data_status=status.HTTP_400_BAD_REQUEST)
+    try:
+        projects = Project.objects.filter(owner_id=user_id)
+        owner = User.objects.get(id=user_id).get_username()
+        data = []
+        for project in projects:
+            data.append(
+                {
+                    "id": project.id,
+                    "name": project.name,
+                    "description": project.description,
+                    "createTime": project.create_time,
+                    "owner": owner,
+                }
+            )
+        return ApiResponse(data)
+    except Exception as e:
+        print(e)
         return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
