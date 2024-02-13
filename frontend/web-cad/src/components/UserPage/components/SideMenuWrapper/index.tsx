@@ -36,12 +36,14 @@ type SideMenuProps = {
 }
 
 const changeRoute = (origin: string, target: string) => {
-  // 原先的路由形式都是类似 /user/:userId/home 这样的形式
-  // 这里我们要换成 /user/:userId/{target} 这样的形式
-  const arr = origin.split("/")
-  arr.pop()
-  arr.push(target)
-  return arr.join("/")
+  // 原先的路由形式都是类似 /user/:userId/home/... 这样的形式
+  // 这里我们要使用正则表达式换成 /user/:userId/{target} 这样的形式
+  const userData = JSON.parse(localStorage.getItem("userData") ?? "{}")
+  const userId = parseInt(userData?.id ?? "1")
+  return origin.replace(
+    new RegExp(`/user/${userId}/[^/]+`),
+    `/user/${userId}/${target}`,
+  )
 }
 
 function SideMenuWrapper(props: SideMenuProps) {
@@ -55,7 +57,7 @@ function SideMenuWrapper(props: SideMenuProps) {
     navigate(changeRoute(originPath, e.key as string))
   }
   const getKeyFromRouterPath = () => {
-    const key = location.pathname.split("/").pop()
+    const key = location.pathname.match(/\/user\/[^/]+\/([^/]+)/)?.[1]
     return key ?? "home"
   }
 
