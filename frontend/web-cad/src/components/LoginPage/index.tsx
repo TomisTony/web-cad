@@ -2,6 +2,7 @@ import apis from "@/apis"
 import React, { useRef } from "react"
 import { LockOutlined, UserOutlined } from "@ant-design/icons"
 import { Button, Form, Input, Card, message } from "antd"
+import { useNavigate } from "react-router-dom"
 
 const LoginPage: React.FC = () => {
   const [registerForm] = Form.useForm()
@@ -9,6 +10,7 @@ const LoginPage: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage()
   const loginCardRef = useRef<HTMLDivElement>(null)
   const registerCardRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
 
   const displayRegisterCard = () => {
     if (loginCardRef.current)
@@ -39,6 +41,7 @@ const LoginPage: React.FC = () => {
           messageApi.success(res?.message)
           const userData = res?.userData
           localStorage.setItem("userData", JSON.stringify(userData))
+          navigate("/user/" + userData?.id + "/home")
         } else {
           messageApi.error(res?.message)
         }

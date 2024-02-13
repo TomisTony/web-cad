@@ -25,9 +25,9 @@ function getItem(
 }
 
 const items: MenuProps["items"] = [
-  getItem("Home", "/home", "/home", <HomeOutlined />),
-  getItem("User", "/user", "/user", <UserOutlined />),
-  getItem("Project", "/project", "/project", <ProjectOutlined />),
+  getItem("Home", "home", "home", <HomeOutlined />),
+  getItem("User", "user", "user", <UserOutlined />),
+  getItem("Project", "project", "project", <ProjectOutlined />),
 ]
 
 type SideMenuProps = {
@@ -46,17 +46,17 @@ const changeRoute = (origin: string, target: string) => {
 
 function SideMenuWrapper(props: SideMenuProps) {
   const location = useLocation()
-  const router = useNavigate()
+  const navigate = useNavigate()
 
   const onClick: MenuProps["onClick"] = (e) => {
     console.log("click ", e)
     // originPath: /user/:userId/...
     const originPath = location.pathname
-    router(changeRoute(originPath, e.key as string))
+    navigate(changeRoute(originPath, e.key as string))
   }
   const getKeyFromRouterPath = () => {
-    const key = "/" + location.pathname.split("/").pop()
-    return key ?? "/home"
+    const key = location.pathname.split("/").pop()
+    return key ?? "home"
   }
 
   return (
@@ -70,7 +70,7 @@ function SideMenuWrapper(props: SideMenuProps) {
         <Menu
           onClick={onClick}
           selectedKeys={[getKeyFromRouterPath()]}
-          defaultSelectedKeys={["/home"]}
+          defaultSelectedKeys={["home"]}
           mode="inline"
           items={items}
         />
