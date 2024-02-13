@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from "react"
 import { Button, Table } from "antd"
+import type { TableProps } from "antd"
 import { useNavigate, useLocation } from "react-router-dom"
 import apis from "@/apis"
 import { getTimeString } from "@/utils/time"
+
+interface DataType {
+  key: string
+  id: number
+  name: string
+  description: string
+  createTime: number
+  owner: string
+}
 
 function Project() {
   const navigate = useNavigate()
@@ -13,11 +23,16 @@ function Project() {
     const userData = JSON.parse(localStorage.getItem("userData") ?? "{}")
     const userId = parseInt(userData?.id ?? "1")
     apis.getProjectList(userId).then((res) => {
-      setTableData(res)
+      // 加上 key, 不然 react 会报错
+      setTableData(
+        res.map((item: DataType) => {
+          return { ...item, key: item.id }
+        }),
+      )
     })
   }, [])
 
-  const columns = [
+  const columns: TableProps<DataType>["columns"] = [
     {
       title: "Id",
       dataIndex: "id",
