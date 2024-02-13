@@ -79,10 +79,10 @@ def get_user_info(request: HttpRequest):
         return ApiResponse(
             {
                 "id": user_id,
-                "username": user.username,
+                "name": user.username,
                 "email": user.email,
-                "join_time": user.date_joined.strftime("%Y-%m-%d %H:%M:%S"),
-                "last_login": (
+                "joinTime": user.date_joined.strftime("%Y-%m-%d %H:%M:%S"),
+                "lastLoginTime": (
                     user.last_login.strftime("%Y-%m-%d %H:%M:%S")
                     if user.last_login is not None
                     else None
@@ -97,7 +97,7 @@ def get_user_info(request: HttpRequest):
 def update_user_info(request: HttpRequest):
     params = json.loads(request.body)
     user_id = params.get("userId", None)
-    username = params.get("username", None)
+    username = params.get("name", None)
     email = params.get("email", None)
     if user_id is None or username is None or email is None:
         return ApiResponse("params miss", data_status=status.HTTP_400_BAD_REQUEST)
@@ -106,7 +106,7 @@ def update_user_info(request: HttpRequest):
         user.username = username
         user.email = email
         user.save()
-        return ApiResponse("update success")
+        return ApiResponse({"success": True})
     except Exception as e:
         return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -122,11 +122,9 @@ def update_user_password(request: HttpRequest):
     try:
         user = User.objects.get(id=user_id)
         if not user.check_password(old_password):
-            return ApiResponse(
-                "old password is wrong", data_status=status.HTTP_400_BAD_REQUEST
-            )
+            return ApiResponse({"success": False})
         user.set_password(new_password)
         user.save()
-        return ApiResponse("update password success")
+        return ApiResponse({"success": True})
     except Exception as e:
         return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)

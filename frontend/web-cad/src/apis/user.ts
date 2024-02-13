@@ -11,3 +11,11 @@ export function register(data: any) {
 export function getUserInfo(userId: number) {
   return request.get("/user/getUserInfo?userId=" + userId)
 }
+
+export function updateUserInfo(data: any) {
+  return request.post("/user/updateUserInfo", data)
+}
+
+export function updateUserPassword(data: any) {
+  return request.post("/user/updateUserPassword", data)
+}
