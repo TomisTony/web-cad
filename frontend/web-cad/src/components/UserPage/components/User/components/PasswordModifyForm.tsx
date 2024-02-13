@@ -19,9 +19,9 @@ const PasswordModifyForm = ({
   return (
     <Modal
       open={open}
-      title="修改密码"
-      okText="确认"
-      cancelText="取消"
+      title="Modify Password"
+      okText="Confirm"
+      cancelText="Cancel"
       closeIcon={null}
       okButtonProps={{ danger: true }}
       onCancel={() => {
@@ -47,32 +47,40 @@ const PasswordModifyForm = ({
           })
       }}
     >
-      <Form form={form} layout="vertical" name="form_in_modal">
+      <Form form={form} layout="vertical" name="passwordModifyForm">
         <Form.Item
           name="oldPassword"
-          label="旧密码"
-          rules={[{ required: true, message: "请输入旧密码" }]}
+          label="Old Password"
+          rules={[{ required: true, message: "Please input old password" }]}
         >
           <Input.Password />
         </Form.Item>
         <Form.Item
           name="newPassword"
-          label="新密码"
-          rules={[{ required: true, message: "新密码不得少于6个字节", min: 6 }]}
+          label="New Password"
+          rules={[
+            {
+              required: true,
+              message: "New Password no less than 6 bytes",
+              min: 6,
+            },
+          ]}
         >
           <Input.Password />
         </Form.Item>
         <Form.Item
           name="confirmPassword"
-          label="确认密码"
+          label="Confirm New Password"
           rules={[
-            { required: true, message: "请确认新密码" },
+            { required: true, message: "Please confirm new password" },
             ({ getFieldValue }) => ({
               validator(_, value) {
                 if (!value || getFieldValue("newPassword") === value) {
                   return Promise.resolve()
                 }
-                return Promise.reject(new Error("两次输入的密码不一致"))
+                return Promise.reject(
+                  new Error("The two passwords do not match"),
+                )
               },
             }),
           ]}

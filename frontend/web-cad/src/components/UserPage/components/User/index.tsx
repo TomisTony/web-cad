@@ -16,27 +16,27 @@ const getItems = (userInfo: UserInfo) => {
     },
     {
       key: "2",
-      label: "头像",
+      label: "Avatar",
       children: <Avatar size="large" icon={<UserOutlined />} />,
     },
     {
       key: "3",
-      label: "用户名",
+      label: "Username",
       children: <p>{userInfo.name}</p>,
     },
     {
       key: "4",
-      label: "邮箱",
+      label: "Email",
       children: <p>{userInfo.email}</p>,
     },
     {
       key: "5",
-      label: "注册时间",
+      label: "Join Time",
       children: <p>{userInfo.joinTime}</p>,
     },
     {
       key: "6",
-      label: "最后登录时间",
+      label: "Last Login Time",
       children: <p>{userInfo.lastLoginTime}</p>,
     },
   ] as DescriptionsProps["items"]
@@ -62,7 +62,7 @@ const UserPage = () => {
     <div className="flex flex-col justify-center items-center">
       {contextHolder}
       <Descriptions
-        title="用户信息"
+        title="User Info"
         items={items}
         column={1}
         bordered
@@ -70,10 +70,10 @@ const UserPage = () => {
       />
       <div className="mt-10">
         <Button className="mr-12" onClick={() => setVisible(1)}>
-          修改信息
+          Modify Info
         </Button>
         <Button type="primary" danger onClick={() => setVisible(2)}>
-          修改密码
+          Modify Password
         </Button>
       </div>
       <UserInfoModifyForm
@@ -81,9 +81,9 @@ const UserPage = () => {
         initialValues={userInfo}
         onOk={(success) => {
           if (success) {
-            messageApi.success("修改用户信息成功")
+            messageApi.success("Modify user info successfully")
           } else {
-            messageApi.error("修改用户信息失败，请联系系统管理员")
+            messageApi.error("Modify user info failed, please check the input")
           }
           apis.getUserInfo(userId).then((res: UserInfo) => {
             console.log(res)
@@ -97,9 +97,9 @@ const UserPage = () => {
         open={visible === 2}
         onOk={(success) => {
           if (success) {
-            messageApi.success("修改密码成功")
+            messageApi.success("Modify password successfully")
           } else {
-            messageApi.error("修改密码失败，请检查旧密码是否输入正确")
+            messageApi.error("Modify password failed, please check the input")
           }
           setVisible(0)
         }}

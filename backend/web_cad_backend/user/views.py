@@ -62,13 +62,6 @@ def login_user(request: HttpRequest):
             {"success": False, "message": "username or password is wrong"}
         )
 
-
-@api_view(["GET"])
-def logout_user(request: HttpRequest):
-    logout(request)
-    return ApiResponse("logout success")
-
-
 @api_view(["GET"])
 def get_user_info(request: HttpRequest):
     user_id = request.GET.get("userId", None)
