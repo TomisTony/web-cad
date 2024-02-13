@@ -2,6 +2,7 @@ import apis from "@/apis"
 import { setGlobalMessage } from "../globalStatus/globalStatusAction"
 import { historySlice } from "./historySlice"
 import { setSceneToOperationModalAsync } from "../model/modelActions"
+import { get } from "http"
 
 export const {
   setHistoryList,
@@ -37,20 +38,19 @@ export const deleteLastHistoryAsync =
     apis
       .deleteProjectHistory({
         operationId: operationId,
-        projectId: 1,
+        projectId: getState().globalStatus.projectId,
         data: {},
       })
       .then((res: any) => {
         dispatch(setGlobalMessage({ content: res, type: "success" }))
+        const lastId = getState().history.choosedHistoryIndex - 1
         dispatch({
           type: "history/chooseHistory",
-          payload: getState().history.choosedHistoryIndex - 1,
+          payload: lastId,
         })
         dispatch(
           setSceneToOperationModalAsync(
-            getState().history.historyList[
-              getState().history.choosedHistoryIndex - 1
-            ].operationId,
+            getState().history.historyList[lastId].operationId,
           ),
         )
       })
@@ -69,7 +69,7 @@ export const deleteProjectHistoryAsync =
     apis
       .deleteProjectHistory({
         operationId,
-        projectId: 1,
+        projectId: getState().globalStatus.projectId,
         data: {},
       })
       .then((res) => {
