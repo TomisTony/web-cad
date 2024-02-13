@@ -23,3 +23,4 @@ export function updateUserPassword(data: any) {
 export function getProjectList(userId: number) {
   return request.get("/user/getProjectList?userId=" + userId)
 }
+

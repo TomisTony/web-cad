@@ -11,6 +11,7 @@ from rest_framework.decorators import permission_classes
 from cad.models import Project
 
 import json
+from typing import List
 
 
 @api_view(["POST"])
@@ -130,10 +131,14 @@ def get_project_list(request: HttpRequest):
     if user_id is None:
         return ApiResponse("params miss", data_status=status.HTTP_400_BAD_REQUEST)
     try:
-        projects = Project.objects.filter(owner_id=user_id)
-        owner = User.objects.get(id=user_id).get_username()
+        origin_projects = Project.objects.all()
+        projects: List[Project] = []
+        for project in origin_projects:
+            if int(user_id) in project.editor_ids or int(user_id) == project.owner_id:
+                projects.append(project)
         data = []
         for project in projects:
+            owner = User.objects.get(id=project.owner_id).get_username()
             data.append(
                 {
                     "id": project.id,

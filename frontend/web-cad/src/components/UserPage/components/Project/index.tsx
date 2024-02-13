@@ -32,6 +32,9 @@ function Project() {
     })
   }, [])
 
+  const userData = JSON.parse(localStorage.getItem("userData") ?? "{}")
+  const username = userData?.name ?? ""
+
   const columns: TableProps<DataType>["columns"] = [
     {
       title: "Id",
@@ -73,10 +76,15 @@ function Project() {
           >
             Enter
           </Button>
-          <Button onClick={() => navigate(location.pathname + "/edit")}>
+          <Button
+            onClick={() => navigate(location.pathname + "/edit")}
+            disabled={username !== record.owner}
+          >
             Edit
           </Button>
-          <Button danger>Delete</Button>
+          <Button danger disabled={username !== record.owner}>
+            Delete
+          </Button>
         </span>
       ),
     },
