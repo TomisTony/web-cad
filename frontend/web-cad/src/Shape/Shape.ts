@@ -21,7 +21,7 @@ export class Shape {
     if (this._modelMaterial == null) {
       const loader = new THREE.TextureLoader()
       loader.setCrossOrigin("")
-      const matcap = loader.load("./dullFrontLitMetal.png")
+      const matcap = loader.load("/dullFrontLitMetal.png")
       const m: any = new THREE.MeshMatcapMaterial({
         // color: new THREE.Color(0xf5f5f5),
         vertexColors: true,
