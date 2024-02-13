@@ -30,7 +30,7 @@ def getProjectHistory(request: HttpRequest):
                     "operationName": operation.type,
                 }
             if operation.data is not None:
-                operation_data["operationSubmitValues"] = json.loads(operation.data)
+                operation_data["operationSubmitValues"] = operation.data
             data.append(operation_data)
         return ApiResponse(data)
     except Exception as e:

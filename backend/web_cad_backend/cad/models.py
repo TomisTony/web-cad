@@ -7,8 +7,8 @@ class Operation(models.Model):
     type = models.CharField(max_length=50)
     operator_id = models.IntegerField()
     time = models.IntegerField()
-    data = models.TextField(null=True) # 前端请求传入的数据，用二进制序列化保存
-    brcad = models.TextField()
+    data = models.JSONField(null=True) # 前端请求传入的数据，用二进制序列化保存
+    brcad = models.TextField() # 不使用 JSONField 是因为有自定义的 to_json() 逻辑
     topods_shape = models.BinaryField()
 
 class Project(models.Model):

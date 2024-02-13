@@ -143,7 +143,7 @@ def fillet(request: HttpRequest):
         project_id=project_id,
         operator_id=1,
         time=int(time.time() * 1000),
-        data=json.dumps(data),
+        data=data,
         brcad=brcad_2.to_json(),
         topods_shape=pickle.dumps(shape),
     )
@@ -183,7 +183,7 @@ def rollback_with_concatenation_mode(request: HttpRequest):
         project_id=project_id,
         operator_id=1,
         time=int(time.time() * 1000),
-        data=json.dumps(data),
+        data=data,
         brcad=brcad_2.to_json(),
         topods_shape=pickle.dumps(rollback_shape),
     )
