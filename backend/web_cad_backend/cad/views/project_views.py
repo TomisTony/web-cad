@@ -17,7 +17,7 @@ def getProjectHistory(request: HttpRequest):
         return ApiResponse("No project id is given", data_status=status.HTTP_400_BAD_REQUEST)
     try:
         project = Project.objects.get(id=project_id)
-        operation_ids = json.loads(project.operation_history_ids)
+        operation_ids = project.operation_history_ids
         operations = Operation.objects.filter(id__in=operation_ids)
         data = []
         for operation in operations:
@@ -47,7 +47,7 @@ def deleteProjectHistory(request: HttpRequest):
         return ApiResponse("params miss", data_status=status.HTTP_400_BAD_REQUEST)
     try:
         project = Project.objects.get(id=project_id)
-        operation_ids = json.loads(project.operation_history_ids)
+        operation_ids = project.operation_history_ids
         if len(operation_ids) == 0:
             return ApiResponse("No history to delete", data_status=status.HTTP_400_BAD_REQUEST)
         if operation_id not in operation_ids:
@@ -55,7 +55,7 @@ def deleteProjectHistory(request: HttpRequest):
         index = operation_ids.index(operation_id)
         operation_ids = operation_ids[:index]
         deleted_operation_ids = operation_ids[index:]
-        project.operation_history_ids = json.dumps(operation_ids)
+        project.operation_history_ids = operation_ids
         project.save()
         # 删除数据库中的数据
         Operation.objects.filter(id__in=deleted_operation_ids).delete()

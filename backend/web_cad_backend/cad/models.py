@@ -17,8 +17,8 @@ class Project(models.Model):
     description = models.TextField()
     create_time = models.IntegerField()
     owner_id = models.IntegerField()
-    editors = models.TextField() # 用序列化 json 字符串保存编辑者的 id 数组
-    operation_history_ids = models.TextField() # 用序列化 json 字符串保存操作历史记录的 id 数组
+    editor_ids = models.JSONField() # 用序列化 json 字符串保存编辑者的 id 数组
+    operation_history_ids = models.JSONField() # 用序列化 json 字符串保存操作历史记录的 id 数组
     
     
     

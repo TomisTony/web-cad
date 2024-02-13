@@ -88,7 +88,7 @@ function Project() {
         type="primary"
         onClick={() => navigate(location.pathname + "/create")}
       >
-        Create Project
+        New Project
       </Button>
       <Table className="mt-2" columns={columns} dataSource={tableData} />
     </div>

@@ -58,9 +58,7 @@ def uploadFile(request: HttpRequest, project_id: int):
         operation.save()
         # 更新 project 的 operation_history_ids
         project = Project.objects.get(id=1)
-        operation_history_ids = json.loads(project.operation_history_ids)
-        operation_history_ids.append(operation.id)
-        project.operation_history_ids = json.dumps(operation_history_ids)
+        project.operation_history_ids.append(operation.id)
         project.save()
         # 通知前端更新历史记录
         notify_update_history_list(project_id)
@@ -152,9 +150,7 @@ def fillet(request: HttpRequest):
     operation.save()
     # step6: 更新 project 的 operation_history_ids
     project = Project.objects.get(id=1)
-    operation_history_ids = json.loads(project.operation_history_ids)
-    operation_history_ids.append(operation.id)
-    project.operation_history_ids = json.dumps(operation_history_ids)
+    project.operation_history_ids.append(operation.id)
     project.save()
     # step7: 通知前端更新历史记录
     notify_update_history_list(project_id)
@@ -194,9 +190,7 @@ def rollback_with_concatenation_mode(request: HttpRequest):
     operation.save()
     # step6: 更新 project 的 operation_history_ids
     project = Project.objects.get(id=1)
-    operation_history_ids = json.loads(project.operation_history_ids)
-    operation_history_ids.append(operation.id)
-    project.operation_history_ids = json.dumps(operation_history_ids)
+    project.operation_history_ids.append(operation.id)
     project.save()
     # step7: 通知前端更新历史记录
     notify_update_history_list(project_id)
