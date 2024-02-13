@@ -1,16 +1,18 @@
 import React from "react"
 import { Avatar, Button } from "antd"
 import { UserOutlined } from "@ant-design/icons"
-
-const logout = () => {
-  localStorage.removeItem("userData")
-  // 跳转到登录页
-  window.location.href = "/login"
-}
+import { useNavigate } from "react-router-dom"
 
 const Header = () => {
   const userData = localStorage.getItem("userData") || "{}"
   const name = JSON.parse(userData)?.name
+  const navigate = useNavigate()
+
+  const logout = () => {
+    localStorage.removeItem("userData")
+    // 跳转到登录页
+    navigate("/login")
+  }
   return (
     <div className="flex justify-between bg-slate-400 border-gray-100 border-2">
       <div className="ml-10 flex items-center text-2xl font-bold">BrCAD</div>

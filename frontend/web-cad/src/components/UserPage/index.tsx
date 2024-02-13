@@ -7,7 +7,7 @@ const UserPage: React.FC = () => {
   return (
     <div className="flex flex-col h-[100vh]">
       <Header />
-      <SideMenuWrapper>
+      <SideMenuWrapper containerClassName="flex-grow p-4">
         <Outlet />
       </SideMenuWrapper>
     </div>
