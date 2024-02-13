@@ -46,12 +46,15 @@ def login_user(request: HttpRequest):
         login(request, user)
         token = RefreshToken.for_user(user).access_token
         # 获取 user 对应的 id
-        
         return ApiResponse(
             {
                 "success": True,
                 "message": "login success",
-                "userData": {"token": str(token), "name": user.get_username(), "id": },
+                "userData": {
+                    "token": str(token),
+                    "name": user.get_username(),
+                    "id": user.id,
+                },
             }
         )
     else:
