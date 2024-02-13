@@ -27,9 +27,10 @@ export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
   dispatch(setOperationExecuting(true))
   const historyList = getState().history.historyList
   const lastOperationId = historyList[historyList.length - 1].operationId
+  const projectId = getState().globalStatus.projectId
   const params = {
     lastOperationId,
-    projectId: 1,
+    projectId,
     data: {
       ...value,
     },
@@ -63,10 +64,11 @@ export const rollbackAsync = (value: any) => (dispatch: any, getState: any) => {
   const historyList = getState().history.historyList
   const lastOperationId = historyList[historyList.length - 1].operationId
   const historyListLength = historyList.length
+  const projectId = getState().globalStatus.projectId
   apis
     .rollback({
       lastOperationId,
-      projectId: 1,
+      projectId,
       data: {
         choosedIdList: [],
         choosedTypeList: [],

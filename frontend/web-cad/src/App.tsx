@@ -10,7 +10,7 @@ import User from "./components/UserPage/components/User"
 import Project from "./components/UserPage/components/Project"
 
 const router = createBrowserRouter([
-  { path: "/cad", element: <CADPage /> },
+  { path: "/cad/:projectId", element: <CADPage /> },
   { path: "/login", element: <LoginPage /> },
   { path: "/", element: <MainPage /> },
   {

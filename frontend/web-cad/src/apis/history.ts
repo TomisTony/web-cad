@@ -2,7 +2,7 @@ import request from "@/utils/request"
 import { History } from "@/types/History"
 
 export function getHistoryList(projectId: number) {
-  return request.get<History[]>("/cad/getProjectHistory?projectId=1")
+  return request.get<History[]>("/cad/getProjectHistory?projectId=" + projectId)
 }
 
 export function deleteProjectHistory(data: any) {

@@ -11,6 +11,7 @@ interface GlobalStatusState {
     type: "success" | "error" | "info" | "warning" | undefined
     content: string
   }
+  projectId: number // 当前项目的 id
 }
 
 const initialState: GlobalStatusState = {
@@ -23,6 +24,7 @@ const initialState: GlobalStatusState = {
     type: undefined,
     content: "",
   },
+  projectId: 0,
 }
 
 export const globalStatusSlice = createSlice({
@@ -46,6 +48,9 @@ export const globalStatusSlice = createSlice({
     },
     setGlobalMessage: (state, action) => {
       state.globalMessage = action.payload
+    },
+    setProjectId: (state, action) => {
+      state.projectId = action.payload
     },
   },
 })

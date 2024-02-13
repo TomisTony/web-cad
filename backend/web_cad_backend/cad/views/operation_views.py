@@ -49,7 +49,7 @@ def uploadFile(request: HttpRequest, project_id: int):
         # 保存操作
         operation = Operation(
             type="Import",
-            project_id=1,
+            project_id=project_id,
             operator_id=1,
             time=int(time.time() * 1000),
             brcad=br_cad.to_json(),
@@ -142,7 +142,7 @@ def fillet(request: HttpRequest):
     # step5: 保存操作
     operation = Operation(
         type="Fillet",
-        project_id=1,
+        project_id=project_id,
         operator_id=1,
         time=int(time.time() * 1000),
         data=json.dumps(data),
@@ -184,7 +184,7 @@ def rollback_with_concatenation_mode(request: HttpRequest):
     # step5: 保存操作
     operation = Operation(
         type="Rollback",
-        project_id=1,
+        project_id=project_id,
         operator_id=1,
         time=int(time.time() * 1000),
         data=json.dumps(data),

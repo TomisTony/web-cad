@@ -6,6 +6,7 @@ import { getTimeString } from "@/utils/time"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { CaretUpOutlined } from "@ant-design/icons"
 import { Socket } from "@/utils/socket"
+import { useParams } from "react-router-dom"
 
 import { refreshHistoryList } from "@/store/history/historyAction"
 import { setSceneToOperationModalAsync } from "@/store/model/modelActions"
@@ -17,6 +18,7 @@ interface HistoryListProps {
 
 function HistoryList(props: HistoryListProps) {
   const dispatch = useAppDispatch()
+  const { projectId } = useParams()
   const choosedHistoryIndex = useAppSelector(
     (state) => state.history.choosedHistoryIndex,
   )
@@ -28,7 +30,7 @@ function HistoryList(props: HistoryListProps) {
   )
   useEffect(() => {
     // 直接获取最新的 HistoryList
-    apis.getHistoryList(1).then((res) => {
+    apis.getHistoryList(parseInt(projectId || "0")).then((res) => {
       dispatch(refreshHistoryList(res))
       // 加载最新的 History
       dispatch({

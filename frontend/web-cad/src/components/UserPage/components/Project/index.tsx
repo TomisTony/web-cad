@@ -65,9 +65,12 @@ function Project() {
       title: "Action",
       dataIndex: "action",
       width: 250,
-      render: () => (
+      render: (_, record: DataType) => (
         <span className="flex justify-evenly">
-          <Button type="primary" onClick={() => navigate("/cad")}>
+          <Button
+            type="primary"
+            onClick={() => window.open(`/cad/${record.id}`)}
+          >
             Enter
           </Button>
           <Button onClick={() => navigate(location.pathname + "/edit")}>

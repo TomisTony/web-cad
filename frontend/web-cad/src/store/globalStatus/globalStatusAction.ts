@@ -7,4 +7,5 @@ export const {
   setOperationPanel,
   setSidePanelVisible,
   setGlobalMessage,
+  setProjectId,
 } = globalStatusSlice.actions

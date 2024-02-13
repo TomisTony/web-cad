@@ -24,6 +24,7 @@ module.exports = {
   rules: {
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-empty-function": "warn",
+    "@typescript-eslint/no-unused-vars": "off",
     semi: ["error", "never"],
     "prettier/prettier": [
       "warn",

@@ -9,9 +9,7 @@ export function fillet(data: any) {
 }
 
 export function getUploadFileUrl(projectId: number) {
-  return (
-    request.baseConfig.baseURL + "/cad/operation/uploadFile/" + projectId
-  )
+  return request.baseConfig.baseURL + "/cad/operation/uploadFile/" + projectId
 }
 
 export function getDownloadUrl(lastOperationId: number, fileFormat: string) {
@@ -24,6 +22,6 @@ export function getDownloadUrl(lastOperationId: number, fileFormat: string) {
   )
 }
 
-export function rollback(data: any){
+export function rollback(data: any) {
   return request.post("/cad/operation/rollback", data)
 }

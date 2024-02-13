@@ -4,6 +4,7 @@ import { Modal, Upload, message } from "antd"
 import type { UploadProps } from "antd"
 import { useAppSelector, useAppDispatch } from "@/app/hooks"
 import { setModal } from "@/store/globalStatus/globalStatusAction"
+import { useParams } from "react-router-dom"
 
 import apis from "@/apis"
 import { importFile } from "@/store/model/modelActions"
@@ -11,6 +12,7 @@ import { importFile } from "@/store/model/modelActions"
 const { Dragger } = Upload
 
 function ImportModal() {
+  const { projectId } = useParams()
   const nowModal = useAppSelector((state) => state.globalStatus.modal)
   const isModalOpen = nowModal === "import"
   const dispatch = useAppDispatch()
@@ -20,7 +22,7 @@ function ImportModal() {
   const props: UploadProps = {
     name: "file",
     accept: ".step,.stp",
-    action: apis.getUploadFileUrl(1),
+    action: apis.getUploadFileUrl(parseInt(projectId || "0")),
     onChange(info: any) {
       const { status } = info.file
       if (status !== "uploading") {
