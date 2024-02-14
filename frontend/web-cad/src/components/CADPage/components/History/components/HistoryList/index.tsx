@@ -43,7 +43,7 @@ function HistoryList(props: HistoryListProps) {
     })
     // websocket 订阅 HistoryList 更新
     const socket = new Socket(
-      "ws://localhost:8000/websocket?projectId=1",
+      `ws://localhost:8000/websocket?projectId=${projectId}`,
       (message: any) => {
         const data = JSON.parse(message.data)
         if (data.type === "updateHistoryList") {

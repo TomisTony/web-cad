@@ -1,5 +1,6 @@
 export class Socket {
   public socket: WebSocket
+  public url: string
   public onmessage: any = () => {
     console.log("WebSocket message")
   }
@@ -22,6 +23,7 @@ export class Socket {
     onclose?: any,
     onerror?: any,
   ) {
+    this.url = url
     if (onopen) this.onopen = onopen
     if (onmessage) this.onmessage = onmessage
     if (onclose) this.onclose = onclose
@@ -37,7 +39,7 @@ export class Socket {
   public reconnect() {
     console.log("Socket is closed. Reconnect will be attempted in 1 second.")
     setTimeout(() => {
-      this.socket = new WebSocket("ws://localhost:8000/websocket?projectId=1")
+      this.socket = new WebSocket(this.url)
       this.socket.onclose = this.onclose
       this.socket.onmessage = this.onmessage
       this.socket.onopen = this.onopen
