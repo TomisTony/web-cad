@@ -5,3 +5,12 @@ export interface UserInfo {
   joinTime: string
   lastLoginTime: string
 }
+
+export interface ProjectInfo {
+  id: number
+  name: string
+  description: string
+  createTime: number
+  owner: string
+  editorIds: number[]
+}

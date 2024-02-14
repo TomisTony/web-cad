@@ -5,14 +5,11 @@ import { useNavigate, useLocation } from "react-router-dom"
 import apis from "@/apis"
 import { getTimeString } from "@/utils/time"
 import NewProjectForm from "./components/NewProjectForm"
+import UpdateProjectForm from "./components/UpdateProjectForm"
+import { ProjectInfo } from "@/types/User"
 
-interface DataType {
+interface DataType extends ProjectInfo {
   key: string
-  id: number
-  name: string
-  description: string
-  createTime: number
-  owner: string
 }
 
 function Project() {
@@ -20,9 +17,9 @@ function Project() {
   const location = useLocation()
   const [deleteProjectModalOpen, setDeleteProjectModalOpen] = useState(false)
   const [newProjectModalOpen, setNewProjectModalOpen] = useState(false)
-  const [editProjectModalOpen, setEditProjectModalOpen] = useState(false)
+  const [updateProjectModalOpen, setUpdateProjectModalOpen] = useState(false)
   const [selectedProjectId, setSelectedProjectId] = useState(-1) // 用于指示对哪个 project 进行操作
-  const [tableData, setTableData] = useState([])
+  const [tableData, setTableData] = useState([] as DataType[])
 
   const fetchAndSetProjectList = () => {
     // fetch data
@@ -102,7 +99,10 @@ function Project() {
             Enter
           </Button>
           <Button
-            onClick={() => navigate(location.pathname + "/edit")}
+            onClick={() => {
+              setUpdateProjectModalOpen(true)
+              setSelectedProjectId(record.id)
+            }}
             disabled={username !== record.owner}
           >
             Edit
@@ -156,7 +156,6 @@ function Project() {
       <Modal
         title="New Project"
         open={newProjectModalOpen}
-        okText="Create"
         footer={null}
         closable={false}
       >
@@ -166,6 +165,25 @@ function Project() {
             fetchAndSetProjectList()
           }}
           onCancle={() => setNewProjectModalOpen(false)}
+        />
+      </Modal>
+      <Modal
+        title="Edit Project"
+        open={updateProjectModalOpen}
+        footer={null}
+        closable={false}
+      >
+        <UpdateProjectForm
+          projectData={
+            tableData.find(
+              (item: any) => item.id === selectedProjectId,
+            ) as ProjectInfo
+          }
+          onFinish={() => {
+            setUpdateProjectModalOpen(false)
+            fetchAndSetProjectList()
+          }}
+          onCancle={() => setUpdateProjectModalOpen(false)}
         />
       </Modal>
     </div>

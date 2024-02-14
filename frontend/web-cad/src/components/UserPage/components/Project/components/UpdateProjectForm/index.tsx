@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react"
 import { Form, Button, Input, Select, message } from "antd"
 import apis from "@/apis"
+import { ProjectInfo } from "@/types/User"
 
-interface NewProjectFormProps {
+interface UpdateProjectFormProps {
   onFinish: () => void
   onCancle: () => void
+  projectData: ProjectInfo
 }
 
-function NewProjectForm(props: NewProjectFormProps) {
+function UpdateProjectForm(props: UpdateProjectFormProps) {
   const [form] = Form.useForm()
   const [options, setOptions] = useState([])
   const userData = JSON.parse(localStorage.getItem("userData") ?? "{}")
@@ -33,10 +35,12 @@ function NewProjectForm(props: NewProjectFormProps) {
   const onFinish = (values: any) => {
     form.validateFields().then(() => {
       console.log(values)
-      apis.createProject({ userId, ...values }).then(() => {
-        message.success("Create project success.")
-        props.onFinish()
-      })
+      apis
+        .updateProject({ userId, projectId: props.projectData?.id, ...values })
+        .then(() => {
+          message.success("Create project success.")
+          props.onFinish()
+        })
     })
   }
 
@@ -46,6 +50,7 @@ function NewProjectForm(props: NewProjectFormProps) {
       labelCol={{ span: 6 }}
       wrapperCol={{ span: 16 }}
       onFinish={onFinish}
+      initialValues={props.projectData}
     >
       <Form.Item
         label="Project Name"
@@ -74,7 +79,7 @@ function NewProjectForm(props: NewProjectFormProps) {
       </Form.Item>
       <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
         <Button type="primary" htmlType="submit">
-          Create
+          Update
         </Button>
         <Button
           className="ml-4"
@@ -88,4 +93,4 @@ function NewProjectForm(props: NewProjectFormProps) {
   )
 }
 
-export default NewProjectForm
+export default UpdateProjectForm

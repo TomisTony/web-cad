@@ -147,6 +147,7 @@ def get_project_list(request: HttpRequest):
                     "description": project.description,
                     "createTime": project.create_time,
                     "owner": owner,
+                    "editorIds": project.editor_ids,
                 }
             )
         return ApiResponse(data)
@@ -199,7 +200,7 @@ def create_project(request: HttpRequest):
     user_id = params.get("userId", None)
     project_name = params.get("name", None)
     description = params.get("description", None)
-    editors = params.get("editors", [])
+    editors = params.get("editorIds", [])
     if user_id is None or project_name is None or description is None:
         return ApiResponse("params miss", data_status=status.HTTP_400_BAD_REQUEST)
     try:
@@ -226,7 +227,7 @@ def update_project(request: HttpRequest):
     project_id = params.get("projectId", None)
     project_name = params.get("name", None)
     description = params.get("description", None)
-    editors = params.get("editors", [])
+    editors = params.get("editorIds", [])
     if user_id is None or project_id is None or project_name is None or description is None:
         return ApiResponse("params miss", data_status=status.HTTP_400_BAD_REQUEST)
     try:
