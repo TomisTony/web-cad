@@ -11,6 +11,7 @@ from rest_framework.decorators import permission_classes
 from cad.models import Project
 
 import json
+import time
 from typing import List
 
 
@@ -168,3 +169,78 @@ def delete_project(request: HttpRequest):
         return ApiResponse({"success": True})
     except Exception as e:
         return ApiResponse({"success": False, "message": "server error"})
+    
+@api_view(["GET"])
+def get_all_user(request: HttpRequest):
+    try:
+        users = User.objects.all()
+        data = []
+        for user in users:
+            data.append(
+                {
+                    "id": user.id,
+                    "name": user.username,
+                    "email": user.email,
+                    "joinTime": user.date_joined.strftime("%Y-%m-%d %H:%M:%S"),
+                    "lastLoginTime": (
+                        user.last_login.strftime("%Y-%m-%d %H:%M:%S")
+                        if user.last_login is not None
+                        else None
+                    ),
+                }
+            )
+        return ApiResponse(data)
+    except Exception as e:
+        return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(["POST"])
+def create_project(request: HttpRequest):
+    params = json.loads(request.body)
+    user_id = params.get("userId", None)
+    project_name = params.get("name", None)
+    description = params.get("description", None)
+    editors = params.get("editors", [])
+    if user_id is None or project_name is None or description is None:
+        return ApiResponse("params miss", data_status=status.HTTP_400_BAD_REQUEST)
+    try:
+        # 如果 editors 不为空的话，需要剔除 user_id
+        if len(editors) > 0:
+            editors = list(filter(lambda x: x != user_id, editors))
+        project = Project(
+            name=project_name,
+            description=description,
+            owner_id=user_id,
+            editor_ids=editors,
+            create_time=int(time.time() * 1000),
+            operation_history_ids=[],
+        )
+        project.save()
+        return ApiResponse({"success": True})
+    except Exception as e:
+        return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(["POST"])
+def update_project(request: HttpRequest):
+    params = json.loads(request.body)
+    user_id = params.get("userId", None)
+    project_id = params.get("projectId", None)
+    project_name = params.get("name", None)
+    description = params.get("description", None)
+    editors = params.get("editors", [])
+    if user_id is None or project_id is None or project_name is None or description is None:
+        return ApiResponse("params miss", data_status=status.HTTP_400_BAD_REQUEST)
+    try:
+        project = Project.objects.get(id=project_id)
+        # 检查 user_id 是否是项目的 owner
+        if int(user_id) != project.owner_id:
+            return ApiResponse({"success": False, "message": "permission denied"})
+        # 如果 editors 不为空的话，需要剔除 user_id
+        if len(editors) > 0:
+            editors = list(filter(lambda x: x != user_id, editors))
+        project.name = project_name
+        project.description = description
+        project.editor_ids = editors
+        project.save()
+        return ApiResponse({"success": True})
+    except Exception as e:
+        return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -29,3 +29,15 @@ export function deleteProject(userId: number, projectId: number) {
     "/user/deleteProject?userId=" + userId + "&projectId=" + projectId,
   )
 }
+
+export function getAllUser() {
+  return request.get("/user/getAllUser")
+}
+
+export function createProject(data: any) {
+  return request.post("/user/createProject", data)
+}
+
+export function updateProject(data: any) {
+  return request.post("/user/updateProject", data)
+}

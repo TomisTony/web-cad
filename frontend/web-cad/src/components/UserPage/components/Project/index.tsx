@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react"
-import { Button, Table, Modal, message } from "antd"
+import { Button, Table, Modal, message, Form } from "antd"
 import type { TableProps } from "antd"
 import { useNavigate, useLocation } from "react-router-dom"
 import apis from "@/apis"
 import { getTimeString } from "@/utils/time"
+import NewProjectForm from "./components/NewProjectForm"
 
 interface DataType {
   key: string
@@ -17,8 +18,10 @@ interface DataType {
 function Project() {
   const navigate = useNavigate()
   const location = useLocation()
-  const [open, setOpen] = useState(false)
-  const [deleteProjectId, setDeleteProjectId] = useState(-1) // 用于删除项目时的提示
+  const [deleteProjectModalOpen, setDeleteProjectModalOpen] = useState(false)
+  const [newProjectModalOpen, setNewProjectModalOpen] = useState(false)
+  const [editProjectModalOpen, setEditProjectModalOpen] = useState(false)
+  const [selectedProjectId, setSelectedProjectId] = useState(-1) // 用于指示对哪个 project 进行操作
   const [tableData, setTableData] = useState([])
 
   const fetchAndSetProjectList = () => {
@@ -108,8 +111,8 @@ function Project() {
             danger
             disabled={username !== record.owner}
             onClick={() => {
-              setOpen(true)
-              setDeleteProjectId(record.id)
+              setDeleteProjectModalOpen(true)
+              setSelectedProjectId(record.id)
             }}
           >
             Delete
@@ -121,22 +124,19 @@ function Project() {
 
   return (
     <div>
-      <Button
-        type="primary"
-        onClick={() => navigate(location.pathname + "/create")}
-      >
+      <Button type="primary" onClick={() => setNewProjectModalOpen(true)}>
         New Project
       </Button>
       <Table className="mt-2" columns={columns} dataSource={tableData} />
       <Modal
         title="Delete Project"
-        open={open}
+        open={deleteProjectModalOpen}
         okButtonProps={{ danger: true }}
         onOk={() => {
-          deleteProject(deleteProjectId)
-          setOpen(false)
+          deleteProject(selectedProjectId)
+          setDeleteProjectModalOpen(false)
         }}
-        onCancel={() => setOpen(false)}
+        onCancel={() => setDeleteProjectModalOpen(false)}
       >
         <p>
           Are you sure to <span className="font-bold text-red-600">DELETE</span>{" "}
@@ -145,13 +145,28 @@ function Project() {
             {
               (
                 tableData.find(
-                  (item: any) => item.id === deleteProjectId,
+                  (item: any) => item.id === selectedProjectId,
                 ) as any
               )?.name
             }
           </span>{" "}
           ?
         </p>
+      </Modal>
+      <Modal
+        title="New Project"
+        open={newProjectModalOpen}
+        okText="Create"
+        footer={null}
+        closable={false}
+      >
+        <NewProjectForm
+          onFinish={() => {
+            setNewProjectModalOpen(false)
+            fetchAndSetProjectList()
+          }}
+          onCancle={() => setNewProjectModalOpen(false)}
+        />
       </Modal>
     </div>
   )
