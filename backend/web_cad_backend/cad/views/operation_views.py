@@ -57,7 +57,7 @@ def uploadFile(request: HttpRequest, project_id: int):
         )
         operation.save()
         # 更新 project 的 operation_history_ids
-        project = Project.objects.get(id=1)
+        project = Project.objects.get(id=project_id)
         project.operation_history_ids.append(operation.id)
         project.save()
         # 通知前端更新历史记录
@@ -149,7 +149,7 @@ def fillet(request: HttpRequest):
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids
-    project = Project.objects.get(id=1)
+    project = Project.objects.get(id=project_id)
     project.operation_history_ids.append(operation.id)
     project.save()
     # step7: 通知前端更新历史记录
@@ -189,7 +189,7 @@ def rollback_with_concatenation_mode(request: HttpRequest):
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids
-    project = Project.objects.get(id=1)
+    project = Project.objects.get(id=project_id)
     project.operation_history_ids.append(operation.id)
     project.save()
     # step7: 通知前端更新历史记录

@@ -19,10 +19,15 @@ function ImportModal() {
   const cancel = () => {
     dispatch(setModal(""))
   }
+  const token =
+    JSON.parse(localStorage.getItem("userData") || "{}")?.token || ""
   const props: UploadProps = {
     name: "file",
     accept: ".step,.stp",
     action: apis.getUploadFileUrl(parseInt(projectId || "0")),
+    headers: {
+      Authorization: "Bearer " + token,
+    },
     onChange(info: any) {
       const { status } = info.file
       if (status !== "uploading") {
