@@ -9,7 +9,9 @@ import {
 import { BrCAD } from "@/types/BrCAD"
 import {
   operationDoneUpdateHistoryChooseAndNowIndex,
+  setNowHistoryIndex,
   setNowHistoryIndexByOperationId,
+  chooseHistory,
 } from "../history/historyAction"
 
 // 每个 case reducer 函数会生成对应的 Action creators
@@ -117,3 +119,12 @@ export const setSceneToOperationModalAsync =
     dispatch(setNowHistoryIndexByOperationId(operationId))
     dispatch(setOperationExecuting(false))
   }
+
+export const setSceneToInit = () => (dispatch: any) => {
+  dispatch(setOperationExecuting(true))
+  ThreeApp.getScene().clearScene()
+  dispatch(setModel({}))
+  dispatch(setOperationExecuting(false))
+  dispatch(setNowHistoryIndex(-1))
+  dispatch(chooseHistory(-1))
+}

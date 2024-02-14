@@ -1,7 +1,10 @@
 import apis from "@/apis"
-import { setGlobalMessage } from "../globalStatus/globalStatusAction"
+import { setGlobalMessage, setModal } from "../globalStatus/globalStatusAction"
 import { historySlice } from "./historySlice"
-import { setSceneToOperationModalAsync } from "../model/modelActions"
+import {
+  setSceneToInit,
+  setSceneToOperationModalAsync,
+} from "../model/modelActions"
 import { get } from "http"
 
 export const {
@@ -44,17 +47,24 @@ export const deleteLastHistoryAsync =
       .then((res: any) => {
         dispatch(setGlobalMessage({ content: res, type: "success" }))
         const lastId = getState().history.choosedHistoryIndex - 1
-        dispatch({
-          type: "history/chooseHistory",
-          payload: lastId,
-        })
-        dispatch(
-          setSceneToOperationModalAsync(
-            getState().history.historyList[lastId].operationId,
-          ),
-        )
+
+        if (lastId < 0) {
+          // 需要做特殊处理（因为不需要向服务器拉取上一个历史记录）
+          dispatch(setSceneToInit())
+        } else {
+          dispatch({
+            type: "history/chooseHistory",
+            payload: lastId,
+          })
+          dispatch(
+            setSceneToOperationModalAsync(
+              getState().history.historyList[lastId].operationId,
+            ),
+          )
+        }
       })
       .catch((err) => {
+        console.error(err)
         dispatch(
           setGlobalMessage({
             type: "error",
