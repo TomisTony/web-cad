@@ -152,3 +152,19 @@ def get_project_list(request: HttpRequest):
     except Exception as e:
         print(e)
         return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(["GET"])
+def delete_project(request: HttpRequest):
+    project_id = request.GET.get("projectId", None)
+    user_id = request.GET.get("userId", None)
+    if project_id is None or user_id is None:
+        return ApiResponse("params miss", data_status=status.HTTP_400_BAD_REQUEST)
+    try:
+        project = Project.objects.get(id=project_id)
+        # 检查 user_id 是否是项目的 owner
+        if int(user_id) != project.owner_id:
+            return ApiResponse({"success": False, "message": "permission denied"})
+        project.delete()
+        return ApiResponse({"success": True})
+    except Exception as e:
+        return ApiResponse({"success": False, "message": "server error"})

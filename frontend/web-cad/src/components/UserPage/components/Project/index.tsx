@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Button, Table } from "antd"
+import { Button, Table, Modal, message } from "antd"
 import type { TableProps } from "antd"
 import { useNavigate, useLocation } from "react-router-dom"
 import apis from "@/apis"
@@ -17,8 +17,11 @@ interface DataType {
 function Project() {
   const navigate = useNavigate()
   const location = useLocation()
+  const [open, setOpen] = useState(false)
+  const [deleteProjectId, setDeleteProjectId] = useState(-1) // 用于删除项目时的提示
   const [tableData, setTableData] = useState([])
-  useEffect(() => {
+
+  const fetchAndSetProjectList = () => {
     // fetch data
     const userData = JSON.parse(localStorage.getItem("userData") ?? "{}")
     const userId = parseInt(userData?.id ?? "1")
@@ -30,6 +33,25 @@ function Project() {
         }),
       )
     })
+  }
+
+  const deleteProject = (id: number) => {
+    // fetch data
+    const userData = JSON.parse(localStorage.getItem("userData") ?? "{}")
+    const userId = parseInt(userData?.id ?? "1")
+    apis.deleteProject(userId, id).then((res) => {
+      if (res?.success) {
+        fetchAndSetProjectList()
+        message.success("Delete Success")
+      } else {
+        message.error(res?.message)
+      }
+    })
+  }
+
+  useEffect(() => {
+    // fetch data
+    fetchAndSetProjectList()
   }, [])
 
   const userData = JSON.parse(localStorage.getItem("userData") ?? "{}")
@@ -82,7 +104,14 @@ function Project() {
           >
             Edit
           </Button>
-          <Button danger disabled={username !== record.owner}>
+          <Button
+            danger
+            disabled={username !== record.owner}
+            onClick={() => {
+              setOpen(true)
+              setDeleteProjectId(record.id)
+            }}
+          >
             Delete
           </Button>
         </span>
@@ -99,6 +128,31 @@ function Project() {
         New Project
       </Button>
       <Table className="mt-2" columns={columns} dataSource={tableData} />
+      <Modal
+        title="Delete Project"
+        open={open}
+        okButtonProps={{ danger: true }}
+        onOk={() => {
+          deleteProject(deleteProjectId)
+          setOpen(false)
+        }}
+        onCancel={() => setOpen(false)}
+      >
+        <p>
+          Are you sure to <span className="font-bold text-red-600">DELETE</span>{" "}
+          project{" "}
+          <span className="font-bold">
+            {
+              (
+                tableData.find(
+                  (item: any) => item.id === deleteProjectId,
+                ) as any
+              )?.name
+            }
+          </span>{" "}
+          ?
+        </p>
+      </Modal>
     </div>
   )
 }
