@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react"
 import apis from "@/apis"
 import PasswordModifyForm from "./components/PasswordModifyForm"
 import UserInfoModifyForm from "./components/UserInfoModifyForm"
+import { getUserId } from "@/utils/localStorage"
 
 const getItems = (userInfo: UserInfo) => {
   return [
@@ -45,8 +46,7 @@ const getItems = (userInfo: UserInfo) => {
 const UserPage = () => {
   const [userInfo, setUserInfo] = useState<UserInfo>({} as UserInfo)
   const [visible, setVisible] = useState(0) // 0: 不显示, 1: 修改信息, 2: 修改密码
-  const userData = JSON.parse(localStorage.getItem("userData") ?? "{}")
-  const userId = parseInt(userData?.id ?? "1")
+  const userId = getUserId()
 
   useEffect(() => {
     apis.getUserInfo(userId).then((res: UserInfo) => {

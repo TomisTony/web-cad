@@ -2,10 +2,10 @@ import React from "react"
 import { Avatar, Button } from "antd"
 import { UserOutlined } from "@ant-design/icons"
 import { useNavigate } from "react-router-dom"
+import { getUserName } from "@/utils/localStorage"
 
 const Header = () => {
-  const userData = localStorage.getItem("userData") || "{}"
-  const name = JSON.parse(userData)?.name
+  const name = getUserName()
   const navigate = useNavigate()
 
   const logout = () => {

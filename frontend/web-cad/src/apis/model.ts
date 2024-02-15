@@ -8,8 +8,14 @@ export function fillet(data: any) {
   return request.post("/cad/operation/fillet", data)
 }
 
-export function getUploadFileUrl(projectId: number) {
-  return request.baseConfig.baseURL + "/cad/operation/uploadFile/" + projectId
+export function getUploadFileUrl(projectId: number, operatorId: number) {
+  return (
+    request.baseConfig.baseURL +
+    "/cad/operation/uploadFile/" +
+    projectId +
+    "/" +
+    operatorId
+  )
 }
 
 export function getDownloadUrl(lastOperationId: number, fileFormat: string) {

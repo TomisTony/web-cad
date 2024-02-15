@@ -3,6 +3,7 @@ import { HomeOutlined, UserOutlined, ProjectOutlined } from "@ant-design/icons"
 import type { MenuProps } from "antd"
 import { Menu } from "antd"
 import { useLocation, useNavigate } from "react-router-dom"
+import { getUserId } from "@/utils/localStorage"
 
 type MenuItem = Required<MenuProps>["items"][number]
 
@@ -38,8 +39,7 @@ type SideMenuProps = {
 const changeRoute = (origin: string, target: string) => {
   // 原先的路由形式都是类似 /user/:userId/home/... 这样的形式
   // 这里我们要使用正则表达式换成 /user/:userId/{target} 这样的形式
-  const userData = JSON.parse(localStorage.getItem("userData") ?? "{}")
-  const userId = parseInt(userData?.id ?? "1")
+  const userId = getUserId()
   return origin.replace(
     new RegExp(`/user/${userId}/[^/]+`),
     `/user/${userId}/${target}`,

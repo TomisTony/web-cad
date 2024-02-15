@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { Form, Button, Input, Select, message } from "antd"
 import apis from "@/apis"
+import { getUserId } from "@/utils/localStorage"
 
 interface NewProjectFormProps {
   onFinish: () => void
@@ -10,8 +11,7 @@ interface NewProjectFormProps {
 function NewProjectForm(props: NewProjectFormProps) {
   const [form] = Form.useForm()
   const [options, setOptions] = useState([])
-  const userData = JSON.parse(localStorage.getItem("userData") ?? "{}")
-  const userId = parseInt(userData?.id ?? "1")
+  const userId = getUserId()
   const filterOption = (
     input: string,
     option?: { label: string; value: string },

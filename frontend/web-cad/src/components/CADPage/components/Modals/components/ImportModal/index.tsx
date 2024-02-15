@@ -8,23 +8,24 @@ import { useParams } from "react-router-dom"
 
 import apis from "@/apis"
 import { importFile } from "@/store/model/modelActions"
+import { getToken, getUserId } from "@/utils/localStorage"
 
 const { Dragger } = Upload
 
 function ImportModal() {
   const { projectId } = useParams()
+  const userId = getUserId()
   const nowModal = useAppSelector((state) => state.globalStatus.modal)
   const isModalOpen = nowModal === "import"
   const dispatch = useAppDispatch()
   const cancel = () => {
     dispatch(setModal(""))
   }
-  const token =
-    JSON.parse(localStorage.getItem("userData") || "{}")?.token || ""
+  const token = getToken()
   const props: UploadProps = {
     name: "file",
     accept: ".step,.stp",
-    action: apis.getUploadFileUrl(parseInt(projectId || "0")),
+    action: apis.getUploadFileUrl(parseInt(projectId || "0"), userId),
     headers: {
       Authorization: "Bearer " + token,
     },

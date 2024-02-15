@@ -1,6 +1,7 @@
 import React from "react"
 import { Modal, Form, Input } from "antd"
 import apis from "@/apis"
+import { getUserId } from "@/utils/localStorage"
 
 interface PasswordModifyFormProps {
   open: boolean
@@ -14,8 +15,7 @@ const PasswordModifyForm = ({
   onCancel,
 }: PasswordModifyFormProps) => {
   const [form] = Form.useForm()
-  const userData = JSON.parse(localStorage.getItem("userData") ?? "{}")
-  const userId = parseInt(userData?.id ?? "1")
+  const userId = getUserId()
   return (
     <Modal
       open={open}

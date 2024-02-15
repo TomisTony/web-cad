@@ -7,6 +7,7 @@ import { getTimeString } from "@/utils/time"
 import NewProjectForm from "./components/NewProjectForm"
 import UpdateProjectForm from "./components/UpdateProjectForm"
 import { ProjectInfo } from "@/types/User"
+import { getUserId, getUserName } from "@/utils/localStorage"
 
 interface DataType extends ProjectInfo {
   key: string
@@ -23,8 +24,7 @@ function Project() {
 
   const fetchAndSetProjectList = () => {
     // fetch data
-    const userData = JSON.parse(localStorage.getItem("userData") ?? "{}")
-    const userId = parseInt(userData?.id ?? "1")
+    const userId = getUserId()
     apis.getProjectList(userId).then((res) => {
       // 加上 key, 不然 react 会报错
       setTableData(
@@ -37,8 +37,7 @@ function Project() {
 
   const deleteProject = (id: number) => {
     // fetch data
-    const userData = JSON.parse(localStorage.getItem("userData") ?? "{}")
-    const userId = parseInt(userData?.id ?? "1")
+    const userId = getUserId()
     apis.deleteProject(userId, id).then((res) => {
       if (res?.success) {
         fetchAndSetProjectList()
@@ -54,8 +53,7 @@ function Project() {
     fetchAndSetProjectList()
   }, [])
 
-  const userData = JSON.parse(localStorage.getItem("userData") ?? "{}")
-  const username = userData?.name ?? ""
+  const username = getUserName()
 
   const columns: TableProps<DataType>["columns"] = [
     {
