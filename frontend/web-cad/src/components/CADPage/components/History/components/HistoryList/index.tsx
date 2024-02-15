@@ -89,8 +89,8 @@ function HistoryList(props: HistoryListProps) {
           (operation) => operation.label === operationName,
         )
         const defaultContent = (
-          <div className="flex justify-between text-bold text-sm">
-            <span>{value.operator}</span>
+          <div className="flex flex-col text-bold text-sm">
+            <span>{"operator: " + value.operator}</span>
             <span>{getTimeString(value.time)}</span>
           </div>
         )

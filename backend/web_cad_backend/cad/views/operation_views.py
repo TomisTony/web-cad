@@ -30,7 +30,7 @@ def getOperationModel(request: HttpRequest):
 
 # Operation "Import"
 @api_view(["POST"])
-def uploadFile(request: HttpRequest, project_id: int):
+def uploadFile(request: HttpRequest, project_id: int, operator_id: int):
     file = request.FILES.get("file", None)
     if file is None:
         return ApiResponse("No file is uploaded", data_status=400)
@@ -50,7 +50,7 @@ def uploadFile(request: HttpRequest, project_id: int):
         operation = Operation(
             type="Import",
             project_id=project_id,
-            operator_id=1,
+            operator_id=int(operator_id),
             time=int(time.time() * 1000),
             brcad=br_cad.to_json(),
             topods_shape=pickle.dumps(shape),
@@ -118,6 +118,7 @@ def fillet(request: HttpRequest):
     params = json.loads(request.body)
     last_operation_id = params.get("lastOperationId")
     project_id = params.get("projectId")
+    operator_id = params.get("operatorId")
     data = params.get("data")
     choosed_id_list = data.get("choosedIdList")
     choosedId = choosed_id_list[0]
@@ -141,7 +142,7 @@ def fillet(request: HttpRequest):
     operation = Operation(
         type="Fillet",
         project_id=project_id,
-        operator_id=1,
+        operator_id=int(operator_id),
         time=int(time.time() * 1000),
         data=data,
         brcad=brcad_2.to_json(),
@@ -164,6 +165,7 @@ def rollback_with_concatenation_mode(request: HttpRequest):
     params = json.loads(request.body)
     last_operation_id = params.get("lastOperationId")
     project_id = params.get("projectId")
+    operator_id = params.get("operatorId")
     data = params.get("data")
     props = data.get("props")
     rollback_operation_id = props.get("rollbackId")
@@ -181,7 +183,7 @@ def rollback_with_concatenation_mode(request: HttpRequest):
     operation = Operation(
         type="Rollback",
         project_id=project_id,
-        operator_id=1,
+        operator_id=int(operator_id),
         time=int(time.time() * 1000),
         data=data,
         brcad=brcad_2.to_json(),

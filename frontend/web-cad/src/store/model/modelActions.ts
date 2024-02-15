@@ -13,6 +13,7 @@ import {
   setNowHistoryIndexByOperationId,
   chooseHistory,
 } from "../history/historyAction"
+import { getUserId } from "@/utils/localStorage"
 
 // 每个 case reducer 函数会生成对应的 Action creators
 const { importFile: importFileAction, fillet, setModel } = modelSlice.actions
@@ -33,6 +34,7 @@ export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
   const params = {
     lastOperationId,
     projectId,
+    operatorId: getUserId(),
     data: {
       ...value,
     },
@@ -71,6 +73,7 @@ export const rollbackAsync = (value: any) => (dispatch: any, getState: any) => {
     .rollback({
       lastOperationId,
       projectId,
+      operatorId: getUserId(),
       data: {
         choosedIdList: [],
         choosedTypeList: [],

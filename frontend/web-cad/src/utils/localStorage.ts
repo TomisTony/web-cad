@@ -3,7 +3,7 @@ export const getUserData = () => {
 }
 
 export const getUserId = () => {
-  return getUserData()?.userId || 0
+  return parseInt(getUserData()?.id || "0")
 }
 
 export const getToken = () => {
@@ -11,5 +11,5 @@ export const getToken = () => {
 }
 
 export const getUserName = () => {
-  return getUserData()?.username || "User"
+  return getUserData()?.name || "User"
 }
