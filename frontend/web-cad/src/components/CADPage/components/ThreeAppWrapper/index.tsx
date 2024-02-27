@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react"
-import { ThreeApp } from "@/three/threeApp"
-import { ThreeScene } from "@/three/threeScene"
+import { ThreeApp } from "@/three/ThreeApp"
+import { ThreeScene } from "@/three/ThreeScene"
 
 import { useAppSelector } from "@/app/hooks"
 

@@ -1,5 +1,5 @@
-import { Shape } from "@/shape/shape"
-import { ThreeApp } from "@/three/threeApp"
+import { Shape } from "@/shape/Shape"
+import { ThreeApp } from "@/three/ThreeApp"
 import apis from "@/apis"
 import { modelSlice } from "./modelSlice"
 import {

@@ -1,5 +1,5 @@
 import * as THREE from "three"
-import { ThreeApp } from "../three/threeApp"
+import { ThreeApp } from "../three/ThreeApp"
 import {
   BrCAD,
   BrCADCompare,
@@ -8,8 +8,8 @@ import {
   BrCADNode,
 } from "@/types/BrCAD"
 import { EdgeMetaData, FaceMetaData } from "@/types/Metadata"
-import Model from "./model"
-import Line from "./line"
+import Model from "./Model"
+import Line from "./Line"
 
 export class Shape {
   // 权宜之计，material 之后要额外处理

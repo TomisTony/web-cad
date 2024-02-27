@@ -1,4 +1,4 @@
-import { ThreeScene } from "./threeScene"
+import { ThreeScene } from "@/three/ThreeScene"
 
 export class ThreeApp {
   public static threeScene: ThreeScene
