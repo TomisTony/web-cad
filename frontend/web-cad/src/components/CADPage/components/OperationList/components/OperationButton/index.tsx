@@ -8,13 +8,16 @@ interface OperationButtonProps {
   img?: string
   icon?: (className: any) => React.ReactNode
   label: string
-  abled?: boolean
+  abled?: (historyChecking: boolean) => boolean
 }
 
 function OperationButton(props: OperationButtonProps) {
   const dispatch = useAppDispatch()
   const operationPanel = useAppSelector(
     (state) => state.globalStatus.operationPanel,
+  )
+  const historyChecking = useAppSelector(
+    (state) => state.globalStatus.historyChecking,
   )
   const onClick = () => {
     if (operationPanel === props.label) {
@@ -31,7 +34,9 @@ function OperationButton(props: OperationButtonProps) {
         "hover:bg-gray-800 hover:text-white hover:cursor-pointer " +
         "active:bg-gray-700 active:text-white transition duration-300 " +
         (operationPanel === props.label ? "bg-gray-700 text-white " : " ") +
-        (!props.abled ? "opacity-40 pointer-events-none " : " ") +
+        (props.abled && !props.abled(historyChecking)
+          ? "opacity-40 pointer-events-none "
+          : " ") +
         (props.className ?? "")
       }
       onClick={onClick}

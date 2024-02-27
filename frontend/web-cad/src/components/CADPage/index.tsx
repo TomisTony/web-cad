@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom"
 import MainContent from "./components/MainContent"
 import Modals from "./components/Modals"
 import Message from "./components/Message"
-import StateListener from "./components/Modals/StateListener"
+import StateListener from "./components/StateListener"
 import { useDispatch } from "react-redux"
 import { setProjectId } from "@/store/globalStatus/globalStatusAction"
 

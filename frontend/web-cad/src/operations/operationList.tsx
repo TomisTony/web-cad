@@ -24,7 +24,7 @@ interface Operation {
   action: () => any
   operationSetting?: OperationSetting
   isDelimiter?: boolean
-  abled?: boolean
+  abled?: (historyChecking: boolean) => boolean
   unvisibleInOperationList?: boolean // 在 OperationList 中不可见，但是本身仍然属于 Operation
   hoverContent?: JSX.Element // 自定义悬浮展示内容
 }
@@ -34,13 +34,13 @@ const operationList: Operation[] = [
     label: "Import",
     icon: (className) => <UploadOutlined className={className} />,
     action: () => store.dispatch(setModal("import")),
-    abled: store.getState().globalStatus.historyChecking === false,
+    abled: (historyChecking: boolean) => historyChecking === false,
   },
   {
     label: "Export",
     icon: (className) => <ExportOutlined className={className} />,
     action: () => store.dispatch(setModal("export")),
-    abled: true,
+    abled: () => true,
   },
   {
     label: "delimiter",
@@ -54,7 +54,7 @@ const operationList: Operation[] = [
     label: "Fillet",
     img: fillet,
     action: () => store.dispatch(setOperationPanel("Fillet")),
-    abled: store.getState().globalStatus.historyChecking === false,
+    abled: (historyChecking: boolean) => historyChecking === false,
     operationSetting: {
       operationName: "Fillet",
       chooseCount: 1,

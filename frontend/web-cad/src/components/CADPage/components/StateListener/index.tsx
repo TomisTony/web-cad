@@ -15,9 +15,9 @@ function StateListener() {
   // 自动设置 historyChecking
   useEffect(() => {
     if (nowHistoryIndex === historyList.length - 1) {
-      dispatch({ type: "history/setHistoryChecking", payload: false })
+      dispatch({ type: "globalStatus/setHistoryChecking", payload: false })
     } else {
-      dispatch({ type: "history/setHistoryChecking", payload: true })
+      dispatch({ type: "globalStatus/setHistoryChecking", payload: true })
     }
   }, [nowHistoryIndex, historyList])
 
