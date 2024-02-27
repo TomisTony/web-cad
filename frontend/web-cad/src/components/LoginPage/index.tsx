@@ -49,6 +49,8 @@ const LoginPage: React.FC = () => {
   }
 
   const onRegisterFinish = async (values: any) => {
+    // 清除原用户信息, 避免登录请求带 token
+    localStorage.removeItem("userData")
     apis
       .register({
         username: values.username,
