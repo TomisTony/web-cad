@@ -34,10 +34,10 @@ class BrCAD_node:
 class BrCAD_face:
     def __init__(
         self,
-        vertex_coordinates: [],
-        uv_coordinates: [],
-        normal_coordinates: [],
-        triangle_indexes: [],
+        vertex_coordinates: List[float],
+        uv_coordinates: List[float],
+        normal_coordinates: List[float],
+        triangle_indexes: List[int],
         number_of_triangles: int,
     ):
         self.id: str = None
@@ -81,7 +81,7 @@ class BrCAD_face:
 
 
 class BrCAD_edge:
-    def __init__(self, vertex_coordinates: []):
+    def __init__(self, vertex_coordinates: List[float]):
         self.id: str = None
         self.vertex_coordinates: List[float] = vertex_coordinates
         
