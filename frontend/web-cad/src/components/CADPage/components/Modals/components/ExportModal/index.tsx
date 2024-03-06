@@ -18,8 +18,22 @@ function ExportModal() {
     dispatch(setModal(""))
   }
   const download = async () => {
+    let auth = ""
+    try {
+      const userDataJson = localStorage.getItem("userData")
+      if (userDataJson) {
+        const token = JSON.parse(userDataJson)?.token
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        auth = `Bearer ${token}`
+      }
+    } catch (err) {
+      console.log(err)
+    }
     await fetch(apis.getDownloadUrl(lastOperationId, format), {
       method: "GET",
+      headers: {
+        Authorization: auth,
+      },
     })
       .then((response) => {
         if (!response.ok) {
