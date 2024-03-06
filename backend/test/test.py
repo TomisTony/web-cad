@@ -1,80 +1,23 @@
+# 加上运行路径
+import sys
+sys.path.append('c:\\users\\GXLYQ_AIR\\Desktop\\web-cad\\backend')
+sys.path.append('c:\\users\\GXLYQ_AIR\\Desktop\\web-cad\\backend\\web_cad_backend')
+
 from OCC.Extend.DataExchange import read_step_file
 
 # 读取 STEP 文件
 # step_filename = 'c:\\users\\GXLYQ_AIR\\Desktop\\web-cad\\backend\\test\\as1-oc-214-mat.stp'
-step_filename = 'c:\\users\\GXLYQ_AIR\\Desktop\\111-Cut.step'
+step_filename = 'c:\\users\\GXLYQ_AIR\\Desktop\\model.step'
 shape = read_step_file(step_filename)
 
 from OCC.Core.TopExp import TopExp_Explorer
 from OCC.Core.TopAbs import TopAbs_SOLID, TopAbs_SHELL, TopAbs_SHAPE
+from web_cad_backend.BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
 
-# 树状遍历并打印所有的实体
-def print_shapes(shape):
-    explorer = TopExp_Explorer(shape, TopAbs_SOLID)
-    while explorer.More():
-        solid = explorer.Current()
-        print("SOLID")
-        explorer_shell = TopExp_Explorer(solid, TopAbs_SHELL)
-        while explorer_shell.More():
-            shell = explorer_shell.Current()
-            print("--SHELL")
-            explorer_shape = TopExp_Explorer(shell, TopAbs_SHAPE)
-            while explorer_shape.More():
-                shape = explorer_shape.Current()
-                print("----SHAPE")
-                explorer_shape.Next()
-            explorer_shell.Next()
-        explorer.Next()
-        
-print_shapes(shape)
-    
-    
-
-# from OCC.Core.TCollection import TCollection_ExtendedString
-
-# from OCC.Core.TDocStd import TDocStd_Document
-# from OCC.Core.XCAFDoc import (XCAFDoc_DocumentTool_ShapeTool,
-#                               XCAFDoc_DocumentTool_ColorTool,
-#                               XCAFDoc_DocumentTool_LayerTool,
-#                               XCAFDoc_DocumentTool_MaterialTool)
-# from OCC.Core.STEPCAFControl import STEPCAFControl_Reader
-# from OCC.Core.IFSelect import IFSelect_RetDone
-# from OCC.Core.TDF import TDF_LabelSequence
-
-# from OCC.Display.SimpleGui import init_display
-
-# filename = 'c:\\users\\GXLYQ_AIR\\Desktop\\web-cad\\backend\\test\\as1-oc-214-mat.stp'
-
-# # create an handle to a document
-# doc = TDocStd_Document(TCollection_ExtendedString("pythonocc-doc"))
-
-# # Get root assembly
-# shape_tool = XCAFDoc_DocumentTool_ShapeTool(doc.Main())
-# l_colors = XCAFDoc_DocumentTool_ColorTool(doc.Main())
-# l_layers = XCAFDoc_DocumentTool_LayerTool(doc.Main())
-# l_materials = XCAFDoc_DocumentTool_MaterialTool(doc.Main())
-
-# step_reader = STEPCAFControl_Reader()
-# step_reader.SetColorMode(True)
-# step_reader.SetLayerMode(True)
-# step_reader.SetNameMode(True)
-# step_reader.SetMatMode(True)
-
-# status = step_reader.ReadFile(filename)
-# if status == IFSelect_RetDone:
-#     step_reader.Transfer(doc)
-
-# labels = TDF_LabelSequence()
-# color_labels = TDF_LabelSequence()
-
-# shape_tool.GetFreeShapes(labels)
-
-# print("Number of shapes at root :%i" % labels.Length())
-# for i in range(labels.Length()):
-#     sub_shapes_labels = TDF_LabelSequence()
-#     print("Is Assembly :", shape_tool.IsAssembly(labels.Value(i+1)))
-#     print("Is Component :", shape_tool.IsComponent(labels.Value(i+1)))
-#     print(shape_tool.NbComponents(labels.Value(i+1)))
-#     sub_shapes = shape_tool.GetSubShapes(labels.Value(i+1), sub_shapes_labels)
-#     print("Number of subshapes in the assemly :%i" % sub_shapes_labels.Length())
+convertor = TopoDSShapeConvertor(shape)
+br_cad = convertor.get_BrCAD()
+json = br_cad.to_json()
+# 保存到同文件夹
+with open('c:\\users\\GXLYQ_AIR\\Desktop\\model.json', 'w') as f:
+    f.write(json)
 

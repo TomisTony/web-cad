@@ -1,7 +1,7 @@
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from OCC.Core.TopoDS import TopoDS_Shape
-from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_FACE, TopAbs_SHAPE
+from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_FACE, TopAbs_SHAPE, TopAbs_SOLID
 from OCC.Core.TopExp import TopExp_Explorer
 from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
 from OCC.Core.TopLoc import TopLoc_Location
@@ -23,44 +23,51 @@ class TopoDSShapeConvertor:
     def __init__(self, topods_shape: TopoDS_Shape, max_deviation: float = 0.1):
         self.topods_shape = topods_shape
         self.max_deviation = max_deviation
-        self.faces: List[BrCAD_face] = []
-        self.edges: List[BrCAD_edge] = []
         self.id_TopoDS_Shape_map: Dict[str, TopoDS_Shape] = {}
-        self.faces, self.edges = self.__converte()
-
-    def get_faces(self):
-        return self.faces
-
-    def get_edges(self):
-        return self.edges
+        self.solid_dict = self.__converte()
 
     def get_BrCAD(self):
-        # 目前并没有做 structure 的适配，统一使用 root
-        return BrCAD(
-            structure=BrCAD_node(
-                label="root",
-                faces=[face.id for face in self.faces],
-                edges=[edge.id for edge in self.edges],
+        # 根据 solid_dict 生成 BrCAD 对象
+        children: List[BrCAD_node] = []
+        faces: List[BrCAD_face] = []
+        edges: List[BrCAD_edge] = []
+        for solid_name, (face_list, edge_list) in self.solid_dict.items():
+            # 构造子 solid, 其中 face 和 edge 分别是 id 数组
+            child = BrCAD_node(
+                label=solid_name,
                 children=[],
+                faces=[face.id for face in face_list],
+                edges=[edge.id for edge in edge_list],
+            )
+            children.append(child)
+            faces.extend(face_list)
+            edges.extend(edge_list)
+        
+        return BrCAD(
+            structure= BrCAD_node(
+                label="Root",
+                children=children,
+                faces=[],
+                edges=[],
             ),
-            faces=self.faces,
-            edges=self.edges,
+            faces=faces,
+            edges=edges,
         )
     
     def get_id_TopoDS_Shape_map(self):
         return self.id_TopoDS_Shape_map
 
-    def __converte(self) -> (List[BrCAD_face], List[BrCAD_edge]):
+    def __converte_topo(self, topo: TopoDS_Shape) -> Tuple[List[BrCAD_face], List[BrCAD_edge]]:
         face_list: List[BrCAD_face] = []
         edge_list: List[BrCAD_edge] = []
         # 开启 mesh 化
-        BRepMesh_IncrementalMesh(self.topods_shape, self.max_deviation, False, self.max_deviation * 5, False)
+        BRepMesh_IncrementalMesh(topo, self.max_deviation, False, self.max_deviation * 5, False)
         
         # 由于我们在遍历所有面的时候就会开始填充 edgeList，所以需要一个 set 来记录已经填充过的 edge
         complete_edge_set = set()
         
         # 遍历所有面
-        faceExp = TopExp_Explorer(self.topods_shape, TopAbs_FACE, TopAbs_SHAPE)
+        faceExp = TopExp_Explorer(topo, TopAbs_FACE, TopAbs_SHAPE)
         while faceExp.More():
             face = faceExp.Current()
             location = TopLoc_Location()
@@ -183,7 +190,7 @@ class TopoDSShapeConvertor:
             faceExp.Next()      
 
         # 并不一定所有的边都在 face 中，而且这些边我们需要特殊处理，所以我们需要额外遍历
-        edgeExp = TopExp_Explorer(self.topods_shape, TopAbs_EDGE, TopAbs_SHAPE) 
+        edgeExp = TopExp_Explorer(topo, TopAbs_EDGE, TopAbs_SHAPE) 
         while edgeExp.More():
             edge = edgeExp.Current()
              # OCC 的 hash 跟内存地址相关，但是由于我们这里的使用是在单次程序中，所以可以认为是唯一标识符
@@ -209,3 +216,21 @@ class TopoDSShapeConvertor:
             edgeExp.Next() 
                    
         return face_list, edge_list 
+    
+    def __converte(self) -> Dict[str, Tuple[List[BrCAD_face], List[BrCAD_edge]]]:
+        solid_dict: Dict[str, Tuple[List[BrCAD_face], List[BrCAD_edge]]] = {}
+        
+        # 遍历所有的 solid
+        count = 0
+        solid_exp = TopExp_Explorer(self.topods_shape, TopAbs_SOLID, TopAbs_SHAPE)
+        while solid_exp.More():
+            count += 1
+            solid = solid_exp.Current()
+            solid_dict["Solid " + str(count)] = self.__converte_topo(solid)
+            solid_exp.Next()
+            
+        # 为了防止没有 solid 的情况
+        if count == 0:
+            solid_dict["Solid 1"] = self.__converte_topo(self.topods_shape)
+            
+        return solid_dict
