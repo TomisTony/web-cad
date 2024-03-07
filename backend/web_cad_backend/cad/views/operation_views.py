@@ -15,6 +15,7 @@ import json
 
 from BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
 from BrCAD.BrCAD_compare import BrCADCompare
+from BrCAD.BrCAD import BrCAD
 
 from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet
 from OCC.Extend.DataExchange import read_step_file
@@ -45,14 +46,14 @@ def uploadFile(request: HttpRequest, project_id: int, operator_id: int):
         # 读取文件
         shape = read_step_file(filename)
         converter = TopoDSShapeConvertor(shape)
-        br_cad = converter.get_BrCAD()
+        br_cad = converter.get_BrCAD_with_new_structure()
         # 保存操作
         operation = Operation(
             type="Import",
             project_id=project_id,
             operator_id=int(operator_id),
             time=int(time.time() * 1000),
-            brcad=br_cad.to_json(),
+            brcad=pickle.dumps(br_cad),
             topods_shape=pickle.dumps(shape),
         )
         operation.save()
@@ -124,10 +125,10 @@ def fillet(request: HttpRequest):
     choosedId = choosed_id_list[0]
     props = data.get("props")
     radius = props.get("radius")
-    # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map
+    # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
     last_shape = pickle.loads(Operation.objects.get(id=last_operation_id).topods_shape)
     converter_1 = TopoDSShapeConvertor(last_shape)
-    brcad_1 = converter_1.get_BrCAD()
+    brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
     id_map = converter_1.get_id_TopoDS_Shape_map()
     # step3: 执行对应操作
     # 创建一个倒角生成器,并设置倒角半径
@@ -136,7 +137,7 @@ def fillet(request: HttpRequest):
     shape = fillet.Shape()
     # step4: 生成新的 BrCAD 对象进行比较
     converter_2 = TopoDSShapeConvertor(shape)
-    brcad_2 = converter_2.get_BrCAD()
+    brcad_2 = converter_2.get_BrCAD_with_old_structure(brcad_1)
     brcad_compare = BrCADCompare(brcad_1, brcad_2)
     # step5: 保存操作
     operation = Operation(
@@ -145,7 +146,7 @@ def fillet(request: HttpRequest):
         operator_id=int(operator_id),
         time=int(time.time() * 1000),
         data=data,
-        brcad=brcad_2.to_json(),
+        brcad=pickle.dumps(brcad_2),
         topods_shape=pickle.dumps(shape),
     )
     operation.save()
@@ -169,15 +170,13 @@ def rollback_with_concatenation_mode(request: HttpRequest):
     data = params.get("data")
     props = data.get("props")
     rollback_operation_id = props.get("rollbackId")
-    # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map
-    last_shape = pickle.loads(Operation.objects.get(id=last_operation_id).topods_shape)
-    converter_1 = TopoDSShapeConvertor(last_shape)
-    brcad_1 = converter_1.get_BrCAD()
+    # step2: 获取上一步的 BrCAD 对象
+    brcad_1 = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
     # step3: 执行对应操作
     rollback_shape = pickle.loads(Operation.objects.get(id=rollback_operation_id).topods_shape)
     # step4: 生成新的 BrCAD 对象进行比较
     converter_2 = TopoDSShapeConvertor(rollback_shape)
-    brcad_2 = converter_2.get_BrCAD()
+    brcad_2 = converter_2.get_BrCAD_with_new_structure()
     brcad_compare = BrCADCompare(brcad_1, brcad_2)
     # step5: 保存操作
     operation = Operation(
@@ -186,7 +185,7 @@ def rollback_with_concatenation_mode(request: HttpRequest):
         operator_id=int(operator_id),
         time=int(time.time() * 1000),
         data=data,
-        brcad=brcad_2.to_json(),
+        brcad=pickle.dumps(brcad_2),
         topods_shape=pickle.dumps(rollback_shape),
     )
     operation.save()
