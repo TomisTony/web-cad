@@ -65,7 +65,7 @@ class BrCAD_face:
             "numberOfTriangles": self.number_of_triangles,
         }
     
-    def calculate_hash(self, solid_id: str):
+    def calculate_hash(self):
         # 由于每次读取 TopoDS_Shape 重新计算时可能会带来高精度上的变化，因此需要对数据进行格式化，减少小数位数
         self._format()
         attributes = []
@@ -77,7 +77,7 @@ class BrCAD_face:
         attributes.append(self.number_of_triangles)
 
         attributes_str = [str(attr) for attr in attributes]
-        hash_str = solid_id.join(attributes_str)
+        hash_str = ''.join(attributes_str)
 
         result = hashlib.md5(hash_str.encode())
         self.id = result.hexdigest()
@@ -97,14 +97,14 @@ class BrCAD_edge:
             "vertexCoordinates": self.vertex_coordinates,
         }
     
-    def calculate_hash(self, solid_id: str):
+    def calculate_hash(self):
         # 由于每次读取 TopoDS_Shape 重新计算时可能会带来高精度上的变化，因此需要对数据进行格式化，减少小数位数
         self._format()
         attributes = []
         
         attributes.extend(self.vertex_coordinates)
         attributes_str = [str(attr) for attr in attributes]
-        hash_str = solid_id.join(attributes_str)
+        hash_str = ''.join(attributes_str)
         
         result = hashlib.md5(hash_str.encode())
         self.id = result.hexdigest()
