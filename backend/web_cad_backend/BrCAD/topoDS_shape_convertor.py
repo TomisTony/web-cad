@@ -51,6 +51,7 @@ class TopoDSShapeConvertor:
         return BrCAD(
             structure= BrCAD_node(
                 label="Root",
+                id='root',
                 children=children,
                 faces=[],
                 edges=[],
@@ -75,7 +76,7 @@ class TopoDSShapeConvertor:
         new_faces_id_list = []
         new_edges_id_list = []
         # 生成新的 face 和 edge 的 id 数组
-        for solid_id, (face_list, edge_list) in self.solid_dict.items():
+        for _, (face_list, edge_list) in self.solid_dict.items():
             new_faces_id_list.extend([face.id for face in face_list])
             new_edges_id_list.extend([edge.id for edge in edge_list])
         # 比较 old_face_id_list 和 new_face_id_list，生成 deleted_faces_id 和 added_faces_id
@@ -104,19 +105,12 @@ class TopoDSShapeConvertor:
             added_edges_id.append(edge_id)
         # 生成新的 structure
         children: List[BrCAD_node] = []
-        faces: List[BrCAD_face] = []
-        edges: List[BrCAD_edge] = []
-        for solid_id, (face_list, edge_list) in self.solid_dict.items():
-            faces.extend(face_list)
-            edges.extend(edge_list)
-            # 如果 solid_id 不在 related_solid_id 中，则保留 old_brcad 中的 structure
-            # 在 related_solid_id 中的 solid 特殊处理
-            if solid_id not in related_solid_ids:
-                for node in old_brcad.structure.children:
-                    if node.id == solid_id:
-                        children.append(node)
+        # 如果 solid_id 不在 related_solid_id 中，则保留 old_brcad 中的 structure
+        # 在 related_solid_id 中的 solid 特殊处理
+        for node in old_brcad.structure.children:
+            if node.id not in related_solid_ids:
+                children.append(node)
         # 新建一个 BrCAD_node，添加所有收集的 solid 为 child，转换这些 solid 的所有数据合并新的更改（包括 delete 和 add）到该 node 下
-        new_node_id = uuid.uuid1().hex
         # 构造新 node 的 children，由 related_solid_id 中的 solid 构造
         new_node_children = []
         # 从 old_brcad 中的 structure 中找到这些 node，将其 faces 和 edges 置空，然后将其添加到新的 node 中
@@ -151,16 +145,22 @@ class TopoDSShapeConvertor:
         # 使用新的 id 构造新的 BrCAD_node    
         new_node = BrCAD_node(
           label=operation_label,
-          id=new_node_id,
+          id=uuid.uuid1().hex,
           children=new_node_children,
           faces=new_node_faces_id_list,
           edges=new_node_edges_id_list,
         )
         children.append(new_node)
         # 构造新的 BrCAD 对象
+        faces: List[BrCAD_face] = []
+        edges: List[BrCAD_edge] = []
+        for _, (face_list, edge_list) in self.solid_dict.items():
+            faces.extend(face_list)
+            edges.extend(edge_list)
         new_brcad = BrCAD(
             structure= BrCAD_node(
                 label="Root",
+                id='root',
                 children=children,
                 faces=[],
                 edges=[],
