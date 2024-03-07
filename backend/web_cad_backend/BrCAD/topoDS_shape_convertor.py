@@ -1,4 +1,5 @@
 from typing import List, Dict, Tuple
+import uuid
 
 from OCC.Core.TopoDS import TopoDS_Shape
 from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_FACE, TopAbs_SHAPE, TopAbs_SOLID
@@ -23,10 +24,12 @@ class TopoDSShapeConvertor:
     def __init__(self, topods_shape: TopoDS_Shape, max_deviation: float = 0.1):
         self.topods_shape = topods_shape
         self.max_deviation = max_deviation
+        # 储存了 face/edge/solid 的 id 到 TopoDS_Shape 的映射
         self.id_TopoDS_Shape_map: Dict[str, TopoDS_Shape] = {}
         self.solid_dict = self.__converte()
-
-    def get_BrCAD(self):
+  
+    # 使用新的 structure 生成 BrCAD 对象，仅用于 import 和新建基本图形
+    def get_BrCAD_with_new_structure(self):
         # 根据 solid_dict 生成 BrCAD 对象
         children: List[BrCAD_node] = []
         faces: List[BrCAD_face] = []
@@ -54,10 +57,14 @@ class TopoDSShapeConvertor:
             edges=edges,
         )
     
+    # 参考之前的 structure 生成 BrCAD 对象，用于操作
+    def get_BrCAD_with_old_structure(self, old_structure: BrCAD_node):
+        pass
+    
     def get_id_TopoDS_Shape_map(self):
         return self.id_TopoDS_Shape_map
 
-    def __converte_topo(self, topo: TopoDS_Shape) -> Tuple[List[BrCAD_face], List[BrCAD_edge]]:
+    def __converte_topo(self, topo: TopoDS_Shape, solid_id: str) -> Tuple[List[BrCAD_face], List[BrCAD_edge]]:
         face_list: List[BrCAD_face] = []
         edge_list: List[BrCAD_edge] = []
         # 开启 mesh 化
@@ -154,7 +161,7 @@ class TopoDSShapeConvertor:
                 validFaceTriangleCount += 1
             brcad_face.number_of_triangles = validFaceTriangleCount
             # 计算 hash 作为 id
-            brcad_face.calculate_hash()
+            brcad_face.calculate_hash(solid_id)
             self.id_TopoDS_Shape_map[brcad_face.id] = face
             face_list.append(brcad_face)
             
@@ -181,7 +188,7 @@ class TopoDSShapeConvertor:
                         brcad_edge.vertex_coordinates.append(brcad_face.vertex_coordinates[(vertex_index - 1) * 3 + 0])
                         brcad_edge.vertex_coordinates.append(brcad_face.vertex_coordinates[(vertex_index - 1) * 3 + 1])
                         brcad_edge.vertex_coordinates.append(brcad_face.vertex_coordinates[(vertex_index - 1) * 3 + 2])
-                    brcad_edge.calculate_hash()
+                    brcad_edge.calculate_hash(solid_id)
                     self.id_TopoDS_Shape_map[brcad_edge.id] = edge
                     edge_list.append(brcad_edge)
                 else:
@@ -210,7 +217,7 @@ class TopoDSShapeConvertor:
                     brcad_edge.vertex_coordinates.append(vertex.Y())
                     brcad_edge.vertex_coordinates.append(vertex.Z())
                 complete_edge_set.add(hash)
-                brcad_edge.calculate_hash()
+                brcad_edge.calculate_hash(solid_id)
                 self.id_TopoDS_Shape_map[brcad_edge.id] = edge
                 edge_list.append(brcad_edge)
             edgeExp.Next() 
@@ -226,11 +233,15 @@ class TopoDSShapeConvertor:
         while solid_exp.More():
             count += 1
             solid = solid_exp.Current()
-            solid_dict["Solid " + str(count)] = self.__converte_topo(solid)
+            solid_id = uuid.uuid1().hex
+            self.id_TopoDS_Shape_map[solid_id] = solid
+            solid_dict["Solid " + str(count)] = self.__converte_topo(solid, solid_id)
             solid_exp.Next()
             
         # 为了防止没有 solid 的情况
         if count == 0:
-            solid_dict["Solid 1"] = self.__converte_topo(self.topods_shape)
+            solid_id = uuid.uuid1().hex
+            self.id_TopoDS_Shape_map[solid_id] = self.topods_shape
+            solid_dict["Solid 1"] = self.__converte_topo(self.topods_shape, solid_id)
             
         return solid_dict

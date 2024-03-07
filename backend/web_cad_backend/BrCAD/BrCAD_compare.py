@@ -6,12 +6,14 @@ class BrCADCompareStructureNode:
     def __init__(
         self,
         label: str,
+        id: str,
         status: str,
         faces: List[int],
         edges: List[int],
         children: List["BrCADCompareStructureNode"],
     ):
         self.label: str = label
+        self.id: str = id
         # status 有 "unchanged"/"children_changed"/"changed"
         self.status: str = status
         self.faces: List[int] = faces
@@ -21,6 +23,7 @@ class BrCADCompareStructureNode:
     def to_dict(self) -> Dict:
         return {
             "label": self.label,
+            "id": self.id,
             "status": self.status,
             "faces": self.faces,
             "edges": self.edges,
@@ -55,12 +58,13 @@ class BrCADCompare:
         # 思路上可以看做树形结构的比较，使用递归
         # 由于我们会在父节点就比较两者的子节点数组是否一致，因此不必担心两者为 None 的问题
         status = "unchanged"
-        # step1: 检查当前节点 的 faces、edges、label 是否改变，如果改变就直接赋 changed，
+        # step1: 检查当前节点 的 faces、edges、label、id 是否改变，如果改变就直接赋 changed，
         # 构造 diff node，结束递归，向上传递 children_change flag 和 diff node
         if origin_node != new_node:
             status = "changed"
             diff_node = BrCADCompareStructureNode(
                 new_node.label,
+                new_node.id,
                 status,
                 new_node.faces,
                 new_node.edges,
@@ -75,6 +79,7 @@ class BrCADCompare:
             status = "changed"
             diff_node = BrCADCompareStructureNode(
                 new_node.label,
+                new_node.id,
                 status,
                 new_node.faces,
                 new_node.edges,
@@ -98,6 +103,7 @@ class BrCADCompare:
         # 并向上传递本节点的 children_change flag
         diff_node = BrCADCompareStructureNode(
             new_node.label,
+            new_node.id,
             status,
             [],
             [],

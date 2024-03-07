@@ -7,11 +7,13 @@ class BrCAD_node:
     def __init__(
         self,
         label: str,
+        id: str,
         faces: List[int],
         edges: List[int],
         children: List["BrCAD_node"],
     ):
         self.label = label
+        self.id = id
         self.faces = faces
         self.edges = edges
         self.children = children
@@ -19,12 +21,13 @@ class BrCAD_node:
     # eq 比较不包括 children
     def __eq__(self, __value: object) -> bool:
         if isinstance(__value, BrCAD_node):
-            return self.label == __value.label and self.faces == __value.faces and self.edges == __value.edges
+            return self.id == __value.id and self.label == __value.label and self.faces == __value.faces and self.edges == __value.edges
         return False
 
     def to_dict(self) -> Dict:
         return {
             "label": self.label,
+            "id": self.id,
             "faces": self.faces,
             "edges": self.edges,
             "children": [child.to_dict() for child in self.children],
@@ -62,7 +65,7 @@ class BrCAD_face:
             "numberOfTriangles": self.number_of_triangles,
         }
     
-    def calculate_hash(self):
+    def calculate_hash(self, solid_id: str):
         # 由于每次读取 TopoDS_Shape 重新计算时可能会带来高精度上的变化，因此需要对数据进行格式化，减少小数位数
         self._format()
         attributes = []
@@ -74,7 +77,7 @@ class BrCAD_face:
         attributes.append(self.number_of_triangles)
 
         attributes_str = [str(attr) for attr in attributes]
-        hash_str = ''.join(attributes_str)
+        hash_str = solid_id.join(attributes_str)
 
         result = hashlib.md5(hash_str.encode())
         self.id = result.hexdigest()
@@ -94,14 +97,14 @@ class BrCAD_edge:
             "vertexCoordinates": self.vertex_coordinates,
         }
     
-    def calculate_hash(self):
+    def calculate_hash(self, solid_id: str):
         # 由于每次读取 TopoDS_Shape 重新计算时可能会带来高精度上的变化，因此需要对数据进行格式化，减少小数位数
         self._format()
         attributes = []
         
         attributes.extend(self.vertex_coordinates)
         attributes_str = [str(attr) for attr in attributes]
-        hash_str = ''.join(attributes_str)
+        hash_str = solid_id.join(attributes_str)
         
         result = hashlib.md5(hash_str.encode())
         self.id = result.hexdigest()
