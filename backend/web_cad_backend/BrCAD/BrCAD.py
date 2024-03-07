@@ -8,8 +8,8 @@ class BrCAD_node:
         self,
         label: str,
         id: str,
-        faces: List[int],
-        edges: List[int],
+        faces: List[str],
+        edges: List[str],
         children: List["BrCAD_node"],
     ):
         self.label = label

@@ -137,7 +137,7 @@ def fillet(request: HttpRequest):
     shape = fillet.Shape()
     # step4: 生成新的 BrCAD 对象进行比较
     converter_2 = TopoDSShapeConvertor(shape)
-    brcad_2 = converter_2.get_BrCAD_with_old_structure(brcad_1)
+    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1)
     brcad_compare = BrCADCompare(brcad_1, brcad_2)
     # step5: 保存操作
     operation = Operation(

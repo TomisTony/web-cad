@@ -15,7 +15,7 @@ from OCC.Core.TopAbs import TopAbs_SOLID, TopAbs_SHELL, TopAbs_SHAPE
 from web_cad_backend.BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
 
 convertor = TopoDSShapeConvertor(shape)
-br_cad = convertor.get_BrCAD()
+br_cad = convertor.get_BrCAD_with_new_structure()
 json = br_cad.to_json()
 # 保存到同文件夹
 with open('c:\\users\\GXLYQ_AIR\\Desktop\\model.json', 'w') as f:
