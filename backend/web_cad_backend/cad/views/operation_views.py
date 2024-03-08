@@ -27,7 +27,8 @@ from OCC.Extend.DataExchange import write_stl_file
 def getOperationModel(request: HttpRequest):
     operation_id = request.GET.get("operationId")
     operation = Operation.objects.get(id=operation_id)
-    return ApiResponse({"model": json.loads(operation.brcad)})
+    brcad: BrCAD = pickle.loads(operation.brcad)
+    return ApiResponse({"model": brcad.to_dict()})
 
 # Operation "Import"
 @api_view(["POST"])

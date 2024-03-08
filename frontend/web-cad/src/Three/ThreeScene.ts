@@ -67,11 +67,8 @@ export class ThreeScene {
     //背景颜色
     //this.scene.background = new THREE.Color(0x222222);
     this.scene.background = new THREE.Color(0xbbbbbb)
-    const axes = new THREE.AxesHelper(10)
-    //axes.rotation.set(Math.PI / 2.0,0,0);
-    this.scene.add(axes)
 
-    const grid: any = new THREE.GridHelper(500, 10, 0xffffff, 0xffffff)
+    const grid: any = new THREE.GridHelper(10000, 1000, 0xffffff, 0xffffff)
     grid.rotation.set(Math.PI / 2.0, 0, 0)
     grid.material.opacity = 0.5
     grid.material.depthWrite = false
@@ -139,7 +136,6 @@ export class ThreeScene {
    * 控制器
    */
   private initControls() {
-    //初始化轨迹球控件
     //this.controls = new TrackballControls(this.camera, this.renderer.domElement);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement)
     // 使动画循环使用时阻尼或自转 意思是否有惯性
