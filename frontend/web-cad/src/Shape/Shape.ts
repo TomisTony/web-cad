@@ -206,6 +206,7 @@ export class Shape {
     if (diffNode.status === "changed") {
       return {
         ...originNode,
+        id: diffNode.id,
         label: diffNode.label,
         faces: diffNode.faces,
         edges: diffNode.edges,

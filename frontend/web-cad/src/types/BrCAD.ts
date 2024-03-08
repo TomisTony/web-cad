@@ -1,5 +1,6 @@
 export interface BrCADNode {
   label: string
+  id: string
   faces: string[]
   edges: string[]
   children: BrCADNode[]
@@ -27,6 +28,7 @@ export interface BrCAD {
 
 export interface BrCADCompareStructureNode {
   label: string
+  id: string
   faces: string[]
   edges: string[]
   children: (BrCADCompareStructureNode | BrCADNode)[]
