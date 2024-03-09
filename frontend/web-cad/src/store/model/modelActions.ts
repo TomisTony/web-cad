@@ -16,7 +16,20 @@ import {
 import { getUserId } from "@/utils/localStorage"
 
 // 每个 case reducer 函数会生成对应的 Action creators
-const { importFile: importFileAction, fillet, setModel } = modelSlice.actions
+export const {
+  importFile: importFileAction,
+  fillet,
+  setModel,
+  setChoosedInfo,
+  addChoosedInfo,
+  unchoose,
+  clearChoosedInfo,
+  setIdSolidIdMap,
+  setSolidIdEdgeIdMap,
+  setSolidIdFaceIdMap,
+  setSolidIdNameMap,
+  setStructureMap,
+} = modelSlice.actions
 
 export const importFile = (data: { model: BrCAD }) => (dispatch: any) => {
   dispatch(setOperationExecuting(true))

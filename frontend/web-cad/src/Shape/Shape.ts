@@ -10,6 +10,8 @@ import {
 import { EdgeMetaData, FaceMetaData } from "@/types/Metadata"
 import Model from "./Model"
 import Line from "./Line"
+import store from "@/app/store"
+import { setStructureMap } from "@/store/model/modelActions"
 
 export class Shape {
   // 权宜之计，material 之后要额外处理
@@ -49,6 +51,34 @@ export class Shape {
   }
 
   public static setBrCADToScene(brCAD: BrCAD) {
+    // 设置 structure map
+    const structures = brCAD.structure.children
+    const solidIdNameMap: { [key: string]: string } = {}
+    const solidIdFaceIdMap: { [key: string]: string } = {}
+    const solidIdEdgeIdMap: { [key: string]: string } = {}
+    const idSolidIdMap: { [key: string]: string } = {}
+    structures.forEach((structure) => {
+      solidIdNameMap[structure.id] = structure.label
+    })
+    structures.forEach((structure) => {
+      structure.faces.forEach((faceId) => {
+        solidIdFaceIdMap[structure.id] = faceId
+        idSolidIdMap[faceId] = structure.id
+      })
+      structure.edges.forEach((edgeId) => {
+        solidIdEdgeIdMap[structure.id] = edgeId
+        idSolidIdMap[edgeId] = structure.id
+      })
+    })
+    store.dispatch(
+      setStructureMap({
+        solidIdNameMap,
+        solidIdFaceIdMap,
+        solidIdEdgeIdMap,
+        idSolidIdMap,
+      }),
+    )
+
     const mainObject = new THREE.Group()
     const faceList = brCAD.faces
     const edgeList = brCAD.edges
