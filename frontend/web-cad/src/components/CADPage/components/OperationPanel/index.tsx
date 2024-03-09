@@ -45,6 +45,10 @@ function OperationPanel({ className, operationSetting }: Props) {
     const submitValues: OperationSubmitValues = {
       choosedIdList: choosedList ?? [],
       choosedTypeList: typeList ?? [],
+      relatedSolidIdList: (choosedList ?? []).map((id: string) => {
+        const solidId = store.getState().model.idSolidIdMap[id]
+        return solidId
+      }),
       props: values,
     }
     console.log(submitValues)

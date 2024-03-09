@@ -123,6 +123,7 @@ def fillet(request: HttpRequest):
     operator_id = params.get("operatorId")
     data = params.get("data")
     choosed_id_list = data.get("choosedIdList")
+    related_solid_id_list = data.get("relatedSolidIdList")
     choosedId = choosed_id_list[0]
     props = data.get("props")
     radius = props.get("radius")
@@ -138,7 +139,7 @@ def fillet(request: HttpRequest):
     shape = fillet.Shape()
     # step4: 生成新的 BrCAD 对象进行比较
     converter_2 = TopoDSShapeConvertor(shape)
-    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1)
+    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, "Fillet", related_solid_id_list)
     brcad_compare = BrCADCompare(brcad_1, brcad_2)
     # step5: 保存操作
     operation = Operation(

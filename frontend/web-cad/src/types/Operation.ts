@@ -18,5 +18,6 @@ export interface OperationProps {
 export interface OperationSubmitValues {
   choosedIdList?: (string | undefined)[]
   choosedTypeList?: (string | undefined)[]
+  relatedSolidIdList?: (string | undefined)[]
   props: any
 }
