@@ -173,13 +173,11 @@ def rollback_with_concatenation_mode(request: HttpRequest):
     props = data.get("props")
     rollback_operation_id = props.get("rollbackId")
     # step2: 获取上一步的 BrCAD 对象
-    brcad_1 = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
     # step3: 执行对应操作
     rollback_shape = pickle.loads(Operation.objects.get(id=rollback_operation_id).topods_shape)
-    # step4: 生成新的 BrCAD 对象进行比较
-    converter_2 = TopoDSShapeConvertor(rollback_shape)
-    brcad_2 = converter_2.get_BrCAD_with_new_structure()
-    brcad_compare = BrCADCompare(brcad_1, brcad_2)
+    rollback_brcad = pickle.loads(Operation.objects.get(id=rollback_operation_id).brcad)
+    # step4: Rollback 操作比较特殊，我们不知道 related_solid_id_list，因此我们直接回传完整的 BrCAD 对象
+    # 本质上和 Transfer 是一样的
     # step5: 保存操作
     operation = Operation(
         type="Rollback",
@@ -187,7 +185,7 @@ def rollback_with_concatenation_mode(request: HttpRequest):
         operator_id=int(operator_id),
         time=int(time.time() * 1000),
         data=data,
-        brcad=pickle.dumps(brcad_2),
+        brcad=pickle.dumps(rollback_brcad),
         topods_shape=pickle.dumps(rollback_shape),
     )
     operation.save()
@@ -198,5 +196,5 @@ def rollback_with_concatenation_mode(request: HttpRequest):
     # step7: 通知前端更新历史记录
     notify_update_history_list(project_id)
     
-    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
+    return ApiResponse({"operationId": operation.id, "model": rollback_brcad.to_dict()})
     

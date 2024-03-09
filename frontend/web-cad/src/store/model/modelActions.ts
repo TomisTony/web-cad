@@ -96,12 +96,10 @@ export const rollbackAsync = (value: any) => (dispatch: any, getState: any) => {
       },
     })
     .then((res) => {
-      const { diff } = res
+      const { model: oldModel } = res
       ThreeApp.getScene().clearScene()
-      let model = getState().model.model
-      model = Shape.applyDiffToBrCAD(model, diff)
-      Shape.setBrCADToScene(model)
-      dispatch(setModel(model))
+      Shape.setBrCADToScene(oldModel)
+      dispatch(setModel(oldModel))
       dispatch({
         type: "history/setNowHistoryIndex",
         payload: historyListLength,
