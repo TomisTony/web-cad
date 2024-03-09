@@ -35,10 +35,11 @@ class TopoDSShapeConvertor:
         children: List[BrCAD_node] = []
         faces: List[BrCAD_face] = []
         edges: List[BrCAD_edge] = []
+        count = 1
         for solid_id, (face_list, edge_list) in self.solid_dict.items():
             # 构造子 solid, 其中 face 和 edge 分别是 id 数组
             child = BrCAD_node(
-                label="Solid",
+                label="Solid " + str(count),
                 id=solid_id,
                 children=[],
                 faces=[face.id for face in face_list],
@@ -47,6 +48,7 @@ class TopoDSShapeConvertor:
             children.append(child)
             faces.extend(face_list)
             edges.extend(edge_list)
+            count += 1
         
         return BrCAD(
             structure= BrCAD_node(

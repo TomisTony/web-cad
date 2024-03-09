@@ -1,7 +1,4 @@
-import React, { useEffect } from "react"
-import apis from "@/apis"
-import { useParams } from "react-router-dom"
-import { ProjectInfo } from "@/types/User"
+import React from "react"
 import { useAppSelector, useAppDispatch } from "@/app/hooks"
 import { Descriptions, DescriptionsProps } from "antd"
 import { getUserData } from "@/utils/localStorage"
@@ -11,18 +8,8 @@ interface SidePanelProps {
 }
 
 function SidePanel(props: SidePanelProps) {
-  const { projectId } = useParams()
-  const dispatch = useAppDispatch()
   const projectInfo = useAppSelector((state) => state.globalStatus.projectInfo)
   const userData = getUserData()
-  useEffect(() => {
-    apis.getProjectInfo(projectId || "1").then((data) => {
-      dispatch({
-        type: "globalStatus/setProjectInfo",
-        payload: data as ProjectInfo,
-      })
-    })
-  }, [])
 
   const projectInfoItems: DescriptionsProps["items"] = [
     {

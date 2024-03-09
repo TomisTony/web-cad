@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react"
+import React, { useRef, useEffect, useMemo } from "react"
 import { Tree, TreeDataNode } from "antd"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { BrCADNode } from "@/types/BrCAD"
@@ -11,6 +11,7 @@ function NodeTree(props: NodeTreeProps) {
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDivElement>(null)
   const brcad = useAppSelector((state) => state.model.model)
+  const projectInfo = useAppSelector((state) => state.globalStatus.projectInfo)
   const brcadStructure = brcad?.structure
   const [treeHight, setTreeHight] = React.useState(0)
   useEffect(() => {
@@ -40,19 +41,22 @@ function NodeTree(props: NodeTreeProps) {
     }
   }
 
-  const treeData: TreeDataNode[] = [
-    {
-      title: "root",
-      key: "root",
-      children: brcadStructure?.children.map((node) => {
-        return {
-          title: node.label,
-          key: node.id,
-          children: node.children.map(makeDisabledTreeDataNode),
-        }
-      }),
-    },
-  ]
+  const treeData: TreeDataNode[] = useMemo(() => {
+    console.log(projectInfo?.name)
+    return [
+      {
+        title: projectInfo?.name ?? "Root",
+        key: "root",
+        children: brcadStructure?.children.map((node) => {
+          return {
+            title: node.label,
+            key: node.id,
+            children: node.children.map(makeDisabledTreeDataNode),
+          }
+        }),
+      },
+    ]
+  }, [brcadStructure, projectInfo])
 
   return (
     <div

@@ -1,11 +1,23 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { CaretLeftOutlined } from "@ant-design/icons"
 import { Badge } from "antd"
+import apis from "@/apis"
+import { ProjectInfo } from "@/types/User"
+import { useParams } from "react-router-dom"
 
 function SidePanelOpenButton(props: { className?: string }) {
+  const { projectId } = useParams()
   const dispatch = useAppDispatch()
   const messageCount = useAppSelector((state) => state.message.newCount)
+  useEffect(() => {
+    apis.getProjectInfo(projectId || "1").then((data) => {
+      dispatch({
+        type: "globalStatus/setProjectInfo",
+        payload: data as ProjectInfo,
+      })
+    })
+  }, [])
 
   return (
     <Badge

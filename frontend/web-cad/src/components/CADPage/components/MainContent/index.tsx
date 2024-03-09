@@ -40,7 +40,7 @@ function MainContent() {
               />
             )}
           </div>
-          <History className="h-[15%] w-full z-50" />
+          <History className="h-[15%] w-full z-50 pointer-events-auto" />
         </div>
         <ThreeAppWrapper className="w-full h-full" />
       </div>
