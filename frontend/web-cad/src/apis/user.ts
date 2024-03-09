@@ -24,6 +24,10 @@ export function getProjectList(userId: number) {
   return request.get("/user/getProjectList?userId=" + userId)
 }
 
+export function getProjectInfo(projectId: string) {
+  return request.get("/user/getProjectInfo?projectId=" + projectId)
+}
+
 export function deleteProject(userId: number, projectId: number) {
   return request.get(
     "/user/deleteProject?userId=" + userId + "&projectId=" + projectId,

@@ -45,7 +45,7 @@ function MainContent() {
       )}
       <Drawer
         open={sidePanelVisible}
-        title="Side Panel"
+        title="Infomation"
         onClose={() => {
           dispatch({ type: "globalStatus/setSidePanelVisible", payload: false })
         }}

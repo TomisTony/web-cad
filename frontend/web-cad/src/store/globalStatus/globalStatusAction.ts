@@ -8,4 +8,5 @@ export const {
   setSidePanelVisible,
   setGlobalMessage,
   setProjectId,
+  setProjectInfo,
 } = globalStatusSlice.actions

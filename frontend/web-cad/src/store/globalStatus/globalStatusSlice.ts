@@ -1,3 +1,4 @@
+import { ProjectInfo } from "@/types/User"
 import { createSlice } from "@reduxjs/toolkit"
 
 interface GlobalStatusState {
@@ -12,6 +13,7 @@ interface GlobalStatusState {
     content: string
   }
   projectId: number // 当前项目的 id
+  projectInfo: ProjectInfo // 当前项目的信息
 }
 
 const initialState: GlobalStatusState = {
@@ -25,6 +27,7 @@ const initialState: GlobalStatusState = {
     content: "",
   },
   projectId: 0,
+  projectInfo: {} as ProjectInfo,
 }
 
 export const globalStatusSlice = createSlice({
@@ -51,6 +54,9 @@ export const globalStatusSlice = createSlice({
     },
     setProjectId: (state, action) => {
       state.projectId = action.payload
+    },
+    setProjectInfo: (state, action) => {
+      state.projectInfo = action.payload
     },
   },
 })

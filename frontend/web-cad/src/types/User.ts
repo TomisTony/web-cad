@@ -13,4 +13,5 @@ export interface ProjectInfo {
   createTime: number
   owner: string
   editorIds: number[]
+  editors?: string[]
 }

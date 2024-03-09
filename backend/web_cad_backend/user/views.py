@@ -156,6 +156,31 @@ def get_project_list(request: HttpRequest):
         return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @api_view(["GET"])
+def get_project_info(request: HttpRequest):
+    project_id = request.GET.get("projectId", None)
+    if project_id is None:
+        return ApiResponse("params miss", data_status=status.HTTP_400_BAD_REQUEST)
+    try:
+        project = Project.objects.get(id=project_id)
+        owner = User.objects.get(id=project.owner_id).get_username()
+        editors = []
+        for editor_id in project.editor_ids:
+            editors.append(User.objects.get(id=editor_id).get_username())
+        return ApiResponse(
+            {
+                "id": project.id,
+                "name": project.name,
+                "description": project.description,
+                "createTime": project.create_time,
+                "owner": owner,
+                "editorIds": project.editor_ids,
+                "editors": editors,
+            }
+        )
+    except Exception as e:
+        return ApiResponse("server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(["GET"])
 def delete_project(request: HttpRequest):
     project_id = request.GET.get("projectId", None)
     user_id = request.GET.get("userId", None)
