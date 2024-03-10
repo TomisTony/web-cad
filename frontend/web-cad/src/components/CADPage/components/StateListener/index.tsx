@@ -11,6 +11,8 @@ function StateListener() {
   )
   const historyList = useAppSelector((state) => state.history.historyList)
   const rollbackMap = useAppSelector((state) => state.history.rollbackMap)
+  const choosedIdList = useAppSelector((state) => state.model.choosedIdList)
+  const idSolidIdMap = useAppSelector((state) => state.model.idSolidIdMap)
 
   // 自动设置 historyChecking
   useEffect(() => {
@@ -47,6 +49,12 @@ function StateListener() {
     })
     dispatch({ type: "history/setRollbackMap", payload: rollbackMap })
   }, [historyList])
+  
+  // 自动设置 choosedSolidIdList
+  useEffect(() => {
+    const solidIdList = choosedIdList.map((id) => idSolidIdMap[id])
+    dispatch({ type: "model/setChoosedSolidIdList", payload: solidIdList })
+  }, [choosedIdList, idSolidIdMap])
 
   return <></>
 }

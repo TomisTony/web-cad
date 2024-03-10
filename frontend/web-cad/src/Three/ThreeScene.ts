@@ -102,22 +102,6 @@ export class ThreeScene {
   }
 
   private initLight() {
-    //添加环境光
-    //第一个参数 Hex:光的颜色
-    //第二个参数 Intensity：光源的强度，默认是1.0，如果为0.5，则强度是一半，意思是颜色会淡一些
-    // this.scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-    // //scene.add(new THREE.AmbientLight(0x5C5C5C));
-
-    // let light = new THREE.DirectionalLight(0xffffff, 0.5);
-    // light.position.set(0.5, 0, 0.866); // ~60º
-    // light.castShadow = true;
-    // this.scene.add(light); //追加光源到场景
-
-    // let light2 = new THREE.DirectionalLight(0xffffff, 0.5);
-    // light2.position.set(-0.5, 0, -0.866); // ~60º
-    // light2.castShadow = true;
-    // this.scene.add(light2); //追加光源到场景
-
     const light = new THREE.HemisphereLight(0xffffff, 0x444444)
     light.position.set(0, 200, 0)
     const light2 = new THREE.DirectionalLight(0xbbbbbb)
@@ -246,6 +230,22 @@ export class ThreeScene {
     store.dispatch({
       type: "model/clearChoosedInfo",
     })
+  }
+  
+  private highlightSolid(solidId: string) {
+    // 通过 solidIdFaceIdMap 和 solidIdEdgeIdMap 来找到对应的 faceId 和 edgeId
+    const obj = this.obj
+    if (obj) {
+      const faceId = store.getState().model.solidIdFaceIdMap[solidId]
+      const edgeId = store.getState().model.solidIdEdgeIdMap[solidId]
+      obj.children.forEach((child: any) => {
+        if (child.type === "LineSegments") {
+          child.toggleChoosedHighlightAtIndex(edgeId)
+        } else {
+          child.toggleChoosedHighlightAtIndex(faceId)
+        }
+      })
+    }
   }
 
   // 鼠标滑过某个对象，黄色高亮

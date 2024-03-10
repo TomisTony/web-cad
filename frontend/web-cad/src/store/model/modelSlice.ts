@@ -10,12 +10,14 @@ interface ModelState {
   idSolidIdMap: { [key: string]: string } // id 到 solidId 的映射
   choosedIdList: string[] // 当前选中的对象的 id
   choosedTypeList: string[] // 当前选中的对象的类型,"edge"/"face"
+  choosedSolidIdList: string[] // 当前选中的 solidIds
 }
 
 const initialState: ModelState = {
   model: {} as BrCAD,
   choosedIdList: [],
   choosedTypeList: [],
+  choosedSolidIdList: [],
   solidIdNameMap: {},
   solidIdFaceIdMap: {},
   solidIdEdgeIdMap: {},
@@ -41,6 +43,9 @@ export const modelSlice = createSlice({
       const index = state.choosedIdList.indexOf(id)
       state.choosedIdList.splice(index, 1)
       state.choosedTypeList.splice(index, 1)
+    },
+    setChoosedSolidIdList: (state, action) => {
+      state.choosedSolidIdList = action.payload
     },
     clearChoosedInfo: (state) => {
       state.choosedIdList = []

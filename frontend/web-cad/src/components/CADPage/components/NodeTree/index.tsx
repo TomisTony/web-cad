@@ -1,7 +1,8 @@
-import React, { useRef, useEffect, useMemo } from "react"
+import React, { useRef, useEffect, useMemo, useState } from "react"
 import { Tree, TreeDataNode } from "antd"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { BrCADNode } from "@/types/BrCAD"
+import { setChoosedSolidIdList } from "@/store/model/modelActions"
 
 interface NodeTreeProps {
   className?: string
@@ -9,7 +10,12 @@ interface NodeTreeProps {
 
 function NodeTree(props: NodeTreeProps) {
   const dispatch = useAppDispatch()
+  const choosedSolidIdList = useAppSelector(
+    (state) => state.model.choosedSolidIdList,
+  )
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([])
   const ref = useRef<HTMLDivElement>(null)
+  const treeRef = useRef<any>(null)
   const brcad = useAppSelector((state) => state.model.model)
   const projectInfo = useAppSelector((state) => state.globalStatus.projectInfo)
   const brcadStructure = brcad?.structure
@@ -31,6 +37,11 @@ function NodeTree(props: NodeTreeProps) {
       setTreeHight(heightWithoutPadding)
     }
   }, [ref])
+
+  useEffect(() => {
+    setSelectedKeys(choosedSolidIdList)
+    treeRef.current.scrollTo({ key: choosedSolidIdList[0] })
+  }, [choosedSolidIdList])
 
   const makeDisabledTreeDataNode = (node: BrCADNode): TreeDataNode => {
     return {
@@ -70,6 +81,8 @@ function NodeTree(props: NodeTreeProps) {
       }
     >
       <Tree
+        ref={treeRef}
+        selectedKeys={selectedKeys}
         treeData={treeData}
         defaultExpandedKeys={["root"]}
         height={treeHight} // 获取 ref 元素的高度

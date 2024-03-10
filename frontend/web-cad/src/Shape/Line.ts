@@ -85,7 +85,6 @@ export default class Line extends THREE.LineSegments {
       this.lineColors[i + 1] = hasChoosed ? 0 : 0
       this.lineColors[i + 2] = hasChoosed ? 0 : 0
     }
-    console.log(this.lineColors.slice(startIndex, endIndex))
     this.geometry.setAttribute(
       "color",
       new THREE.Float32BufferAttribute(this.lineColors, 3),
