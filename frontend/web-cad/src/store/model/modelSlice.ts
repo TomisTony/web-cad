@@ -44,6 +44,10 @@ export const modelSlice = createSlice({
       state.choosedIdList.splice(index, 1)
       state.choosedTypeList.splice(index, 1)
     },
+    setChoosedInfos: (state, action) => {
+      state.choosedIdList = action.payload.idList
+      state.choosedTypeList = action.payload.typeList
+    },
     setChoosedSolidIdList: (state, action) => {
       state.choosedSolidIdList = action.payload
     },

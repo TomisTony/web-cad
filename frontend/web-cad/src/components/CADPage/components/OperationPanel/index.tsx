@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { Input, Select, Checkbox, Form, Button } from "antd"
 
 import { useAppSelector } from "@/app/hooks"
@@ -6,6 +6,8 @@ import store from "@/app/store"
 import { setOperationPanel } from "@/store/globalStatus/globalStatusAction"
 
 import { OperationSetting, OperationSubmitValues } from "@/types/Operation"
+
+import TopoSelect from "./components/TopoSelect"
 
 interface Props {
   className?: string
@@ -21,7 +23,6 @@ function OperationPanel({ className, operationSetting }: Props) {
   } = operationSetting
 
   const [form] = Form.useForm()
-
   // 获取已经选择的对象
   const __choosedIdList = useAppSelector((state) => state.model.choosedIdList)
   const __choosedTypeList = useAppSelector(
@@ -30,7 +31,7 @@ function OperationPanel({ className, operationSetting }: Props) {
   const choosedIdList = [...__choosedIdList]
   const choosedTypeList = [...__choosedTypeList]
   // 在 choosedTypeList 中按照 typeList 的顺序找到对应的 id, 多个相同 type 的选项按照先后顺序取
-  const choosedList = typeList?.map((type) => {
+  const defaultChoosedList = typeList?.map((type) => {
     const index = choosedTypeList?.indexOf(type)
     if (index === undefined || index === -1) {
       return undefined
@@ -40,6 +41,26 @@ function OperationPanel({ className, operationSetting }: Props) {
     choosedIdList?.splice(index, 1)
     return res
   })
+  const [choosedList, setChoosedList] = useState(defaultChoosedList)
+  // 根据选中更新 choosedList
+  // TODO: 需要使用 ahook
+  useEffect(() => {
+    console.log("danger!")
+    const choosedIdList = [...__choosedIdList]
+    const choosedTypeList = [...__choosedTypeList]
+    // 在 choosedTypeList 中按照 typeList 的顺序找到对应的 id, 多个相同 type 的选项按照先后顺序取
+    const defaultChoosedList = typeList?.map((type) => {
+      const index = choosedTypeList?.indexOf(type)
+      if (index === undefined || index === -1) {
+        return undefined
+      }
+      choosedTypeList?.splice(index, 1)
+      const res = choosedIdList?.[index]
+      choosedIdList?.splice(index, 1)
+      return res
+    })
+    setChoosedList(defaultChoosedList)
+  }, [__choosedIdList, __choosedTypeList])
 
   const onFinish = (values: any) => {
     const submitValues: OperationSubmitValues = {
@@ -74,55 +95,56 @@ function OperationPanel({ className, operationSetting }: Props) {
         onFinish={onFinish}
         initialValues={initialValues}
       >
-        <div className="text-2xl font-bold border-0 border-b-2 border-solid border-black">
+        <div className="text-2xl font-bold border-0 border-b-2 border-solid border-black mb-2">
           {operationName}
         </div>
-        <div className="text-lg font-bold">Choosed Topo</div>
-        <div className="text-base">
-          {chooseLabelList?.map((label, i) => (
-            <div
-              key={i}
-              className="whitespace-nowrap overflow-hidden text-ellipsis"
-            >
-              {label +
-                ": " +
-                (choosedList?.[i] === undefined ? "None" : choosedList[i])}
-            </div>
-          ))}
+        <div className="flex flex-col max-h-[400px] overflow-auto">
+          <div className="text-lg font-bold">Choosed Topo</div>
+          <div className="text-base">
+            {typeList && (
+              <TopoSelect
+                typeList={typeList}
+                chooseLabelList={chooseLabelList as string[]}
+                choosedList={choosedList as (string | undefined)[]}
+                setChoosedList={setChoosedList}
+              />
+            )}
+          </div>
+          <div className="text-lg font-bold">Props</div>
+          <div className="text-base">
+            {props?.map((prop, index) => (
+              <div key={index} className="flex space-x-2 items-center">
+                <div className="text-base mr-2">{prop.label + ":"}</div>
+                {prop.type === "input" && (
+                  <Form.Item className="m-0" name={prop.label}>
+                    <Input className="w-full" placeholder={prop.info} />
+                  </Form.Item>
+                )}
+                {prop.type === "select" && (
+                  <Form.Item className="m-0" name={prop.label}>
+                    <Select className="w-full" placeholder={prop.info}>
+                      {prop.options?.map((option, index) => (
+                        <Select.Option key={index} value={option}>
+                          {option}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                )}
+                {prop.type === "checkbox" && (
+                  <Form.Item
+                    className="m-0"
+                    name={prop.label}
+                    valuePropName="checked"
+                  >
+                    <Checkbox />
+                  </Form.Item>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="text-lg font-bold">Props</div>
-        <div className="text-base">
-          {props?.map((prop, index) => (
-            <div key={index} className="flex space-x-2 items-center">
-              <div className="text-base mr-2">{prop.label + ":"}</div>
-              {prop.type === "input" && (
-                <Form.Item className="m-0" name={prop.label}>
-                  <Input className="w-full" placeholder={prop.info} />
-                </Form.Item>
-              )}
-              {prop.type === "select" && (
-                <Form.Item className="m-0" name={prop.label}>
-                  <Select className="w-full" placeholder={prop.info}>
-                    {prop.options?.map((option, index) => (
-                      <Select.Option key={index} value={option}>
-                        {option}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              )}
-              {prop.type === "checkbox" && (
-                <Form.Item
-                  className="m-0"
-                  name={prop.label}
-                  valuePropName="checked"
-                >
-                  <Checkbox />
-                </Form.Item>
-              )}
-            </div>
-          ))}
-        </div>
+
         <div className="flex space-x-2 mt-8">
           <Button
             className="w-full bg-gray-400 text-black rounded-lg border-black"

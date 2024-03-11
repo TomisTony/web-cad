@@ -231,22 +231,6 @@ export class ThreeScene {
       type: "model/clearChoosedInfo",
     })
   }
-  
-  private highlightSolid(solidId: string) {
-    // 通过 solidIdFaceIdMap 和 solidIdEdgeIdMap 来找到对应的 faceId 和 edgeId
-    const obj = this.obj
-    if (obj) {
-      const faceId = store.getState().model.solidIdFaceIdMap[solidId]
-      const edgeId = store.getState().model.solidIdEdgeIdMap[solidId]
-      obj.children.forEach((child: any) => {
-        if (child.type === "LineSegments") {
-          child.toggleChoosedHighlightAtIndex(edgeId)
-        } else {
-          child.toggleChoosedHighlightAtIndex(faceId)
-        }
-      })
-    }
-  }
 
   // 鼠标滑过某个对象，黄色高亮
   private ListenerMouseMove = (event: any) => {

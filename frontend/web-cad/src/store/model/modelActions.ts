@@ -22,6 +22,7 @@ export const {
   setModel,
   setChoosedInfo,
   addChoosedInfo,
+  setChoosedInfos,
   setChoosedSolidIdList,
   unchoose,
   clearChoosedInfo,

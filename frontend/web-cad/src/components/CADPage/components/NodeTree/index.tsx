@@ -53,7 +53,6 @@ function NodeTree(props: NodeTreeProps) {
   }
 
   const treeData: TreeDataNode[] = useMemo(() => {
-    console.log(projectInfo?.name)
     return [
       {
         title: projectInfo?.name ?? "Root",
