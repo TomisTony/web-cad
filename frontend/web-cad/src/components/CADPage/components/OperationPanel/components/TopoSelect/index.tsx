@@ -2,6 +2,8 @@ import React, { useMemo, useState } from "react"
 import { Tree, TreeDataNode } from "antd"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import TopoSelectTree from "./components/TopoSelectTree"
+import { setChoosedInfosAndHighlightManually } from "@/store/model/modelActions"
+import { ThreeApp } from "@/three/ThreeApp"
 
 interface TopoSelectProps {
   typeList: string[]
@@ -92,10 +94,14 @@ function TopoSelect(props: TopoSelectProps) {
       const originChoosedList = [...choosedList]
       originChoosedList[index] = selectedKeys[0]
       setChoosedList(originChoosedList)
-      dispatch({
-        type: "model/setChoosedInfos",
-        payload: converteToChoosedInfo(typeList, originChoosedList),
-      })
+      const res = converteToChoosedInfo(typeList, originChoosedList)
+      dispatch(
+        setChoosedInfosAndHighlightManually(
+          res.idList,
+          res.typeList,
+          ThreeApp.getScene(),
+        ),
+      )
     }
   }
 

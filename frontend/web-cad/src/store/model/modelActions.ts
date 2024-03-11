@@ -14,6 +14,7 @@ import {
   chooseHistory,
 } from "../history/historyAction"
 import { getUserId } from "@/utils/localStorage"
+import { ThreeScene } from "@/three/ThreeScene"
 
 // 每个 case reducer 函数会生成对应的 Action creators
 export const {
@@ -144,3 +145,13 @@ export const setSceneToInit = () => (dispatch: any) => {
   dispatch(setNowHistoryIndex(-1))
   dispatch(chooseHistory(-1))
 }
+
+export const setChoosedInfosAndHighlightManually =
+  (choosedIdList: string[], typeList: string[], threeScene: ThreeScene) =>
+  (dispatch: any, getState: any) => {
+    threeScene.clearChoosedHighlight(getState().model.choosedIdList)
+    threeScene.chooseHighlight(choosedIdList)
+    // 必须先 toogle（clear and set） Highlight，再设置 choosedInfo,因为 toogle 函数中
+    // 会用到 set 前的 choosedInfo 来作为基准
+    dispatch(setChoosedInfos({ idList: choosedIdList, typeList }))
+  }

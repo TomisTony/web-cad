@@ -302,20 +302,11 @@ export class ThreeScene {
             ? intersectsObject.edgeIds[intersects[0].index as number]
             : intersectsObject.faceIds[intersects[0].face?.a as number]
 
-        // 单选情况下的特殊代码: 此时 choosedIdList 里面只有一个元素
-        // 选择前先将之前选择的置回原色
         const choosedIdList = store.getState().model.choosedIdList
-        const lastId = choosedIdList[0]
-        if (lastId) {
-          children.forEach((child: any) => {
-            child.toggleChoosedHighlightAtIndex(choosedIdList[0])
-          })
-        }
+        this.clearChoosedHighlight(choosedIdList)
 
         // 反转当前选择的选择高亮色, 高亮变不亮，不亮变高亮
-        children.forEach((child: any) => {
-          child.toggleChoosedHighlightAtIndex(newDetectedId)
-        })
+        this.chooseHighlight([newDetectedId])
         console.log(type + " Index: " + newDetectedId + " clicked.")
         // 更新 store
         // 查看是否已经被选择了，因为二次点击是取消选择
@@ -327,6 +318,29 @@ export class ThreeScene {
         }
       }
     }
+  }
+
+  // 清除之前的选择高亮
+  public clearChoosedHighlight(highlightedIds: string[]) {
+    const firstId = highlightedIds[0]
+    console.log("clearChoosedHighlight: " + firstId)
+    if (firstId) {
+      highlightedIds.forEach((id: string) => {
+        this.obj.children.forEach((child: any) => {
+          child.toggleChoosedHighlightAtIndex(id)
+        })
+      })
+    }
+  }
+
+  // 根据 choosedIdList 选择高亮对应的对象
+  public chooseHighlight(highlightIds: string[]) {
+    console.log("chooseHighlight: " + highlightIds)
+    this.obj.children.forEach((child: any) => {
+      highlightIds.forEach((id: string) => {
+        child.toggleChoosedHighlightAtIndex(id)
+      })
+    })
   }
 
   public clearScene() {

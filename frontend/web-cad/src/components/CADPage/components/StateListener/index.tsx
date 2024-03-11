@@ -49,7 +49,7 @@ function StateListener() {
     })
     dispatch({ type: "history/setRollbackMap", payload: rollbackMap })
   }, [historyList])
-  
+
   // 自动设置 choosedSolidIdList
   useEffect(() => {
     const solidIdList = choosedIdList.map((id) => idSolidIdMap[id])
