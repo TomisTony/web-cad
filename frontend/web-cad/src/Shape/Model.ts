@@ -73,11 +73,8 @@ export default class Model extends THREE.Mesh {
     this.geometry.attributes.color.needsUpdate = true
   }
 
-  public toggleChoosedHighlightAtIndex(id: string) {
+  public toggleChoosedHighlightAtIndex(id: string, hasChoosed: boolean) {
     if (!this.globalFaceMetadata[id]) return
-
-    const choosedIdList = store.getState().model.choosedIdList
-    const hasChoosed = choosedIdList.includes(id)
 
     const startIndex = this.globalFaceMetadata[id].colorIndexStart
     const endIndex = this.globalFaceMetadata[id].colorIndexEnd

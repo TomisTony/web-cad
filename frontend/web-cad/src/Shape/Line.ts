@@ -72,11 +72,8 @@ export default class Line extends THREE.LineSegments {
     this.geometry.attributes.color.needsUpdate = true
   }
 
-  public toggleChoosedHighlightAtIndex(id: string) {
+  public toggleChoosedHighlightAtIndex(id: string, hasChoosed: boolean) {
     if (!this.globalEdgeMetadata[id]) return
-
-    const choosedIdList = store.getState().model.choosedIdList
-    const hasChoosed = choosedIdList.includes(id)
 
     const startIndex = this.globalEdgeMetadata[id].colorIndexStart
     const endIndex = this.globalEdgeMetadata[id].colorIndexEnd

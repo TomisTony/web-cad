@@ -327,7 +327,7 @@ export class ThreeScene {
     if (firstId) {
       highlightedIds.forEach((id: string) => {
         this.obj.children.forEach((child: any) => {
-          child.toggleChoosedHighlightAtIndex(id)
+          child.toggleChoosedHighlightAtIndex(id, true)
         })
       })
     }
@@ -338,7 +338,7 @@ export class ThreeScene {
     console.log("chooseHighlight: " + highlightIds)
     this.obj.children.forEach((child: any) => {
       highlightIds.forEach((id: string) => {
-        child.toggleChoosedHighlightAtIndex(id)
+        child.toggleChoosedHighlightAtIndex(id, false)
       })
     })
   }
