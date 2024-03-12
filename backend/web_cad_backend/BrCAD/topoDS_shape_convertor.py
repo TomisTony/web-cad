@@ -200,7 +200,7 @@ class TopoDSShapeConvertor:
     def get_id_TopoDS_Shape_map(self):
         return self.id_TopoDS_Shape_map
     
-    def get_id_solids_map(self):
+    def get_id_solid_map(self):
         return self.id_solid_map
 
     def __converte_topo(self, topo: TopoDS_Shape) -> Tuple[List[BrCAD_face], List[BrCAD_edge]]:

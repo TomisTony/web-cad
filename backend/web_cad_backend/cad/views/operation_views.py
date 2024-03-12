@@ -17,7 +17,11 @@ from BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
 from BrCAD.BrCAD_compare import BrCADCompare
 from BrCAD.BrCAD import BrCAD
 
+from OCC.Core.TopoDS import TopoDS_Shape, TopoDS_Compound
 from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
+from OCC.Core.BRep import BRep_Builder
+from OCC.Core.gp import gp_Pnt, gp_Trsf, gp_Vec, gp_Ax1, gp_Dir, gp_Quaternion
 from OCC.Extend.DataExchange import read_step_file
 from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_StepModelType
 from OCC.Extend.DataExchange import write_stl_file
@@ -139,7 +143,7 @@ def fillet(request: HttpRequest):
     shape = fillet.Shape()
     # step4: 生成新的 BrCAD 对象进行比较
     converter_2 = TopoDSShapeConvertor(shape)
-    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, "Fillet", related_solid_id_list)
+    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, "Fillet", related_solid_id_list, True)
     brcad_compare = BrCADCompare(brcad_1, brcad_2)
     # step5: 保存操作
     operation = Operation(
@@ -207,6 +211,84 @@ def rename(request: HttpRequest):
     notify_update_history_list(project_id)
 
     return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
+
+# Operation "Transform"
+@api_view(["POST"])
+def transform(request: HttpRequest):
+    # step1: 获取参数
+    params = json.loads(request.body)
+    last_operation_id = params.get("lastOperationId")
+    project_id = params.get("projectId")
+    operator_id = params.get("operatorId")
+    data = params.get("data")
+    choosed_id_list = data.get("choosedIdList")
+    related_solid_id_list = data.get("relatedSolidIdList")
+    choosedId = choosed_id_list[0]
+    props = data.get("props")
+    move_x = props.get("moveX")
+    move_y = props.get("moveY")
+    move_z = props.get("moveZ")
+    rotate_x = props.get("rotateX")
+    rotate_y = props.get("rotateY")
+    rotate_z = props.get("rotateZ")
+    scale = props.get("scale")
+    # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
+    last_shape: TopoDS_Shape = pickle.loads(Operation.objects.get(id=last_operation_id).topods_shape)
+    converter_1 = TopoDSShapeConvertor(last_shape)
+    brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
+    solid_map = converter_1.get_id_solid_map()
+    # step3: 执行对应操作
+    T_translate = gp_Trsf()
+    T_rotate_x = gp_Trsf()
+    T_rotate_y = gp_Trsf()
+    T_rotate_z = gp_Trsf()
+    T_scale = gp_Trsf()
+    T_translate.SetTranslation(gp_Vec(float(move_x), float(move_y), float(move_z)))
+    T_rotate_x.SetRotation(gp_Ax1(gp_Pnt(0, 0, 0), gp_Dir(1, 0, 0)), float(rotate_x))
+    T_rotate_y.SetRotation(gp_Ax1(gp_Pnt(0, 0, 0), gp_Dir(0, 1, 0)), float(rotate_y))
+    T_rotate_z.SetRotation(gp_Ax1(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1)), float(rotate_z))
+    T_scale.SetScaleFactor(float(scale))
+    # 整合变换
+    T_final = gp_Trsf()
+    T_final.Multiply(T_translate)
+    T_final.Multiply(T_rotate_x)
+    T_final.Multiply(T_rotate_y)
+    T_final.Multiply(T_rotate_z)
+    T_final.Multiply(T_scale)
+    shape = TopoDS_Compound()
+    builder = BRep_Builder()
+    builder.MakeCompound(shape)
+    for solid_id, solid in solid_map.items():
+        if solid_id == choosedId:
+            print("111")
+            new_solid = BRepBuilderAPI_Transform(solid, T_final).Shape()
+        else:
+            new_solid = solid
+        builder.Add(shape, new_solid)
+    # step4: 生成新的 BrCAD 对象进行比较
+    converter_2 = TopoDSShapeConvertor(shape)
+    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, "Transform", related_solid_id_list, True)
+    brcad_compare = BrCADCompare(brcad_1, brcad_2)
+    # step5: 保存操作
+    operation = Operation(
+        type="Transform",
+        project_id=project_id,
+        operator_id=int(operator_id),
+        time=int(time.time() * 1000),
+        data=data,
+        brcad=pickle.dumps(brcad_2),
+        topods_shape=pickle.dumps(shape),
+    )
+    operation.save()
+    # step6: 更新 project 的 operation_history_ids
+    project = Project.objects.get(id=project_id)
+    project.operation_history_ids.append(operation.id)
+    project.save()
+    # step7: 通知前端更新历史记录
+    notify_update_history_list(project_id)
+    
+    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
+    
 
 # Operation "Rollback"
 @api_view(["POST"])

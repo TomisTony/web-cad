@@ -2,6 +2,7 @@ import React from "react"
 import { OperationSetting } from "@/types/Operation"
 
 import fillet from "@/assets/operations/fillet.png"
+import transform from "@/assets/operations/transform.png"
 
 import {
   UploadOutlined,
@@ -16,7 +17,11 @@ import {
   setModal,
   setOperationPanel,
 } from "@/store/globalStatus/globalStatusAction"
-import { filletAsync, renameAsync } from "@/store/model/modelActions"
+import {
+  filletAsync,
+  renameAsync,
+  transformAsync,
+} from "@/store/model/modelActions"
 
 interface Operation {
   label: string
@@ -50,6 +55,65 @@ const operationList: Operation[] = [
       console.log("delimiter")
     },
     isDelimiter: true,
+  },
+  {
+    label: "Transform",
+    img: transform,
+    action: () => store.dispatch(setOperationPanel("Transform")),
+    abled: (historyChecking: boolean) => historyChecking === false,
+    operationSetting: {
+      operationName: "Transform",
+      chooseCount: 1,
+      chooseLabelList: ["Solid"],
+      chooseTypeList: ["solid"],
+      props: [
+        {
+          type: "input",
+          label: "moveX",
+          info: "moveX",
+          defaultValue: "0.0",
+        },
+        {
+          type: "input",
+          label: "moveY",
+          info: "moveY",
+          defaultValue: "0.0",
+        },
+        {
+          type: "input",
+          label: "moveZ",
+          info: "moveZ",
+          defaultValue: "0.0",
+        },
+        {
+          type: "input",
+          label: "rotateX",
+          info: "rotateX",
+          defaultValue: "0.0",
+        },
+        {
+          type: "input",
+          label: "rotateY",
+          info: "rotateY",
+          defaultValue: "0.0",
+        },
+        {
+          type: "input",
+          label: "rotateZ",
+          info: "rotateZ",
+          defaultValue: "0.0",
+        },
+        {
+          type: "input",
+          label: "scale",
+          info: "scale",
+          defaultValue: "1.0",
+        },
+      ],
+      onSubmit: (values) => {
+        store.dispatch(transformAsync(values))
+      },
+    },
   },
   {
     label: "Rename",

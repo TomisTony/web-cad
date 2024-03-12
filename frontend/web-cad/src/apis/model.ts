@@ -32,6 +32,10 @@ export function rename(data: any) {
   return request.post("/cad/operation/rename", data)
 }
 
+export function transform(data: any) {
+  return request.post("/cad/operation/transform", data)
+}
+
 export function rollback(data: any) {
   return request.post("/cad/operation/rollback", data)
 }

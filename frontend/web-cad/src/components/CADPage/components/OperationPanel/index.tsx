@@ -97,7 +97,7 @@ function OperationPanel({ className, operationSetting }: Props) {
         <div className="text-2xl font-bold border-0 border-b-2 border-solid border-black mb-2">
           {operationName}
         </div>
-        <div className="flex flex-col max-h-[400px] overflow-auto">
+        <div className="flex flex-col max-h-[350px] overflow-auto">
           <div className="text-lg font-bold">Choosed Topo</div>
           <div className="text-base">
             {typeList && (
@@ -112,8 +112,10 @@ function OperationPanel({ className, operationSetting }: Props) {
           <div className="text-lg font-bold">Props</div>
           <div className="text-base">
             {props?.map((prop, index) => (
-              <div key={index} className="flex space-x-2 items-center">
-                <div className="text-base mr-2">{prop.label + ":"}</div>
+              <div key={index} className="flex space-y-2 items-center">
+                <div className="text-base mr-2 min-w-[20%]">
+                  {prop.label + ":"}
+                </div>
                 {prop.type === "input" && (
                   <Form.Item className="m-0" name={prop.label}>
                     <Input className="w-full" placeholder={prop.info} />
