@@ -26,6 +26,8 @@ class TopoDSShapeConvertor:
         self.max_deviation = max_deviation
         # 储存了 face/edge/solid 的 id 到 TopoDS_Shape 的映射
         self.id_TopoDS_Shape_map: Dict[str, TopoDS_Shape] = {}
+        # 储存了 solid 的 id 到 TopoDS_Shape 的映射
+        self.id_solid_map: Dict[str, TopoDS_Shape] = {}
         # 储存了 solid 的 id 到 (face_list, edge_list) 的映射
         self.solid_dict = self.__converte()
   
@@ -68,7 +70,8 @@ class TopoDSShapeConvertor:
     # old_brcad: 之前的 BrCAD 对象
     # operation_label: 操作的标签，用于生成新的 BrCAD_node 对象的 label
     # related_solid_ids: 与该操作相关的 solid 的 id 数组
-    def get_BrCAD_after_operation(self, old_brcad_unchangeable: BrCAD, operation_label: str, related_solid_ids: List[str] = []):
+    # in_place: 是否不改变 old_brcad 的 structure 结构。仅在确认只会有一个 solid 会发生变化时使用
+    def get_BrCAD_after_operation(self, old_brcad_unchangeable: BrCAD, operation_label: str, related_solid_ids: List[str] = [], in_place: bool = False):
         # 深拷贝 old_brcad
         import pickle
         old_brcad: BrCAD = pickle.loads(pickle.dumps(old_brcad_unchangeable))
@@ -112,47 +115,69 @@ class TopoDSShapeConvertor:
         for node in old_brcad.structure.children:
             if node.id not in related_solid_ids:
                 children.append(node)
-        # 新建一个 BrCAD_node，添加所有收集的 solid 为 child，转换这些 solid 的所有数据合并新的更改（包括 delete 和 add）到该 node 下
-        # 构造新 node 的 children，由 related_solid_id 中的 solid 构造
-        new_node_children = []
-        # 从 old_brcad 中的 structure 中找到这些 node，将其 faces 和 edges 置空，然后将其添加到新的 node 中
-        for solid_id in related_solid_ids:
+        # 针对更改的地方，两种情况
+        if not in_place:
+            # 新建一个 BrCAD_node，添加所有收集的 solid 为 child，转换这些 solid 的所有数据合并新的更改（包括 delete 和 add）到该 node 下
+            # 构造新 node 的 children，由 related_solid_id 中的 solid 构造
+            new_node_children = []
+            # 从 old_brcad 中的 structure 中找到这些 node，将其 faces 和 edges 置空，然后将其添加到新的 node 中
+            for solid_id in related_solid_ids:
+                for node in old_brcad.structure.children:
+                    deep_copy_node: BrCAD_node = pickle.loads(pickle.dumps(node))
+                    if deep_copy_node.id == solid_id:
+                        deep_copy_node.faces = []
+                        deep_copy_node.edges = []
+                        new_node_children.append(deep_copy_node)
+            
+            # 构造新 node 的 faces 和 edges
+            new_node_faces_id_list = []
+            new_node_edges_id_list = []
             for node in old_brcad.structure.children:
-                deep_copy_node: BrCAD_node = pickle.loads(pickle.dumps(node))
-                if deep_copy_node.id == solid_id:
-                    deep_copy_node.faces = []
-                    deep_copy_node.edges = []
-                    new_node_children.append(deep_copy_node)
-        
-        # 构造新 node 的 faces 和 edges
-        new_node_faces_id_list = []
-        new_node_edges_id_list = []
-        for node in old_brcad.structure.children:
-            if node.id in related_solid_ids:
-                new_node_faces_id_list.extend([face for face in node.faces])
-                new_node_edges_id_list.extend([edge for edge in node.edges])
-        # 在 new_node_faces_id_list 和 new_node_edges_id_list 中删除和添加新的 face 和 edge 的 id
-        # 注意一个 list 里面可能会有重复的 id，要按照数量进行增减
-        for face_id in deleted_faces_id:
-            if face_id in new_node_faces_id_list:
-                new_node_faces_id_list.remove(face_id)
-        for face_id in added_faces_id:
-            new_node_faces_id_list.append(face_id)
-        for edge_id in deleted_edges_id:
-            if edge_id in new_node_edges_id_list:
-                new_node_edges_id_list.remove(edge_id)
-        for edge_id in added_edges_id:
-            new_node_edges_id_list.append(edge_id)
-        
-        # 使用新的 id 构造新的 BrCAD_node    
-        new_node = BrCAD_node(
-          label=operation_label,
-          id=uuid.uuid1().hex,
-          children=new_node_children,
-          faces=new_node_faces_id_list,
-          edges=new_node_edges_id_list,
-        )
-        children.append(new_node)
+                if node.id in related_solid_ids:
+                    new_node_faces_id_list.extend([face for face in node.faces])
+                    new_node_edges_id_list.extend([edge for edge in node.edges])
+            # 在 new_node_faces_id_list 和 new_node_edges_id_list 中删除和添加新的 face 和 edge 的 id
+            # 注意一个 list 里面可能会有重复的 id，要按照数量进行增减
+            for face_id in deleted_faces_id:
+                if face_id in new_node_faces_id_list:
+                    new_node_faces_id_list.remove(face_id)
+            for face_id in added_faces_id:
+                new_node_faces_id_list.append(face_id)
+            for edge_id in deleted_edges_id:
+                if edge_id in new_node_edges_id_list:
+                    new_node_edges_id_list.remove(edge_id)
+            for edge_id in added_edges_id:
+                new_node_edges_id_list.append(edge_id)
+            
+            # 使用新的 id 构造新的 BrCAD_node    
+            new_node = BrCAD_node(
+              label=operation_label,
+              id=uuid.uuid1().hex,
+              children=new_node_children,
+              faces=new_node_faces_id_list,
+              edges=new_node_edges_id_list,
+            )
+            children.append(new_node)
+        else:
+            # 如果 in_place 为 True，则直接在 old_brcad 中的 structure 中更改
+            for node in old_brcad.structure.children:
+                if node.id in related_solid_ids:
+                    # 更改 node 中的 faces 和 edges
+                    # 删除和添加新的 face 和 edge 的 id
+                    # 注意一个 list 里面可能会有重复的 id，要按照数量进行增减
+                    for face_id in deleted_faces_id:
+                        if face_id in node.faces:
+                            node.faces.remove(face_id)
+                    for face_id in added_faces_id:
+                        node.faces.append(face_id)
+                    for edge_id in deleted_edges_id:
+                        if edge_id in node.edges:
+                            node.edges.remove(edge_id)
+                    for edge_id in added_edges_id:
+                        node.edges.append(edge_id)
+                    children.append(node)
+                    # in-place 开启时，只会有一个 solid 会发生变化
+                    break
         # 构造新的 BrCAD 对象
         faces: List[BrCAD_face] = []
         edges: List[BrCAD_edge] = []
@@ -174,6 +199,9 @@ class TopoDSShapeConvertor:
     
     def get_id_TopoDS_Shape_map(self):
         return self.id_TopoDS_Shape_map
+    
+    def get_id_solids_map(self):
+        return self.id_solid_map
 
     def __converte_topo(self, topo: TopoDS_Shape) -> Tuple[List[BrCAD_face], List[BrCAD_edge]]:
         face_list: List[BrCAD_face] = []
@@ -346,6 +374,7 @@ class TopoDSShapeConvertor:
             solid = solid_exp.Current()
             solid_id = uuid.uuid1().hex
             self.id_TopoDS_Shape_map[solid_id] = solid
+            self.id_solid_map[solid_id] = solid
             solid_dict[solid_id] = self.__converte_topo(solid)
             solid_exp.Next()
             
@@ -353,6 +382,7 @@ class TopoDSShapeConvertor:
         if count == 0:
             solid_id = uuid.uuid1().hex
             self.id_TopoDS_Shape_map[solid_id] = self.topods_shape
+            self.id_solid_map[solid_id] = self.topods_shape
             solid_dict[solid_id] = self.__converte_topo(self.topods_shape)
             
         return solid_dict
