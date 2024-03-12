@@ -43,7 +43,38 @@ const operationList: Operation[] = [
     abled: () => true,
   },
   {
-    label: "delimiter",
+    label: "delimiter0",
+    img: "",
+    action: () => {
+      console.log("delimiter")
+    },
+    isDelimiter: true,
+  },
+  {
+    label: "Rename",
+    img: fillet,
+    action: () => store.dispatch(setOperationPanel("Rename")),
+    abled: (historyChecking: boolean) => historyChecking === false,
+    operationSetting: {
+      operationName: "Rename",
+      chooseCount: 1,
+      chooseLabelList: ["Solid"],
+      chooseTypeList: ["solid"],
+      props: [
+        {
+          type: "input",
+          label: "name",
+          info: "New Name",
+          defaultValue: "New Name",
+        },
+      ],
+      onSubmit: (values) => {
+        store.dispatch(filletAsync(values))
+      },
+    },
+  },
+  {
+    label: "delimiter1",
     img: "",
     action: () => {
       console.log("delimiter")

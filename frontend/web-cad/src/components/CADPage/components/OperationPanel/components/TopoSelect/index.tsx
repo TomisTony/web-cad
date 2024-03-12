@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import TopoSelectTree from "./components/TopoSelectTree"
 import { setChoosedInfosAndHighlightManually } from "@/store/model/modelActions"
 import { ThreeApp } from "@/three/ThreeApp"
+import { BrCADNode } from "@/types/BrCAD"
 
 interface TopoSelectProps {
   typeList: string[]
@@ -74,6 +75,14 @@ function TopoSelect(props: TopoSelectProps) {
     ]
   }, [brcadStructure, projectInfo])
 
+  const makeDisabledTreeDataNode = (node: BrCADNode): TreeDataNode => {
+    return {
+      title: node.label,
+      key: node.id,
+      disabled: true,
+      children: node.children.map(makeDisabledTreeDataNode),
+    }
+  }
   const solidTreeData: TreeDataNode[] = useMemo(() => {
     return [
       {
@@ -83,6 +92,9 @@ function TopoSelect(props: TopoSelectProps) {
           return {
             title: node.label,
             key: node.id,
+            children: node.children.map((child) =>
+              makeDisabledTreeDataNode(child),
+            ),
           }
         }),
       },

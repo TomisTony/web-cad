@@ -69,6 +69,8 @@ export class Shape {
         solidIdEdgeIdMap[structure.id] = edgeId
         idSolidIdMap[edgeId] = structure.id
       })
+      // 选择了 solid 本身，也要记录
+      idSolidIdMap[structure.id] = structure.id
     })
     store.dispatch(
       setStructureMap({
