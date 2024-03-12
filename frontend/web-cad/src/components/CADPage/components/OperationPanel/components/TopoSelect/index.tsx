@@ -38,10 +38,12 @@ function TopoSelect(props: TopoSelectProps) {
       {
         title: projectInfo?.name ?? "Root",
         key: "root",
+        selectable: false,
         children: brcadStructure?.children.map((node) => {
           return {
             title: node.label,
             key: node.id,
+            selectable: false,
             children: node.edges.map((edge, index) => {
               return {
                 title: "edge " + index,
@@ -59,10 +61,12 @@ function TopoSelect(props: TopoSelectProps) {
       {
         title: projectInfo?.name ?? "Root",
         key: "root",
+        selectable: false,
         children: brcadStructure?.children.map((node) => {
           return {
             title: node.label,
             key: node.id,
+            selectable: false,
             children: node.faces.map((face, index) => {
               return {
                 title: "face " + index,
@@ -88,6 +92,7 @@ function TopoSelect(props: TopoSelectProps) {
       {
         title: projectInfo?.name ?? "Root",
         key: "root",
+        selectable: false,
         children: brcadStructure?.children.map((node) => {
           return {
             title: node.label,
