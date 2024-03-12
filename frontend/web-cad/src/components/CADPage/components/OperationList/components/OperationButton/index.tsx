@@ -29,7 +29,7 @@ function OperationButton(props: OperationButtonProps) {
   return (
     <div
       className={
-        "flex flex-col items-center justify-center  w-16 p-2 select-none" +
+        "flex flex-col items-center justify-center min-w-16 p-2 select-none" +
         " rounded-lg border border-black border-solid border-opacity-0 " +
         "hover:bg-gray-800 hover:text-white hover:cursor-pointer " +
         "active:bg-gray-700 active:text-white transition duration-300 " +
