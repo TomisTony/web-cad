@@ -248,9 +248,10 @@ def transform(request: HttpRequest):
     T_rotate_z = gp_Trsf()
     T_scale = gp_Trsf()
     T_translate.SetTranslation(gp_Vec(float(move_x), float(move_y), float(move_z)))
-    T_rotate_x.SetRotation(gp_Ax1(gp_Pnt(0, 0, 0), gp_Dir(1, 0, 0)), float(rotate_x))
-    T_rotate_y.SetRotation(gp_Ax1(gp_Pnt(0, 0, 0), gp_Dir(0, 1, 0)), float(rotate_y))
-    T_rotate_z.SetRotation(gp_Ax1(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1)), float(rotate_z))
+    PI = 3.14159265358979323846
+    T_rotate_x.SetRotation(gp_Ax1(gp_Pnt(0, 0, 0), gp_Dir(1, 0, 0)), float(rotate_x) * PI / 180)
+    T_rotate_y.SetRotation(gp_Ax1(gp_Pnt(0, 0, 0), gp_Dir(0, 1, 0)), float(rotate_y) * PI / 180)
+    T_rotate_z.SetRotation(gp_Ax1(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1)), float(rotate_z) * PI / 180)
     T_scale.SetScaleFactor(float(scale))
     # 整合变换
     T_final = gp_Trsf()
