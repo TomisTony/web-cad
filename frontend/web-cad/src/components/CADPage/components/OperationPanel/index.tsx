@@ -79,7 +79,7 @@ function OperationPanel({ className, operationSetting }: Props) {
     let check = true
     ;(submitValues.choosedTypeList as string[]).forEach(
       (_: string, index: number) => {
-        if ((submitValues.choosedTypeList as string[])[index]) {
+        if (!(submitValues.choosedIdList as string[])[index]) {
           check = false
         }
       },
