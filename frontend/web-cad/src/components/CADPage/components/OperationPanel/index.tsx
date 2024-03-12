@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react"
 import { Input, Select, Checkbox, Form, Button } from "antd"
 
-import { useAppSelector } from "@/app/hooks"
+import { useAppSelector, useAppDispatch } from "@/app/hooks"
 import store from "@/app/store"
-import { setOperationPanel } from "@/store/globalStatus/globalStatusAction"
+import {
+  setOperationPanel,
+  setGlobalMessage,
+} from "@/store/globalStatus/globalStatusAction"
 
 import { OperationSetting, OperationSubmitValues } from "@/types/Operation"
 
@@ -23,6 +26,7 @@ function OperationPanel({ className, operationSetting }: Props) {
   } = operationSetting
 
   const [form] = Form.useForm()
+  const dispatch = useAppDispatch()
   // 获取已经选择的对象
   const __choosedIdList = useAppSelector((state) => state.model.choosedIdList)
   const __choosedTypeList = useAppSelector(
@@ -71,6 +75,24 @@ function OperationPanel({ className, operationSetting }: Props) {
       }),
       props: values,
     }
+    // 检查 choosedIdList 是否对应 typeList
+    let check = true
+    ;(submitValues.choosedTypeList as string[]).forEach(
+      (_: string, index: number) => {
+        if ((submitValues.choosedTypeList as string[])[index]) {
+          check = false
+        }
+      },
+    )
+    if (!check) {
+      dispatch(
+        setGlobalMessage({
+          type: "error",
+          content: "Please choose Topo!",
+        }),
+      )
+      return
+    }
     console.log(submitValues)
     operationSetting?.onSubmit?.(submitValues)
     store.dispatch(setOperationPanel(""))
@@ -98,7 +120,7 @@ function OperationPanel({ className, operationSetting }: Props) {
           {operationName}
         </div>
         <div className="flex flex-col max-h-[350px] overflow-auto">
-          <div className="text-lg font-bold">Choosed Topo</div>
+          <div className="text-lg font-bold">Chosen Topo</div>
           <div className="text-base">
             {typeList && (
               <TopoSelect
@@ -117,12 +139,20 @@ function OperationPanel({ className, operationSetting }: Props) {
                   {prop.label + ":"}
                 </div>
                 {prop.type === "input" && (
-                  <Form.Item className="m-0" name={prop.label}>
+                  <Form.Item
+                    className="m-0"
+                    name={prop.label}
+                    rules={[{ required: true, message: "value require!" }]}
+                  >
                     <Input className="w-full" placeholder={prop.info} />
                   </Form.Item>
                 )}
                 {prop.type === "select" && (
-                  <Form.Item className="m-0" name={prop.label}>
+                  <Form.Item
+                    className="m-0"
+                    name={prop.label}
+                    rules={[{ required: true, message: "value require!" }]}
+                  >
                     <Select className="w-full" placeholder={prop.info}>
                       {prop.options?.map((option, index) => (
                         <Select.Option key={index} value={option}>
@@ -137,6 +167,7 @@ function OperationPanel({ className, operationSetting }: Props) {
                     className="m-0"
                     name={prop.label}
                     valuePropName="checked"
+                    rules={[{ required: true, message: "value require!" }]}
                   >
                     <Checkbox />
                   </Form.Item>
