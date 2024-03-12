@@ -9,7 +9,7 @@ class Operation(models.Model):
     time = models.IntegerField()
     data = models.JSONField(null=True) # 前端请求传入的数据，用二进制序列化保存
     brcad = models.BinaryField() # 不使用 JSONField 是因为有自定义的 to_json() 逻辑
-    topods_shape = models.BinaryField()
+    solid_ids = models.JSONField() # 用序列化 json 字符串保存 TopoDS_Shape 中所有 solid 的 id 数组
 
 class Project(models.Model):
     id = models.AutoField(primary_key=True)
@@ -19,6 +19,11 @@ class Project(models.Model):
     owner_id = models.IntegerField()
     editor_ids = models.JSONField() # 用序列化 json 字符串保存编辑者的 id 数组
     operation_history_ids = models.JSONField() # 用序列化 json 字符串保存操作历史记录的 id 数组
+    
+class Solid(models.Model):
+    id = models.AutoField(primary_key=True)
+    solid_id = models.TextField()
+    shape = models.BinaryField()
     
     
     

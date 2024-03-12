@@ -12,16 +12,19 @@ import pickle
 import os
 import time
 import json
+import uuid
 
 from BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
 from BrCAD.BrCAD_compare import BrCADCompare
 from BrCAD.BrCAD import BrCAD
 
+from utils.solid_tool import get_solid_by_id, get_solid_id_map, save_shape, get_TopoDS_Shape_from_solid_ids, get_TopoDS_Shape_from_solid_id_map
+
 from OCC.Core.TopoDS import TopoDS_Shape, TopoDS_Compound
 from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
 from OCC.Core.BRep import BRep_Builder
-from OCC.Core.gp import gp_Pnt, gp_Trsf, gp_Vec, gp_Ax1, gp_Dir, gp_Quaternion
+from OCC.Core.gp import gp_Pnt, gp_Trsf, gp_Vec, gp_Ax1, gp_Dir
 from OCC.Extend.DataExchange import read_step_file
 from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_StepModelType
 from OCC.Extend.DataExchange import write_stl_file
@@ -52,14 +55,16 @@ def uploadFile(request: HttpRequest, project_id: int, operator_id: int):
         shape = read_step_file(filename)
         converter = TopoDSShapeConvertor(shape)
         br_cad = converter.get_BrCAD_with_new_structure()
+        solid_id_map = converter.get_id_solid_map()
         # 保存操作
+        solid_ids = save_shape(solid_id_map)
         operation = Operation(
             type="Import",
             project_id=project_id,
             operator_id=int(operator_id),
             time=int(time.time() * 1000),
             brcad=pickle.dumps(br_cad),
-            topods_shape=pickle.dumps(shape),
+            solid_ids=solid_ids,
         )
         operation.save()
         # 更新 project 的 operation_history_ids
@@ -88,9 +93,7 @@ def downloadFile(request: HttpRequest):
     try:
         lastOperationId = request.GET.get("lastOperationId")
         fileFormat = request.GET.get("fileFormat")
-        last_shape = pickle.loads(
-            Operation.objects.get(id=lastOperationId).topods_shape
-        )
+        last_shape = get_TopoDS_Shape_from_solid_ids(Operation.objects.get(id=lastOperationId).solid_ids)
         # 一个存储文件后缀名和对应 MIME 类型的字典
         MIME_TYPES = {
             ".step": "application/vnd.ms-pki.stl",
@@ -132,20 +135,26 @@ def fillet(request: HttpRequest):
     props = data.get("props")
     radius = props.get("radius")
     # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
-    last_shape = pickle.loads(Operation.objects.get(id=last_operation_id).topods_shape)
-    converter_1 = TopoDSShapeConvertor(last_shape)
     brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
+    solid_id_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
+    target_solid = solid_id_map[related_solid_id_list[0]]
+    # 获得更改的 solid 的 对应的 face 和 edge 的 id map
+    converter_1 = TopoDSShapeConvertor(target_solid)
     id_map = converter_1.get_id_TopoDS_Shape_map()
     # step3: 执行对应操作
     # 创建一个倒角生成器,并设置倒角半径
-    fillet = BRepFilletAPI_MakeFillet(last_shape)
+    fillet = BRepFilletAPI_MakeFillet(target_solid)
     fillet.Add(float(radius), id_map[choosedId])
-    shape = fillet.Shape()
+    new_solid = fillet.Shape()
+    new_solid_id = uuid.uuid1().hex
+    solid_id_map[new_solid_id] = new_solid
+    solid_id_map.pop(related_solid_id_list[0])
     # step4: 生成新的 BrCAD 对象进行比较
-    converter_2 = TopoDSShapeConvertor(shape)
-    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, "Fillet", related_solid_id_list, True)
+    converter_2 = TopoDSShapeConvertor(get_TopoDS_Shape_from_solid_id_map(solid_id_map))
+    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, "Fillet",new_solid_id, related_solid_id_list, True)
     brcad_compare = BrCADCompare(brcad_1, brcad_2)
     # step5: 保存操作
+    solid_ids = save_shape(solid_id_map)
     operation = Operation(
         type="Fillet",
         project_id=project_id,
@@ -153,7 +162,7 @@ def fillet(request: HttpRequest):
         time=int(time.time() * 1000),
         data=data,
         brcad=pickle.dumps(brcad_2),
-        topods_shape=pickle.dumps(shape),
+        solid_ids=solid_ids,
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids
@@ -180,10 +189,7 @@ def rename(request: HttpRequest):
     props = data.get("props")
     new_name = props.get("name")
     # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
-    last_shape = pickle.loads(Operation.objects.get(id=last_operation_id).topods_shape)
-    converter_1 = TopoDSShapeConvertor(last_shape)
     brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
-    id_map = converter_1.get_id_TopoDS_Shape_map()
     # step3: 执行对应操作
     # 重命名
     brcad_2: BrCAD = pickle.loads(pickle.dumps(brcad_1))
@@ -200,7 +206,7 @@ def rename(request: HttpRequest):
         time=int(time.time() * 1000),
         data=data,
         brcad=pickle.dumps(brcad_2),
-        topods_shape=pickle.dumps(last_shape),
+        solid_ids=Operation.objects.get(id=last_operation_id).solid_ids,
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids
@@ -233,10 +239,8 @@ def transform(request: HttpRequest):
     rotate_z = props.get("rotateZ")
     scale = props.get("scale")
     # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
-    last_shape: TopoDS_Shape = pickle.loads(Operation.objects.get(id=last_operation_id).topods_shape)
-    converter_1 = TopoDSShapeConvertor(last_shape)
+    solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
     brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
-    solid_map = converter_1.get_id_solid_map()
     # step3: 执行对应操作
     T_translate = gp_Trsf()
     T_rotate_x = gp_Trsf()
@@ -260,16 +264,19 @@ def transform(request: HttpRequest):
     builder.MakeCompound(shape)
     for solid_id, solid in solid_map.items():
         if solid_id == choosedId:
-            print("111")
             new_solid = BRepBuilderAPI_Transform(solid, T_final).Shape()
+            builder.Add(shape, new_solid)
         else:
-            new_solid = solid
-        builder.Add(shape, new_solid)
+            builder.Add(shape, solid)
+    new_solid_id = uuid.uuid1().hex
+    solid_map.pop(choosedId)
+    solid_map[new_solid_id] = new_solid
     # step4: 生成新的 BrCAD 对象进行比较
     converter_2 = TopoDSShapeConvertor(shape)
-    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, "Transform", related_solid_id_list, True)
+    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, "Transform",new_solid_id, related_solid_id_list, True)
     brcad_compare = BrCADCompare(brcad_1, brcad_2)
     # step5: 保存操作
+    solid_ids = save_shape(solid_map)
     operation = Operation(
         type="Transform",
         project_id=project_id,
@@ -277,7 +284,7 @@ def transform(request: HttpRequest):
         time=int(time.time() * 1000),
         data=data,
         brcad=pickle.dumps(brcad_2),
-        topods_shape=pickle.dumps(shape),
+        solid_ids=solid_ids,
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids
@@ -303,7 +310,7 @@ def rollback_with_concatenation_mode(request: HttpRequest):
     rollback_operation_id = props.get("rollbackId")
     # step2: 获取上一步的 BrCAD 对象
     # step3: 执行对应操作
-    rollback_shape = pickle.loads(Operation.objects.get(id=rollback_operation_id).topods_shape)
+    rollback_solid_ids = Operation.objects.get(id=rollback_operation_id).solid_ids
     rollback_brcad = pickle.loads(Operation.objects.get(id=rollback_operation_id).brcad)
     # step4: Rollback 操作比较特殊，我们不知道 related_solid_id_list，因此我们直接回传完整的 BrCAD 对象
     # 本质上和 Transfer 是一样的
@@ -315,7 +322,7 @@ def rollback_with_concatenation_mode(request: HttpRequest):
         time=int(time.time() * 1000),
         data=data,
         brcad=pickle.dumps(rollback_brcad),
-        topods_shape=pickle.dumps(rollback_shape),
+        solid_ids=rollback_solid_ids,
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids

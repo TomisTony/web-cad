@@ -5,8 +5,6 @@ import { RootState } from "@/app/store"
 interface ModelState {
   model: BrCAD // 储存当前的模型
   solidIdNameMap: { [key: string]: string } // solidId 到 solidName 的映射
-  solidIdFaceIdMap: { [key: string]: string } // solidId 到 faceId 的映射
-  solidIdEdgeIdMap: { [key: string]: string } // solidId 到 edgeId 的映射
   idSolidIdMap: { [key: string]: string } // id 到 solidId 的映射
   choosedIdList: string[] // 当前选中的对象的 id
   choosedTypeList: string[] // 当前选中的对象的类型,"edge"/"face"
@@ -19,8 +17,6 @@ const initialState: ModelState = {
   choosedTypeList: [],
   choosedSolidIdList: [],
   solidIdNameMap: {},
-  solidIdFaceIdMap: {},
-  solidIdEdgeIdMap: {},
   idSolidIdMap: {},
 }
 
@@ -67,19 +63,11 @@ export const modelSlice = createSlice({
     setSolidIdNameMap: (state, action) => {
       state.solidIdNameMap = action.payload
     },
-    setSolidIdFaceIdMap: (state, action) => {
-      state.solidIdFaceIdMap = action.payload
-    },
-    setSolidIdEdgeIdMap: (state, action) => {
-      state.solidIdEdgeIdMap = action.payload
-    },
     setIdSolidIdMap: (state, action) => {
       state.idSolidIdMap = action.payload
     },
     setStructureMap: (state, action) => {
       state.solidIdNameMap = action.payload.solidIdNameMap
-      state.solidIdFaceIdMap = action.payload.solidIdFaceIdMap
-      state.solidIdEdgeIdMap = action.payload.solidIdEdgeIdMap
       state.idSolidIdMap = action.payload.idSolidIdMap
     },
   },

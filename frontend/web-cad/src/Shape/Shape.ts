@@ -54,19 +54,15 @@ export class Shape {
     // 设置 structure map
     const structures = brCAD.structure.children
     const solidIdNameMap: { [key: string]: string } = {}
-    const solidIdFaceIdMap: { [key: string]: string } = {}
-    const solidIdEdgeIdMap: { [key: string]: string } = {}
     const idSolidIdMap: { [key: string]: string } = {}
     structures.forEach((structure) => {
       solidIdNameMap[structure.id] = structure.label
     })
     structures.forEach((structure) => {
       structure.faces.forEach((faceId) => {
-        solidIdFaceIdMap[structure.id] = faceId
         idSolidIdMap[faceId] = structure.id
       })
       structure.edges.forEach((edgeId) => {
-        solidIdEdgeIdMap[structure.id] = edgeId
         idSolidIdMap[edgeId] = structure.id
       })
       // 选择了 solid 本身，也要记录
@@ -75,8 +71,6 @@ export class Shape {
     store.dispatch(
       setStructureMap({
         solidIdNameMap,
-        solidIdFaceIdMap,
-        solidIdEdgeIdMap,
         idSolidIdMap,
       }),
     )

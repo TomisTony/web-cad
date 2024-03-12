@@ -28,8 +28,6 @@ export const {
   unchoose,
   clearChoosedInfo,
   setIdSolidIdMap,
-  setSolidIdEdgeIdMap,
-  setSolidIdFaceIdMap,
   setSolidIdNameMap,
   setStructureMap,
 } = modelSlice.actions

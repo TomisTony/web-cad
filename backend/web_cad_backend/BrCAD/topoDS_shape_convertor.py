@@ -69,9 +69,10 @@ class TopoDSShapeConvertor:
     # WARNING: 我们这里会对之前的 BrCAD 进行修改，因此需要注意深拷贝
     # old_brcad: 之前的 BrCAD 对象
     # operation_label: 操作的标签，用于生成新的 BrCAD_node 对象的 label
+    # new_solid_id: 形成的新的 solid 的 id
     # related_solid_ids: 与该操作相关的 solid 的 id 数组
     # in_place: 是否不改变 old_brcad 的 structure 结构。仅在确认只会有一个 solid 会发生变化时使用
-    def get_BrCAD_after_operation(self, old_brcad_unchangeable: BrCAD, operation_label: str, related_solid_ids: List[str] = [], in_place: bool = False):
+    def get_BrCAD_after_operation(self, old_brcad_unchangeable: BrCAD, operation_label: str, new_solid_id: str, related_solid_ids: List[str] = [], in_place: bool = False):
         # 深拷贝 old_brcad
         import pickle
         old_brcad: BrCAD = pickle.loads(pickle.dumps(old_brcad_unchangeable))
@@ -152,7 +153,7 @@ class TopoDSShapeConvertor:
             # 使用新的 id 构造新的 BrCAD_node    
             new_node = BrCAD_node(
               label=operation_label,
-              id=uuid.uuid1().hex,
+              id=new_solid_id,
               children=new_node_children,
               faces=new_node_faces_id_list,
               edges=new_node_edges_id_list,
@@ -175,6 +176,7 @@ class TopoDSShapeConvertor:
                             node.edges.remove(edge_id)
                     for edge_id in added_edges_id:
                         node.edges.append(edge_id)
+                    node.id = new_solid_id
                     children.append(node)
                     # in-place 开启时，只会有一个 solid 会发生变化
                     break
