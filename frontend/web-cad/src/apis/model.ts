@@ -28,6 +28,10 @@ export function getDownloadUrl(lastOperationId: number, fileFormat: string) {
   )
 }
 
+export function rename(data: any) {
+  return request.post("/cad/operation/rename", data)
+}
+
 export function rollback(data: any) {
   return request.post("/cad/operation/rollback", data)
 }

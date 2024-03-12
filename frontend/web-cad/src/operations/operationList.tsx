@@ -7,6 +7,7 @@ import {
   UploadOutlined,
   ExportOutlined,
   RollbackOutlined,
+  FormOutlined,
 } from "@ant-design/icons"
 
 import store from "@/app/store"
@@ -15,7 +16,7 @@ import {
   setModal,
   setOperationPanel,
 } from "@/store/globalStatus/globalStatusAction"
-import { filletAsync } from "@/store/model/modelActions"
+import { filletAsync, renameAsync } from "@/store/model/modelActions"
 
 interface Operation {
   label: string
@@ -52,7 +53,7 @@ const operationList: Operation[] = [
   },
   {
     label: "Rename",
-    img: fillet,
+    icon: (className) => <FormOutlined className={className} />,
     action: () => store.dispatch(setOperationPanel("Rename")),
     abled: (historyChecking: boolean) => historyChecking === false,
     operationSetting: {
@@ -69,7 +70,7 @@ const operationList: Operation[] = [
         },
       ],
       onSubmit: (values) => {
-        store.dispatch(filletAsync(values))
+        store.dispatch(renameAsync(values))
       },
     },
   },

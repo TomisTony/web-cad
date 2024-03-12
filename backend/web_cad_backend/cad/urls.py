@@ -11,5 +11,6 @@ urlpatterns = [
 
     path("operation/fillet", operation_views.fillet, name="loadDiff"),
     path("operation/uploadFile/<int:project_id>/<int:operator_id>", operation_views.uploadFile, name="uploadFile"),
+    path("operation/rename", operation_views.rename, name="rename"),
     path("operation/rollback", operation_views.rollback_with_concatenation_mode, name="rollback"),
 ]

@@ -45,7 +45,6 @@ function OperationPanel({ className, operationSetting }: Props) {
   // 根据选中更新 choosedList
   // TODO: 需要使用 ahook
   useEffect(() => {
-    console.log("danger!")
     const choosedIdList = [...__choosedIdList]
     const choosedTypeList = [...__choosedTypeList]
     // 在 choosedTypeList 中按照 typeList 的顺序找到对应的 id, 多个相同 type 的选项按照先后顺序取

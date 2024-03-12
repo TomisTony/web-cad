@@ -161,6 +161,53 @@ def fillet(request: HttpRequest):
 
     return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
 
+# Operation "Rename"
+@api_view(["POST"])
+def rename(request: HttpRequest):
+    # step1: 获取参数
+    params = json.loads(request.body)
+    last_operation_id = params.get("lastOperationId")
+    project_id = params.get("projectId")
+    operator_id = params.get("operatorId")
+    data = params.get("data")
+    choosed_id_list = data.get("choosedIdList")
+    related_solid_id_list = data.get("relatedSolidIdList")
+    choosedId = choosed_id_list[0]
+    props = data.get("props")
+    new_name = props.get("name")
+    # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
+    last_shape = pickle.loads(Operation.objects.get(id=last_operation_id).topods_shape)
+    converter_1 = TopoDSShapeConvertor(last_shape)
+    brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
+    id_map = converter_1.get_id_TopoDS_Shape_map()
+    # step3: 执行对应操作
+    # 重命名
+    brcad_2: BrCAD = pickle.loads(pickle.dumps(brcad_1))
+    for node in brcad_2.structure.children:
+        if node.id == choosedId:
+            node.label = new_name
+            break
+    brcad_compare = BrCADCompare(brcad_1, brcad_2)
+    # step5: 保存操作
+    operation = Operation(
+        type="Rename",
+        project_id=project_id,
+        operator_id=int(operator_id),
+        time=int(time.time() * 1000),
+        data=data,
+        brcad=pickle.dumps(brcad_2),
+        topods_shape=pickle.dumps(last_shape),
+    )
+    operation.save()
+    # step6: 更新 project 的 operation_history_ids
+    project = Project.objects.get(id=project_id)
+    project.operation_history_ids.append(operation.id)
+    project.save()
+    # step7: 通知前端更新历史记录
+    notify_update_history_list(project_id)
+
+    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
+
 # Operation "Rollback"
 @api_view(["POST"])
 def rollback_with_concatenation_mode(request: HttpRequest):
