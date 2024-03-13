@@ -40,7 +40,8 @@ def getOperationModel(request: HttpRequest):
 
 # Operation "Import"
 @api_view(["POST"])
-def uploadFile(request: HttpRequest, project_id: int, operator_id: int, last_operation_id: int):
+def uploadFile(request: HttpRequest, project_id: int, operator_id: int, last_operation_id: str):
+    last_operation_id = int(last_operation_id)
     file = request.FILES.get("file", None)
     if file is None:
         return ApiResponse("No file is uploaded", data_status=400)
