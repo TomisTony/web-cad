@@ -189,50 +189,56 @@ export const transformAsync =
       })
   }
 
-export const makeBoxAsync = (value: any) => (dispatch: any, getState: any) => {
-  dispatch(setOperationExecuting(true))
-  const historyList = getState().history.historyList
-  const lastOperationId = historyList[historyList.length - 1]?.operationId ?? -1
-  const projectId = getState().globalStatus.projectId
-  const params = {
-    lastOperationId,
-    projectId,
-    operatorId: getUserId(),
-    data: {
-      ...value,
-    },
+const makeSomethingAsync =
+  (api: (data: any) => Promise<any>) =>
+  (value: any) =>
+  (dispatch: any, getState: any) => {
+    dispatch(setOperationExecuting(true))
+    const historyList = getState().history.historyList
+    const lastOperationId =
+      historyList[historyList.length - 1]?.operationId ?? -1
+    const projectId = getState().globalStatus.projectId
+    const params = {
+      lastOperationId,
+      projectId,
+      operatorId: getUserId(),
+      data: {
+        ...value,
+      },
+    }
+    api(params)
+      .then((data) => {
+        const { diff, model: newModel } = data
+        if (newModel) {
+          ThreeApp.getScene().clearScene()
+          Shape.setBrCADToScene(newModel)
+          dispatch(setModel(newModel))
+          dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
+        } else {
+          ThreeApp.getScene().clearScene()
+          let model = getState().model.model
+          model = Shape.applyDiffToBrCAD(model, diff)
+          Shape.setBrCADToScene(model)
+          dispatch(setModel(model))
+          dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
+        }
+      })
+      .catch((err) => {
+        dispatch(
+          setGlobalMessage({
+            type: "error",
+            content: "Error: Server Error! Check the console.",
+          }),
+        )
+      })
+      .finally(() => {
+        dispatch(setOperationExecuting(false))
+      })
   }
-  apis
-    .makeBox(params)
-    .then((data) => {
-      // 分两种情况，一种是新建立的模型，一种是对原有模型进行修改
-      const { diff, model: newModel } = data
-      if (newModel) {
-        ThreeApp.getScene().clearScene()
-        Shape.setBrCADToScene(newModel)
-        dispatch(setModel(newModel))
-        dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
-      } else {
-        ThreeApp.getScene().clearScene()
-        let model = getState().model.model
-        model = Shape.applyDiffToBrCAD(model, diff)
-        Shape.setBrCADToScene(model)
-        dispatch(setModel(model))
-        dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
-      }
-    })
-    .catch((err) => {
-      dispatch(
-        setGlobalMessage({
-          type: "error",
-          content: "Error: Server Error! Check the console.",
-        }),
-      )
-    })
-    .finally(() => {
-      dispatch(setOperationExecuting(false))
-    })
-}
+
+export const makeBoxAsync = makeSomethingAsync(apis.makeBox)
+
+export const makeCylinderAsync = makeSomethingAsync(apis.makeCylinder)
 
 export const rollbackAsync = (value: any) => (dispatch: any, getState: any) => {
   dispatch(setOperationExecuting(true))

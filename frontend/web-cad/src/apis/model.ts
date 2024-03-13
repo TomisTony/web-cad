@@ -44,6 +44,10 @@ export function makeBox(data: any) {
   return request.post("/cad/operation/makeBox", data)
 }
 
+export function makeCylinder(data: any) {
+  return request.post("/cad/operation/makeCylinder", data)
+}
+
 export function deleteSolid(data: any) {
   return request.post("/cad/operation/deleteSolid", data)
 }

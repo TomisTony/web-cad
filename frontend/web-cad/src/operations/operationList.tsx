@@ -5,6 +5,7 @@ import fillet from "@/assets/operations/Part_Fillet.png"
 import chamfer from "@/assets/operations/Part_Chamfer.png"
 import transform from "@/assets/operations/transform.png"
 import box from "@/assets/operations/Part_Box.png"
+import cylinder from "@/assets/operations/Part_Cylinder.png"
 
 import {
   UploadOutlined,
@@ -25,6 +26,7 @@ import {
   renameAsync,
   transformAsync,
   makeBoxAsync,
+  makeCylinderAsync,
 } from "@/store/model/modelActions"
 
 interface Operation {
@@ -182,6 +184,41 @@ const operationList: Operation[] = [
       ],
       onSubmit: (values) => {
         store.dispatch(makeBoxAsync(values))
+      },
+    },
+  },
+  {
+    label: "Cylinder",
+    img: cylinder,
+    action: () => store.dispatch(setOperationPanel("Cylinder")),
+    abled: (historyChecking: boolean) => historyChecking === false,
+    operationSetting: {
+      operationName: "Cylinder",
+      chooseCount: 0,
+      chooseLabelList: [],
+      chooseTypeList: [],
+      props: [
+        {
+          type: "input",
+          label: "radius",
+          info: "radius",
+          defaultValue: "1.0",
+        },
+        {
+          type: "input",
+          label: "height",
+          info: "height",
+          defaultValue: "1.0",
+        },
+        {
+          type: "input",
+          label: "angle",
+          info: "angle",
+          defaultValue: "360.0",
+        },
+      ],
+      onSubmit: (values) => {
+        store.dispatch(makeCylinderAsync(values))
       },
     },
   },

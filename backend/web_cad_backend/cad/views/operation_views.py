@@ -419,7 +419,75 @@ def makeBox(request: HttpRequest):
     notify_update_history_list(project_id)
     
     return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
+
+# Operation "Cylinder"
+@api_view(["POST"])
+def makeCylinder(request: HttpRequest):
+    # 新建物体的操作和其他操作不同,因为新建物体的时候需要特判是不是空项目
+    # 其他操作在空项目的时候，前端会进行拦截（因为没法选中 topo）
+    # step1: 获取参数
+    params = json.loads(request.body)
+    last_operation_id = params.get("lastOperationId")
+    project_id = params.get("projectId")
+    operator_id = params.get("operatorId")
+    data = params.get("data")
+    props = data.get("props")
+    radius = props.get("radius")
+    height = props.get("height")
+    angle = props.get("angle")
+    PI = 3.14159265358979323846
+    if last_operation_id == -1:
+        # 如果是空项目，直接新建一个物体，传完整 BrCAD 对象
+        solid = BRepPrimAPI_MakeCylinder(float(radius), float(height), float(angle) * PI / 180).Shape()
+        converter = TopoDSShapeConvertor(get_TopoDS_Shape_from_solid(solid))
+        brcad = converter.get_BrCAD_with_new_structure()
+        solid_map = converter.get_id_solid_map()
+        solid_ids = save_shape(solid_map)
+        operation = Operation(
+            type="Cylinder",
+            project_id=project_id,
+            operator_id=int(operator_id),
+            time=int(time.time() * 1000),
+            data=data,
+            brcad=pickle.dumps(brcad),
+            solid_ids=solid_ids,
+        )
+        operation.save()
+        #更新 project 的 operation_history_ids
+        project = Project.objects.get(id=project_id)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+        #通知前端更新历史记录
+        notify_update_history_list(project_id)
+        
+        return ApiResponse({"operationId": operation.id, "model": brcad.to_dict()})
+    solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
+    brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
+    solid = BRepPrimAPI_MakeCylinder(float(radius), float(height), float(angle) * PI / 180).Shape()
+    new_solid_id = uuid.uuid1().hex
+    solid_map[new_solid_id] = solid
+    converter_2 = TopoDSShapeConvertor(get_TopoDS_Shape_from_solid_id_map(solid_map))
+    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, "Cylinder",new_solid_id, [])
+    brcad_compare = BrCADCompare(brcad_1, brcad_2)
+    solid_ids = save_shape(solid_map)
+    operation = Operation(
+        type="Cylinder",
+        project_id=project_id,
+        operator_id=int(operator_id),
+        time=int(time.time() * 1000),
+        data=data,
+        brcad=pickle.dumps(brcad_2),
+        solid_ids=solid_ids,
+    )
+    operation.save()
+    #更新 project 的 operation_history_ids
+    project = Project.objects.get(id=project_id)
+    project.operation_history_ids.append(operation.id)
+    project.save()
+    #通知前端更新历史记录
+    notify_update_history_list(project_id)
     
+    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})    
 
 # Operation "Rollback"
 @api_view(["POST"])
