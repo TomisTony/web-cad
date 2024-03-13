@@ -1,7 +1,8 @@
 import React from "react"
 import { OperationSetting } from "@/types/Operation"
 
-import fillet from "@/assets/operations/fillet.png"
+import fillet from "@/assets/operations/Part_Fillet.png"
+import chamfer from "@/assets/operations/Part_Chamfer.png"
 import transform from "@/assets/operations/transform.png"
 
 import {
@@ -19,6 +20,7 @@ import {
 } from "@/store/globalStatus/globalStatusAction"
 import {
   filletAsync,
+  chamferAsync,
   renameAsync,
   transformAsync,
 } from "@/store/model/modelActions"
@@ -166,6 +168,29 @@ const operationList: Operation[] = [
       ],
       onSubmit: (values) => {
         store.dispatch(filletAsync(values))
+      },
+    },
+  },
+  {
+    label: "Chamfer",
+    img: chamfer,
+    action: () => store.dispatch(setOperationPanel("Chamfer")),
+    abled: (historyChecking: boolean) => historyChecking === false,
+    operationSetting: {
+      operationName: "Chamfer",
+      chooseCount: 1,
+      chooseLabelList: ["Edge"],
+      chooseTypeList: ["edge"],
+      props: [
+        {
+          type: "input",
+          label: "length",
+          info: "length",
+          defaultValue: 0.1,
+        },
+      ],
+      onSubmit: (values) => {
+        store.dispatch(chamferAsync(values))
       },
     },
   },

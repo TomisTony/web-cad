@@ -21,7 +21,7 @@ from BrCAD.BrCAD import BrCAD
 from utils.solid_tool import get_solid_by_id, get_solid_id_map, save_shape, get_TopoDS_Shape_from_solid_ids, get_TopoDS_Shape_from_solid_id_map
 
 from OCC.Core.TopoDS import TopoDS_Shape, TopoDS_Compound
-from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet
+from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet, BRepFilletAPI_MakeChamfer
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
 from OCC.Core.BRep import BRep_Builder
 from OCC.Core.gp import gp_Pnt, gp_Trsf, gp_Vec, gp_Ax1, gp_Dir
@@ -157,6 +157,60 @@ def fillet(request: HttpRequest):
     solid_ids = save_shape(solid_id_map)
     operation = Operation(
         type="Fillet",
+        project_id=project_id,
+        operator_id=int(operator_id),
+        time=int(time.time() * 1000),
+        data=data,
+        brcad=pickle.dumps(brcad_2),
+        solid_ids=solid_ids,
+    )
+    operation.save()
+    # step6: 更新 project 的 operation_history_ids
+    project = Project.objects.get(id=project_id)
+    project.operation_history_ids.append(operation.id)
+    project.save()
+    # step7: 通知前端更新历史记录
+    notify_update_history_list(project_id)
+
+    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
+
+# Operation "Chamfer"
+@api_view(["POST"])
+def chamfer(request: HttpRequest):
+    # step1: 获取参数
+    params = json.loads(request.body)
+    last_operation_id = params.get("lastOperationId")
+    project_id = params.get("projectId")
+    operator_id = params.get("operatorId")
+    data = params.get("data")
+    choosed_id_list = data.get("choosedIdList")
+    related_solid_id_list = data.get("relatedSolidIdList")
+    choosedId = choosed_id_list[0]
+    props = data.get("props")
+    length = props.get("length")
+    # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
+    brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
+    solid_id_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
+    target_solid = solid_id_map[related_solid_id_list[0]]
+    # 获得更改的 solid 的 对应的 face 和 edge 的 id map
+    converter_1 = TopoDSShapeConvertor(target_solid)
+    id_map = converter_1.get_id_TopoDS_Shape_map()
+    # step3: 执行对应操作
+    # 创建一个倒角生成器,并设置倒角半径
+    chamfer = BRepFilletAPI_MakeChamfer(target_solid)
+    chamfer.Add(float(length), id_map[choosedId])
+    new_solid = chamfer.Shape()
+    new_solid_id = uuid.uuid1().hex
+    solid_id_map[new_solid_id] = new_solid
+    solid_id_map.pop(related_solid_id_list[0])
+    # step4: 生成新的 BrCAD 对象进行比较
+    converter_2 = TopoDSShapeConvertor(get_TopoDS_Shape_from_solid_id_map(solid_id_map))
+    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, "Chamfer",new_solid_id, related_solid_id_list, True)
+    brcad_compare = BrCADCompare(brcad_1, brcad_2)
+    # step5: 保存操作
+    solid_ids = save_shape(solid_id_map)
+    operation = Operation(
+        type="Chamfer",
         project_id=project_id,
         operator_id=int(operator_id),
         time=int(time.time() * 1000),

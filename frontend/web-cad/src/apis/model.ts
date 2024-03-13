@@ -8,6 +8,10 @@ export function fillet(data: any) {
   return request.post("/cad/operation/fillet", data)
 }
 
+export function chamfer(data: any) {
+  return request.post("/cad/operation/chamfer", data)
+}
+
 export function getUploadFileUrl(projectId: number, operatorId: number) {
   return (
     request.baseConfig.baseURL +
@@ -34,6 +38,10 @@ export function rename(data: any) {
 
 export function transform(data: any) {
   return request.post("/cad/operation/transform", data)
+}
+
+export function deleteSolid(data: any) {
+  return request.post("/cad/operation/deleteSolid", data)
 }
 
 export function rollback(data: any) {

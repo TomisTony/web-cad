@@ -77,6 +77,43 @@ export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
     })
 }
 
+export const chamferAsync = (value: any) => (dispatch: any, getState: any) => {
+  dispatch(setOperationExecuting(true))
+  const historyList = getState().history.historyList
+  const lastOperationId = historyList[historyList.length - 1].operationId
+  const projectId = getState().globalStatus.projectId
+  const params = {
+    lastOperationId,
+    projectId,
+    operatorId: getUserId(),
+    data: {
+      ...value,
+    },
+  }
+  apis
+    .chamfer(params)
+    .then((data) => {
+      const { diff } = data
+      ThreeApp.getScene().clearScene()
+      let model = getState().model.model
+      model = Shape.applyDiffToBrCAD(model, diff)
+      Shape.setBrCADToScene(model)
+      dispatch(setModel(model))
+      dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
+    })
+    .catch((err) => {
+      dispatch(
+        setGlobalMessage({
+          type: "error",
+          content: "Error: Server Error! Check the console.",
+        }),
+      )
+    })
+    .finally(() => {
+      dispatch(setOperationExecuting(false))
+    })
+}
+
 export const renameAsync = (value: any) => (dispatch: any, getState: any) => {
   console.log("renameAsync")
   dispatch(setOperationExecuting(true))
