@@ -51,12 +51,6 @@ export const modelSlice = createSlice({
       state.choosedIdList = []
       state.choosedTypeList = []
     },
-    importFile: (state, action) => {
-      state.model = action.payload.model
-    },
-    fillet: (state, action) => {
-      state.model = action.payload.model
-    },
     setModel: (state, action) => {
       state.model = action.payload
     },

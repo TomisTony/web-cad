@@ -18,8 +18,6 @@ import { ThreeScene } from "@/three/ThreeScene"
 
 // 每个 case reducer 函数会生成对应的 Action creators
 export const {
-  importFile: importFileAction,
-  fillet,
   setModel,
   setChoosedInfo,
   addChoosedInfo,
@@ -36,14 +34,14 @@ export const importFile = (data: { model: BrCAD }) => (dispatch: any) => {
   dispatch(setOperationExecuting(true))
   ThreeApp.getScene().clearScene()
   Shape.setBrCADToScene(data.model)
-  dispatch(importFileAction(data))
+  dispatch(setModel(data.model))
   dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
   dispatch(setOperationExecuting(false))
 }
 export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
   dispatch(setOperationExecuting(true))
   const historyList = getState().history.historyList
-  const lastOperationId = historyList[historyList.length - 1].operationId
+  const lastOperationId = historyList[historyList.length - 1]?.operationId ?? -1
   const projectId = getState().globalStatus.projectId
   const params = {
     lastOperationId,
@@ -61,7 +59,7 @@ export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
       let model = getState().model.model
       model = Shape.applyDiffToBrCAD(model, diff)
       Shape.setBrCADToScene(model)
-      dispatch(fillet({ model }))
+      dispatch(setModel(model))
       dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
     })
     .catch((err) => {
@@ -80,7 +78,7 @@ export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
 export const chamferAsync = (value: any) => (dispatch: any, getState: any) => {
   dispatch(setOperationExecuting(true))
   const historyList = getState().history.historyList
-  const lastOperationId = historyList[historyList.length - 1].operationId
+  const lastOperationId = historyList[historyList.length - 1]?.operationId ?? -1
   const projectId = getState().globalStatus.projectId
   const params = {
     lastOperationId,
@@ -118,7 +116,7 @@ export const renameAsync = (value: any) => (dispatch: any, getState: any) => {
   console.log("renameAsync")
   dispatch(setOperationExecuting(true))
   const historyList = getState().history.historyList
-  const lastOperationId = historyList[historyList.length - 1].operationId
+  const lastOperationId = historyList[historyList.length - 1]?.operationId ?? -1
   const projectId = getState().globalStatus.projectId
   const params = {
     lastOperationId,
@@ -156,7 +154,8 @@ export const transformAsync =
   (value: any) => (dispatch: any, getState: any) => {
     dispatch(setOperationExecuting(true))
     const historyList = getState().history.historyList
-    const lastOperationId = historyList[historyList.length - 1].operationId
+    const lastOperationId =
+      historyList[historyList.length - 1]?.operationId ?? -1
     const projectId = getState().globalStatus.projectId
     const params = {
       lastOperationId,
@@ -193,7 +192,7 @@ export const transformAsync =
 export const makeBoxAsync = (value: any) => (dispatch: any, getState: any) => {
   dispatch(setOperationExecuting(true))
   const historyList = getState().history.historyList
-  const lastOperationId = historyList[historyList.length - 1].operationId
+  const lastOperationId = historyList[historyList.length - 1]?.operationId ?? -1
   const projectId = getState().globalStatus.projectId
   const params = {
     lastOperationId,
@@ -206,13 +205,21 @@ export const makeBoxAsync = (value: any) => (dispatch: any, getState: any) => {
   apis
     .makeBox(params)
     .then((data) => {
-      const { diff } = data
-      ThreeApp.getScene().clearScene()
-      let model = getState().model.model
-      model = Shape.applyDiffToBrCAD(model, diff)
-      Shape.setBrCADToScene(model)
-      dispatch(setModel(model))
-      dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
+      // 分两种情况，一种是新建立的模型，一种是对原有模型进行修改
+      const { diff, model: newModel } = data
+      if (newModel) {
+        ThreeApp.getScene().clearScene()
+        Shape.setBrCADToScene(newModel)
+        dispatch(setModel(newModel))
+        dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
+      } else {
+        ThreeApp.getScene().clearScene()
+        let model = getState().model.model
+        model = Shape.applyDiffToBrCAD(model, diff)
+        Shape.setBrCADToScene(model)
+        dispatch(setModel(model))
+        dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
+      }
     })
     .catch((err) => {
       dispatch(
@@ -230,7 +237,7 @@ export const makeBoxAsync = (value: any) => (dispatch: any, getState: any) => {
 export const rollbackAsync = (value: any) => (dispatch: any, getState: any) => {
   dispatch(setOperationExecuting(true))
   const historyList = getState().history.historyList
-  const lastOperationId = historyList[historyList.length - 1].operationId
+  const lastOperationId = historyList[historyList.length - 1]?.operationId ?? -1
   const historyListLength = historyList.length
   const projectId = getState().globalStatus.projectId
   apis

@@ -45,3 +45,10 @@ def get_TopoDS_Shape_from_solid_id_map(solid_id_map: Dict[str, TopoDS_Solid]) ->
     for solid in solid_id_map.values():
         builder.Add(compound, solid)
     return compound
+
+def get_TopoDS_Shape_from_solid(solid: TopoDS_Solid) -> TopoDS_Shape:
+    compound = TopoDS_Compound()
+    builder = BRep_Builder()
+    builder.MakeCompound(compound)
+    builder.Add(compound, solid)
+    return compound

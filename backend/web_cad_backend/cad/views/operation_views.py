@@ -18,7 +18,7 @@ from BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
 from BrCAD.BrCAD_compare import BrCADCompare
 from BrCAD.BrCAD import BrCAD
 
-from utils.solid_tool import get_solid_by_id, get_solid_id_map, save_shape, get_TopoDS_Shape_from_solid_ids, get_TopoDS_Shape_from_solid_id_map
+from utils.solid_tool import get_TopoDS_Shape_from_solid, get_solid_by_id, get_solid_id_map, save_shape, get_TopoDS_Shape_from_solid_ids, get_TopoDS_Shape_from_solid_id_map
 
 from OCC.Core.TopoDS import TopoDS_Shape, TopoDS_Compound
 from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet, BRepFilletAPI_MakeChamfer
@@ -355,6 +355,8 @@ def transform(request: HttpRequest):
 # Operation "Box"
 @api_view(["POST"])
 def makeBox(request: HttpRequest):
+    # 新建物体的操作和其他操作不同,因为新建物体的时候需要特判是不是空项目
+    # 其他操作在空项目的时候，前端会进行拦截（因为没法选中 topo）
     # step1: 获取参数
     params = json.loads(request.body)
     last_operation_id = params.get("lastOperationId")
@@ -365,18 +367,39 @@ def makeBox(request: HttpRequest):
     x = props.get("x")
     y = props.get("y")
     z = props.get("z")
-    # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
+    if last_operation_id == -1:
+        # 如果是空项目，直接新建一个物体，传完整 BrCAD 对象
+        solid = BRepPrimAPI_MakeBox(float(x), float(y), float(z)).Shape()
+        converter = TopoDSShapeConvertor(get_TopoDS_Shape_from_solid(solid))
+        brcad = converter.get_BrCAD_with_new_structure()
+        solid_map = converter.get_id_solid_map()
+        solid_ids = save_shape(solid_map)
+        operation = Operation(
+            type="Box",
+            project_id=project_id,
+            operator_id=int(operator_id),
+            time=int(time.time() * 1000),
+            data=data,
+            brcad=pickle.dumps(brcad),
+            solid_ids=solid_ids,
+        )
+        operation.save()
+        #更新 project 的 operation_history_ids
+        project = Project.objects.get(id=project_id)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+        #通知前端更新历史记录
+        notify_update_history_list(project_id)
+        
+        return ApiResponse({"operationId": operation.id, "model": brcad.to_dict()})
     solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
     brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
-    # step3: 执行对应操作
     solid = BRepPrimAPI_MakeBox(float(x), float(y), float(z)).Shape()
     new_solid_id = uuid.uuid1().hex
     solid_map[new_solid_id] = solid
-    # step4: 生成新的 BrCAD 对象进行比较
     converter_2 = TopoDSShapeConvertor(get_TopoDS_Shape_from_solid_id_map(solid_map))
     brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, "Box",new_solid_id, [])
     brcad_compare = BrCADCompare(brcad_1, brcad_2)
-    # step5: 保存操作
     solid_ids = save_shape(solid_map)
     operation = Operation(
         type="Box",
@@ -388,11 +411,11 @@ def makeBox(request: HttpRequest):
         solid_ids=solid_ids,
     )
     operation.save()
-    # step6: 更新 project 的 operation_history_ids
+    #更新 project 的 operation_history_ids
     project = Project.objects.get(id=project_id)
     project.operation_history_ids.append(operation.id)
     project.save()
-    # step7: 通知前端更新历史记录
+    #通知前端更新历史记录
     notify_update_history_list(project_id)
     
     return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
