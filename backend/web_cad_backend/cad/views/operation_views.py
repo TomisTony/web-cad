@@ -22,6 +22,7 @@ from utils.solid_tool import get_solid_by_id, get_solid_id_map, save_shape, get_
 
 from OCC.Core.TopoDS import TopoDS_Shape, TopoDS_Compound
 from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet, BRepFilletAPI_MakeChamfer
+from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox, BRepPrimAPI_MakeCylinder, BRepPrimAPI_MakeSphere, BRepPrimAPI_MakeTorus, BRepPrimAPI_MakeCone
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
 from OCC.Core.BRep import BRep_Builder
 from OCC.Core.gp import gp_Pnt, gp_Trsf, gp_Vec, gp_Ax1, gp_Dir
@@ -334,6 +335,51 @@ def transform(request: HttpRequest):
     solid_ids = save_shape(solid_map)
     operation = Operation(
         type="Transform",
+        project_id=project_id,
+        operator_id=int(operator_id),
+        time=int(time.time() * 1000),
+        data=data,
+        brcad=pickle.dumps(brcad_2),
+        solid_ids=solid_ids,
+    )
+    operation.save()
+    # step6: 更新 project 的 operation_history_ids
+    project = Project.objects.get(id=project_id)
+    project.operation_history_ids.append(operation.id)
+    project.save()
+    # step7: 通知前端更新历史记录
+    notify_update_history_list(project_id)
+    
+    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
+
+# Operation "Box"
+@api_view(["POST"])
+def makeBox(request: HttpRequest):
+    # step1: 获取参数
+    params = json.loads(request.body)
+    last_operation_id = params.get("lastOperationId")
+    project_id = params.get("projectId")
+    operator_id = params.get("operatorId")
+    data = params.get("data")
+    props = data.get("props")
+    x = props.get("x")
+    y = props.get("y")
+    z = props.get("z")
+    # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
+    solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
+    brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
+    # step3: 执行对应操作
+    solid = BRepPrimAPI_MakeBox(float(x), float(y), float(z)).Shape()
+    new_solid_id = uuid.uuid1().hex
+    solid_map[new_solid_id] = solid
+    # step4: 生成新的 BrCAD 对象进行比较
+    converter_2 = TopoDSShapeConvertor(get_TopoDS_Shape_from_solid_id_map(solid_map))
+    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, "Box",new_solid_id, [])
+    brcad_compare = BrCADCompare(brcad_1, brcad_2)
+    # step5: 保存操作
+    solid_ids = save_shape(solid_map)
+    operation = Operation(
+        type="Box",
         project_id=project_id,
         operator_id=int(operator_id),
         time=int(time.time() * 1000),

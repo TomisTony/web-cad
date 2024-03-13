@@ -4,6 +4,7 @@ import { OperationSetting } from "@/types/Operation"
 import fillet from "@/assets/operations/Part_Fillet.png"
 import chamfer from "@/assets/operations/Part_Chamfer.png"
 import transform from "@/assets/operations/transform.png"
+import box from "@/assets/operations/Part_Box.png"
 
 import {
   UploadOutlined,
@@ -23,6 +24,7 @@ import {
   chamferAsync,
   renameAsync,
   transformAsync,
+  makeBoxAsync,
 } from "@/store/model/modelActions"
 
 interface Operation {
@@ -142,6 +144,49 @@ const operationList: Operation[] = [
   },
   {
     label: "delimiter1",
+    img: "",
+    action: () => {
+      console.log("delimiter")
+    },
+    isDelimiter: true,
+  },
+  {
+    label: "Box",
+    img: box,
+    action: () => store.dispatch(setOperationPanel("Box")),
+    abled: (historyChecking: boolean) => historyChecking === false,
+    operationSetting: {
+      operationName: "Box",
+      chooseCount: 0,
+      chooseLabelList: [],
+      chooseTypeList: [],
+      props: [
+        {
+          type: "input",
+          label: "x",
+          info: "x",
+          defaultValue: "1.0",
+        },
+        {
+          type: "input",
+          label: "y",
+          info: "y",
+          defaultValue: "1.0",
+        },
+        {
+          type: "input",
+          label: "z",
+          info: "z",
+          defaultValue: "1.0",
+        },
+      ],
+      onSubmit: (values) => {
+        store.dispatch(makeBoxAsync(values))
+      },
+    },
+  },
+  {
+    label: "delimiter2",
     img: "",
     action: () => {
       console.log("delimiter")

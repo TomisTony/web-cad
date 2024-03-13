@@ -40,6 +40,10 @@ export function transform(data: any) {
   return request.post("/cad/operation/transform", data)
 }
 
+export function makeBox(data: any) {
+  return request.post("/cad/operation/makeBox", data)
+}
+
 export function deleteSolid(data: any) {
   return request.post("/cad/operation/deleteSolid", data)
 }
