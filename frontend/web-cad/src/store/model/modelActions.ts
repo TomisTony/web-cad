@@ -30,11 +30,18 @@ export const {
   setStructureMap,
 } = modelSlice.actions
 
-export const importFile = (data: { model: BrCAD }) => (dispatch: any) => {
+export const importFile = (data: any) => (dispatch: any, getState: any) => {
+  const { model: newModel, diff } = data
   dispatch(setOperationExecuting(true))
   ThreeApp.getScene().clearScene()
-  Shape.setBrCADToScene(data.model)
-  dispatch(setModel(data.model))
+  let model
+  if (newModel) {
+    model = newModel
+  } else {
+    model = Shape.applyDiffToBrCAD(getState().model.model, diff)
+  }
+  Shape.setBrCADToScene(model)
+  dispatch(setModel(model))
   dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
   dispatch(setOperationExecuting(false))
 }

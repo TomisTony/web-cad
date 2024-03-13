@@ -40,7 +40,7 @@ def getOperationModel(request: HttpRequest):
 
 # Operation "Import"
 @api_view(["POST"])
-def uploadFile(request: HttpRequest, project_id: int, operator_id: int):
+def uploadFile(request: HttpRequest, project_id: int, operator_id: int, last_operation_id: int):
     file = request.FILES.get("file", None)
     if file is None:
         return ApiResponse("No file is uploaded", data_status=400)
@@ -54,29 +54,59 @@ def uploadFile(request: HttpRequest, project_id: int, operator_id: int):
                 f.write(chunk)
         # 读取文件
         shape = read_step_file(filename)
-        converter = TopoDSShapeConvertor(shape)
-        br_cad = converter.get_BrCAD_with_new_structure()
-        solid_id_map = converter.get_id_solid_map()
-        # 保存操作
-        solid_ids = save_shape(solid_id_map)
-        operation = Operation(
-            type="Import",
-            project_id=project_id,
-            operator_id=int(operator_id),
-            time=int(time.time() * 1000),
-            brcad=pickle.dumps(br_cad),
-            solid_ids=solid_ids,
-        )
-        operation.save()
-        # 更新 project 的 operation_history_ids
-        project = Project.objects.get(id=project_id)
-        project.operation_history_ids.append(operation.id)
-        project.save()
-        # 通知前端更新历史记录
-        notify_update_history_list(project_id)
-        # 删除文件
-        os.remove(filename)
-        return ApiResponse({"operationId": operation.id, "model": br_cad.to_dict()})
+        # 分两种情况,如果是空项目,则直接返回 BrCAD 对象,否则返回操作后的 BrCAD 对象
+        if last_operation_id == -1:
+            converter = TopoDSShapeConvertor(shape)
+            br_cad = converter.get_BrCAD_with_new_structure()
+            solid_id_map = converter.get_id_solid_map()
+            # 保存操作
+            solid_ids = save_shape(solid_id_map)
+            operation = Operation(
+                type="Import",
+                project_id=project_id,
+                operator_id=int(operator_id),
+                time=int(time.time() * 1000),
+                brcad=pickle.dumps(br_cad),
+                solid_ids=solid_ids,
+            )
+            operation.save()
+            # 更新 project 的 operation_history_ids
+            project = Project.objects.get(id=project_id)
+            project.operation_history_ids.append(operation.id)
+            project.save()
+            # 通知前端更新历史记录
+            notify_update_history_list(project_id)
+            # 删除文件
+            os.remove(filename)
+            return ApiResponse({"operationId": operation.id, "model": br_cad.to_dict()})
+        else:
+            solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
+            brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
+            converter = TopoDSShapeConvertor(shape)
+            new_solid_id_map = converter.get_id_solid_map()
+            for solid_id, solid in new_solid_id_map.items():
+                solid_map[solid_id] = solid
+            brcad_2 = BrCAD.union(brcad_1, converter.get_BrCAD_with_new_structure())
+            brcad_compare = BrCADCompare(brcad_1, brcad_2)
+            solid_ids = save_shape(solid_map)
+            operation = Operation(
+                type="Import",
+                project_id=project_id,
+                operator_id=int(operator_id),
+                time=int(time.time() * 1000),
+                brcad=pickle.dumps(brcad_2),
+                solid_ids=solid_ids,
+            )
+            operation.save()
+            # 更新 project 的 operation_history_ids
+            project = Project.objects.get(id=project_id)
+            project.operation_history_ids.append(operation.id)
+            project.save()
+            # 通知前端更新历史记录
+            notify_update_history_list(project_id)
+            # 删除文件
+            os.remove(filename)
+            return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
     except Exception as e:
         # 先查看文件是否已经保存下来了,如果保存下来了,则删除
         print(e)

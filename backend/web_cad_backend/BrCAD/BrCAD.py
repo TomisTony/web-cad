@@ -1,5 +1,6 @@
 import hashlib
 import json
+import pickle
 from typing import List, Dict
 
 
@@ -130,3 +131,18 @@ class BrCAD:
 
     def to_json(self) -> None:
         return json.dumps(self.to_dict())
+    
+    @staticmethod
+    def union(origin_brcad_1: "BrCAD", origin_brcad_2: "BrCAD") -> "BrCAD":
+        brcad_1: BrCAD = pickle.loads(pickle.dumps(origin_brcad_1))
+        brcad_2: BrCAD = pickle.loads(pickle.dumps(origin_brcad_2))
+        faces = []
+        edges = []
+        structure = brcad_1.structure
+        for structure_2 in brcad_2.structure.children:
+            structure.children.append(structure_2)
+        faces.extend(brcad_1.faces)
+        faces.extend(brcad_2.faces)
+        edges.extend(brcad_1.edges)
+        edges.extend(brcad_2.edges)
+        return BrCAD(structure, faces, edges)

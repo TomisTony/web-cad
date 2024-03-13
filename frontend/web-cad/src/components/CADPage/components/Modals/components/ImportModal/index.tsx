@@ -22,10 +22,16 @@ function ImportModal() {
     dispatch(setModal(""))
   }
   const token = getToken()
+  const historyList = useAppSelector((state) => state.history.historyList)
+  const lastOperationId = historyList[historyList.length - 1]?.operationId ?? -1
   const props: UploadProps = {
     name: "file",
     accept: ".step,.stp",
-    action: apis.getUploadFileUrl(parseInt(projectId || "0"), userId),
+    action: apis.getUploadFileUrl(
+      parseInt(projectId || "0"),
+      userId,
+      lastOperationId,
+    ),
     headers: {
       Authorization: "Bearer " + token,
     },

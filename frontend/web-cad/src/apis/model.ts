@@ -12,13 +12,19 @@ export function chamfer(data: any) {
   return request.post("/cad/operation/chamfer", data)
 }
 
-export function getUploadFileUrl(projectId: number, operatorId: number) {
+export function getUploadFileUrl(
+  projectId: number,
+  operatorId: number,
+  lastOperationId: number,
+) {
   return (
     request.baseConfig.baseURL +
     "/cad/operation/uploadFile/" +
     projectId +
     "/" +
-    operatorId
+    operatorId +
+    "/" +
+    lastOperationId
   )
 }
 
