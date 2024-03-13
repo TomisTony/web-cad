@@ -72,7 +72,7 @@ function NodeTree(props: NodeTreeProps) {
     <div
       ref={ref}
       className={
-        "bg-gray-400 bg-opacity-70 w-[18%] p-4 flex flex-col shadow-sm" +
+        "bg-gray-400 bg-opacity-70 w-[15%] p-4 flex flex-col shadow-sm" +
         " select-none pointer-events-auto " +
         "rounded-lg" +
         "border-solid border border-black" +

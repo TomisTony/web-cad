@@ -132,12 +132,10 @@ function OperationPanel({ className, operationSetting }: Props) {
             )}
           </div>
           <div className="text-lg font-bold">Props</div>
-          <div className="text-base">
+          <div className="text-base flex flex-col space-y-2">
             {props?.map((prop, index) => (
-              <div key={index} className="flex space-y-2 items-center">
-                <div className="text-base mr-2 min-w-[20%]">
-                  {prop.label + ":"}
-                </div>
+              <div key={index} className="flex items-center">
+                <div className="mr-2 min-w-[25%]">{prop.label + ":"}</div>
                 {prop.type === "input" && (
                   <Form.Item
                     className="m-0"

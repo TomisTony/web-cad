@@ -67,7 +67,8 @@ export class ThreeScene {
     //背景颜色
     //this.scene.background = new THREE.Color(0x222222);
     this.scene.background = new THREE.Color(0xbbbbbb)
-
+    const axes = new THREE.AxesHelper(100)
+    this.scene.add(axes)
     const grid: any = new THREE.GridHelper(10000, 1000, 0xffffff, 0xffffff)
     grid.rotation.set(Math.PI / 2.0, 0, 0)
     grid.material.opacity = 0.5
@@ -87,7 +88,7 @@ export class ThreeScene {
       0.1,
       10000,
     )
-    this.camera.position.set(0, -400, 530)
+    this.camera.position.set(0, -300, 200)
     this.camera.up = new THREE.Vector3(0, 0, 1)
     this.camera.lookAt(new THREE.Vector3(0, 0, 0))
   }

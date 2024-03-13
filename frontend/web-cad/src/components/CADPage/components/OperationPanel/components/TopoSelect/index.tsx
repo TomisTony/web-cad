@@ -138,7 +138,7 @@ function TopoSelect(props: TopoSelectProps) {
   }
 
   return (
-    <div>
+    <div className="w-[95%]">
       {typeList.map((type, index) => {
         return (
           <div key={index}>
