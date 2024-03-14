@@ -16,7 +16,7 @@ import uuid
 
 from BrCAD.topoDS_shape_convertor import TopoDSShapeConvertor
 from BrCAD.BrCAD_compare import BrCADCompare
-from BrCAD.BrCAD import BrCAD
+from BrCAD.BrCAD import BrCAD, BrCAD_node
 
 from utils.solid_tool import get_TopoDS_Shape_from_solid, get_solid_by_id, get_solid_id_map, save_shape, get_TopoDS_Shape_from_solid_ids, get_TopoDS_Shape_from_solid_id_map
 
@@ -366,6 +366,65 @@ def transform(request: HttpRequest):
     solid_ids = save_shape(solid_map)
     operation = Operation(
         type="Transform",
+        project_id=project_id,
+        operator_id=int(operator_id),
+        time=int(time.time() * 1000),
+        data=data,
+        brcad=pickle.dumps(brcad_2),
+        solid_ids=solid_ids,
+    )
+    operation.save()
+    # step6: 更新 project 的 operation_history_ids
+    project = Project.objects.get(id=project_id)
+    project.operation_history_ids.append(operation.id)
+    project.save()
+    # step7: 通知前端更新历史记录
+    notify_update_history_list(project_id)
+    
+    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
+
+# Operation "Delete"
+@api_view(["POST"])
+def deleteSolid(request: HttpRequest):
+    # step1: 获取参数
+    params = json.loads(request.body)
+    last_operation_id = params.get("lastOperationId")
+    project_id = params.get("projectId")
+    operator_id = params.get("operatorId")
+    data = params.get("data")
+    choosed_id_list = data.get("choosedIdList")
+    related_solid_id_list = data.get("relatedSolidIdList")
+    choosedId = choosed_id_list[0]
+    # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
+    brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
+    solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
+    # step3: 执行对应操作
+    solid_map.pop(choosedId)
+    # step4: 生成新的 BrCAD 对象进行比较
+    brcad_2: BrCAD = pickle.loads(pickle.dumps(brcad_1))
+    delete_node: BrCAD_node = None
+    for node in brcad_2.structure.children:
+        if node.id == choosedId:
+            delete_node = node
+            break
+    # 删除 face 和 edge
+    if delete_node is not None:
+        for face_id in delete_node.faces:
+            for face in brcad_2.faces:
+                if face.id == face_id:
+                    brcad_2.faces.remove(face)
+                    break
+        for edge_id in delete_node.edges:
+            for edge in brcad_2.edges:
+                if edge.id == edge_id:
+                    brcad_2.edges.remove(edge)
+                    break
+        brcad_2.structure.children.remove(delete_node) 
+    brcad_compare = BrCADCompare(brcad_1, brcad_2)
+    # step5: 保存操作
+    solid_ids = save_shape(solid_map)
+    operation = Operation(
+        type="Delete",
         project_id=project_id,
         operator_id=int(operator_id),
         time=int(time.time() * 1000),

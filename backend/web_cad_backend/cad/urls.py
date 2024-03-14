@@ -14,6 +14,7 @@ urlpatterns = [
     path("operation/uploadFile/<int:project_id>/<int:operator_id>/<str:last_operation_id>", operation_views.uploadFile, name="uploadFile"),
     path("operation/transform", operation_views.transform, name="transform"),
     path("operation/rename", operation_views.rename, name="rename"),
+    path("operation/deleteSolid", operation_views.deleteSolid, name="deleteSolid"),
     path("operation/makeBox", operation_views.makeBox, name="box"),
     path("operation/makeTorus", operation_views.makeTorus, name="torus"),
     path("operation/makeCone", operation_views.makeCone, name="cone"),

@@ -196,6 +196,43 @@ export const transformAsync =
       })
   }
 
+export const deleteAsync = (value: any) => (dispatch: any, getState: any) => {
+  dispatch(setOperationExecuting(true))
+  const historyList = getState().history.historyList
+  const lastOperationId = historyList[historyList.length - 1]?.operationId ?? -1
+  const projectId = getState().globalStatus.projectId
+  const params = {
+    lastOperationId,
+    projectId,
+    operatorId: getUserId(),
+    data: {
+      ...value,
+    },
+  }
+  apis
+    .deleteSolid(params)
+    .then((data) => {
+      const { diff } = data
+      ThreeApp.getScene().clearScene()
+      let model = getState().model.model
+      model = Shape.applyDiffToBrCAD(model, diff)
+      Shape.setBrCADToScene(model)
+      dispatch(setModel(model))
+      dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
+    })
+    .catch((err) => {
+      dispatch(
+        setGlobalMessage({
+          type: "error",
+          content: "Error: Server Error! Check the console.",
+        }),
+      )
+    })
+    .finally(() => {
+      dispatch(setOperationExecuting(false))
+    })
+}
+
 const makeSomethingAsync =
   (api: (data: any) => Promise<any>) =>
   (value: any) =>

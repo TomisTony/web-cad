@@ -15,6 +15,7 @@ import {
   ExportOutlined,
   RollbackOutlined,
   FormOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons"
 
 import store from "@/app/store"
@@ -28,6 +29,7 @@ import {
   chamferAsync,
   renameAsync,
   transformAsync,
+  deleteAsync,
   makeBoxAsync,
   makeCylinderAsync,
   makeConeAsync,
@@ -147,6 +149,22 @@ const operationList: Operation[] = [
       ],
       onSubmit: (values) => {
         store.dispatch(renameAsync(values))
+      },
+    },
+  },
+  {
+    label: "Delete",
+    icon: (className) => <DeleteOutlined className={className} />,
+    action: () => store.dispatch(setOperationPanel("Delete")),
+    abled: (historyChecking: boolean) => historyChecking === false,
+    operationSetting: {
+      operationName: "Delete",
+      chooseCount: 1,
+      chooseLabelList: ["Solid"],
+      chooseTypeList: ["solid"],
+      props: [],
+      onSubmit: (values) => {
+        store.dispatch(deleteAsync(values))
       },
     },
   },
