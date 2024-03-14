@@ -54,6 +54,18 @@ export function makeCylinder(data: any) {
   return request.post("/cad/operation/makeCylinder", data)
 }
 
+export function makeCone(data: any) {
+  return request.post("/cad/operation/makeCone", data)
+}
+
+export function makeSphere(data: any) {
+  return request.post("/cad/operation/makeSphere", data)
+}
+
+export function makeTorus(data: any) {
+  return request.post("/cad/operation/makeTorus", data)
+}
+
 export function deleteSolid(data: any) {
   return request.post("/cad/operation/deleteSolid", data)
 }

@@ -6,6 +6,9 @@ import chamfer from "@/assets/operations/Part_Chamfer.png"
 import transform from "@/assets/operations/transform.png"
 import box from "@/assets/operations/Part_Box.png"
 import cylinder from "@/assets/operations/Part_Cylinder.png"
+import Cone from "@/assets/operations/Part_Cone.png"
+import Torus from "@/assets/operations/Part_Torus.png"
+import Sphere from "@/assets/operations/Part_Sphere.png"
 
 import {
   UploadOutlined,
@@ -27,6 +30,9 @@ import {
   transformAsync,
   makeBoxAsync,
   makeCylinderAsync,
+  makeConeAsync,
+  makeSphereAsync,
+  makeTorusAsync,
 } from "@/store/model/modelActions"
 
 interface Operation {
@@ -219,6 +225,111 @@ const operationList: Operation[] = [
       ],
       onSubmit: (values) => {
         store.dispatch(makeCylinderAsync(values))
+      },
+    },
+  },
+  {
+    label: "Cone",
+    img: Cone,
+    action: () => store.dispatch(setOperationPanel("Cone")),
+    abled: (historyChecking: boolean) => historyChecking === false,
+    operationSetting: {
+      operationName: "Cylinder",
+      chooseCount: 0,
+      chooseLabelList: [],
+      chooseTypeList: [],
+      props: [
+        {
+          type: "input",
+          label: "radius1",
+          info: "radius1",
+          defaultValue: "0.0",
+        },
+        {
+          type: "input",
+          label: "radius2",
+          info: "radius2",
+          defaultValue: "1.0",
+        },
+        {
+          type: "input",
+          label: "height",
+          info: "height",
+          defaultValue: "1.0",
+        },
+      ],
+      onSubmit: (values) => {
+        store.dispatch(makeConeAsync(values))
+      },
+    },
+  },
+  {
+    label: "Sphere",
+    img: Sphere,
+    action: () => store.dispatch(setOperationPanel("Sphere")),
+    abled: (historyChecking: boolean) => historyChecking === false,
+    operationSetting: {
+      operationName: "Sphere",
+      chooseCount: 0,
+      chooseLabelList: [],
+      chooseTypeList: [],
+      props: [
+        {
+          type: "input",
+          label: "radius",
+          info: "radius",
+          defaultValue: "1.0",
+        },
+        {
+          type: "input",
+          label: "angle1",
+          info: "angle1",
+          defaultValue: "360.0",
+        },
+        {
+          type: "input",
+          label: "angle2",
+          info: "angle2",
+          defaultValue: "360.0",
+        },
+      ],
+      onSubmit: (values) => {
+        store.dispatch(makeSphereAsync(values))
+      },
+    },
+  },
+  {
+    label: "Torus",
+    img: Torus,
+    action: () => store.dispatch(setOperationPanel("Torus")),
+    abled: (historyChecking: boolean) => historyChecking === false,
+    operationSetting: {
+      operationName: "Torus",
+      chooseCount: 0,
+      chooseLabelList: [],
+      chooseTypeList: [],
+      props: [
+        {
+          type: "input",
+          label: "radius1",
+          info: "radius1",
+          defaultValue: "1.0",
+        },
+        {
+          type: "input",
+          label: "radius2",
+          info: "radius2",
+          defaultValue: "2.0",
+        },
+        {
+          type: "input",
+          label: "angle",
+          info: "angle",
+          defaultValue: "360.0",
+        },
+      ],
+      onSubmit: (values) => {
+        store.dispatch(makeTorusAsync(values))
       },
     },
   },

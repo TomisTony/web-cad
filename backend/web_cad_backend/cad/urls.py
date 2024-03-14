@@ -15,6 +15,9 @@ urlpatterns = [
     path("operation/transform", operation_views.transform, name="transform"),
     path("operation/rename", operation_views.rename, name="rename"),
     path("operation/makeBox", operation_views.makeBox, name="box"),
+    path("operation/makeTorus", operation_views.makeTorus, name="torus"),
+    path("operation/makeCone", operation_views.makeCone, name="cone"),
+    path("operation/makeSphere", operation_views.makeSphere, name="sphere"),
     path("operation/makeCylinder", operation_views.makeCylinder, name="cylinder"),
     path("operation/rollback", operation_views.rollback_with_concatenation_mode, name="rollback"),
 ]

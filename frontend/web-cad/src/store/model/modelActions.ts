@@ -247,6 +247,12 @@ export const makeBoxAsync = makeSomethingAsync(apis.makeBox)
 
 export const makeCylinderAsync = makeSomethingAsync(apis.makeCylinder)
 
+export const makeConeAsync = makeSomethingAsync(apis.makeCone)
+
+export const makeSphereAsync = makeSomethingAsync(apis.makeSphere)
+
+export const makeTorusAsync = makeSomethingAsync(apis.makeTorus)
+
 export const rollbackAsync = (value: any) => (dispatch: any, getState: any) => {
   dispatch(setOperationExecuting(true))
   const historyList = getState().history.historyList
