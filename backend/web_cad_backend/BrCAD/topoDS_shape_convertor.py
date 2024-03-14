@@ -345,7 +345,6 @@ class TopoDSShapeConvertor:
             hash = edge.HashCode(MAX_SAFE_INT)
             if hash not in complete_edge_set:
                 brcad_edge = BrCAD_edge(
-                    id=str(hash),
                     vertex_coordinates=[],
                 )
                 location = TopLoc_Location()
