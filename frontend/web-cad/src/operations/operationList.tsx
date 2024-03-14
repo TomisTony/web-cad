@@ -282,14 +282,8 @@ const operationList: Operation[] = [
         },
         {
           type: "input",
-          label: "angle1",
-          info: "angle1",
-          defaultValue: "360.0",
-        },
-        {
-          type: "input",
-          label: "angle2",
-          info: "angle2",
+          label: "angle",
+          info: "angle",
           defaultValue: "360.0",
         },
       ],

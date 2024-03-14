@@ -533,12 +533,11 @@ def makeSphere(request: HttpRequest):
     data = params.get("data")
     props = data.get("props")
     radius = props.get("radius")
-    angle_1 = props.get("angle1")
-    angle_2 = props.get("angle2")
+    angle = props.get("angle")
     PI = 3.14159265358979323846
     if last_operation_id == -1:
         # 如果是空项目，直接新建一个物体，传完整 BrCAD 对象
-        solid = BRepPrimAPI_MakeSphere(float(radius), float(angle_1) * PI / 180, float(angle_2) * PI / 180).Shape()
+        solid = BRepPrimAPI_MakeSphere(float(radius), float(angle) * PI / 180).Shape()
         converter = TopoDSShapeConvertor(get_TopoDS_Shape_from_solid(solid))
         brcad = converter.get_BrCAD_with_new_structure()
         solid_map = converter.get_id_solid_map()
@@ -563,7 +562,7 @@ def makeSphere(request: HttpRequest):
         return ApiResponse({"operationId": operation.id, "model": brcad.to_dict()})
     solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
     brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
-    solid = BRepPrimAPI_MakeSphere(float(radius), float(angle_1) * PI / 180, float(angle_2) * PI / 180).Shape()
+    solid = BRepPrimAPI_MakeSphere(float(radius), float(angle) * PI / 180).Shape()
     new_solid_id = uuid.uuid1().hex
     solid_map[new_solid_id] = solid
     converter_2 = TopoDSShapeConvertor(get_TopoDS_Shape_from_solid_id_map(solid_map))
