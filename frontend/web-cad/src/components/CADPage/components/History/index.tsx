@@ -21,7 +21,7 @@ function History(props: HistoryProps) {
         props.className
       }
     >
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 w-[80%]">
         <div className="m-1 text-white font-bold flex justify-between">
           {"History"}
           <div className="text-base">
@@ -29,7 +29,7 @@ function History(props: HistoryProps) {
             {": The History Currently Being Displayed"}
           </div>
         </div>
-        <HistoryList className="m-1 flex-1" />
+        <HistoryList className="m-1 flex-1 overflow-auto" />
       </div>
       <div className="w-[1px] bg-gray-300" />
       <div className="flex flex-col w-[20%]">
