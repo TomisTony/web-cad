@@ -147,7 +147,7 @@ function OperationPanel({ className, operationSetting }: Props) {
                 )}
                 {prop.type === "select" && (
                   <Form.Item
-                    className="m-0"
+                    className="my-0 min-w-[50%]"
                     name={prop.label}
                     rules={[{ required: true, message: "value require!" }]}
                   >

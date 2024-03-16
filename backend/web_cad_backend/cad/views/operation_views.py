@@ -23,6 +23,7 @@ from utils.solid_tool import get_TopoDS_Shape_from_solid, get_solid_by_id, get_s
 from OCC.Core.TopoDS import TopoDS_Shape, TopoDS_Compound
 from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet, BRepFilletAPI_MakeChamfer
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox, BRepPrimAPI_MakeCylinder, BRepPrimAPI_MakeSphere, BRepPrimAPI_MakeTorus, BRepPrimAPI_MakeCone
+from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Cut, BRepAlgoAPI_Fuse,BRepAlgoAPI_Common
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
 from OCC.Core.BRep import BRep_Builder
 from OCC.Core.gp import gp_Pnt, gp_Trsf, gp_Vec, gp_Ax1, gp_Dir
@@ -783,7 +784,207 @@ def makeTorus(request: HttpRequest):
     #通知前端更新历史记录
     notify_update_history_list(project_id)
     
-    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})      
+    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
+
+# Operation "Boolean"
+@api_view(["POST"])
+def boolean(request: HttpRequest):
+    # step1: 获取参数
+    params = json.loads(request.body)
+    last_operation_id = params.get("lastOperationId")
+    project_id = params.get("projectId")
+    operator_id = params.get("operatorId")
+    data = params.get("data")
+    props = data.get("props")
+    operation_type = props.get("type")
+    solid_1 = props.get("solid1")
+    solid_2 = props.get("solid2")
+    related_solid_id_list = data.get("relatedSolidIdList")
+    # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
+    brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
+    solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
+    solid_1 = solid_map[related_solid_id_list[0]]
+    solid_2 = solid_map[related_solid_id_list[1]]
+    solid: TopoDS_Shape = None
+    # step3: 执行对应操作
+    if operation_type == "union":
+        solid = BRepAlgoAPI_Fuse(solid_1, solid_2).Shape()
+    elif operation_type == "difference":
+        solid = BRepAlgoAPI_Cut(solid_1, solid_2).Shape()
+    elif operation_type == "intersection":
+        solid = BRepAlgoAPI_Common(solid_1, solid_2).Shape()
+    new_solid_id = uuid.uuid1().hex
+    solid_map[new_solid_id] = solid
+    solid_map.pop(related_solid_id_list[0])
+    solid_map.pop(related_solid_id_list[1])
+    # step4: 生成新的 BrCAD 对象进行比较
+    converter_2 = TopoDSShapeConvertor(get_TopoDS_Shape_from_solid_id_map(solid_map))
+    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, operation_type, new_solid_id, related_solid_id_list, False)
+    brcad_compare = BrCADCompare(brcad_1, brcad_2)
+    # step5: 保存操作
+    solid_ids = save_shape(solid_map)
+    operation = Operation(
+        type="Boolean",
+        project_id=project_id,
+        operator_id=int(operator_id),
+        time=int(time.time() * 1000),
+        data=data,
+        brcad=pickle.dumps(brcad_2),
+        solid_ids=solid_ids,
+    )
+    operation.save()
+    # step6: 更新 project 的 operation_history_ids
+    project = Project.objects.get(id=project_id)
+    project.operation_history_ids.append(operation.id)
+    project.save()
+    # step7: 通知前端更新历史记录
+    notify_update_history_list(project_id)
+    
+    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
+
+# Operation "Union"
+@api_view(["POST"])
+def union(request: HttpRequest):
+    # step1: 获取参数
+    params = json.loads(request.body)
+    last_operation_id = params.get("lastOperationId")
+    project_id = params.get("projectId")
+    operator_id = params.get("operatorId")
+    data = params.get("data")
+    props = data.get("props")
+    solid_1 = props.get("solid1")
+    solid_2 = props.get("solid2")
+    related_solid_id_list = data.get("relatedSolidIdList")
+    # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
+    brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
+    solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
+    solid_1 = solid_map[related_solid_id_list[0]]
+    solid_2 = solid_map[related_solid_id_list[1]]
+    solid = BRepAlgoAPI_Fuse(solid_1, solid_2).Shape()
+    new_solid_id = uuid.uuid1().hex
+    solid_map[new_solid_id] = solid
+    solid_map.pop(related_solid_id_list[0])
+    solid_map.pop(related_solid_id_list[1])
+    # step4: 生成新的 BrCAD 对象进行比较
+    converter_2 = TopoDSShapeConvertor(get_TopoDS_Shape_from_solid_id_map(solid_map))
+    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, "union", new_solid_id, related_solid_id_list, False)
+    brcad_compare = BrCADCompare(brcad_1, brcad_2)
+    # step5: 保存操作
+    solid_ids = save_shape(solid_map)
+    operation = Operation(
+        type="Union",
+        project_id=project_id,
+        operator_id=int(operator_id),
+        time=int(time.time() * 1000),
+        data=data,
+        brcad=pickle.dumps(brcad_2),
+        solid_ids=solid_ids,
+    )
+    operation.save()
+    # step6: 更新 project 的 operation_history_ids
+    project = Project.objects.get(id=project_id)
+    project.operation_history_ids.append(operation.id)
+    project.save()
+    # step7: 通知前端更新历史记录
+    notify_update_history_list(project_id)
+    
+    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
+
+# Operation "Difference"
+@api_view(["POST"])
+def difference(request: HttpRequest):
+    # step1: 获取参数
+    params = json.loads(request.body)
+    last_operation_id = params.get("lastOperationId")
+    project_id = params.get("projectId")
+    operator_id = params.get("operatorId")
+    data = params.get("data")
+    props = data.get("props")
+    solid_1 = props.get("solid1")
+    solid_2 = props.get("solid2")
+    related_solid_id_list = data.get("relatedSolidIdList")
+    # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
+    brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
+    solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
+    solid_1 = solid_map[related_solid_id_list[0]]
+    solid_2 = solid_map[related_solid_id_list[1]]
+    solid = BRepAlgoAPI_Cut(solid_1, solid_2).Shape()
+    new_solid_id = uuid.uuid1().hex
+    solid_map[new_solid_id] = solid
+    solid_map.pop(related_solid_id_list[0])
+    solid_map.pop(related_solid_id_list[1])
+    # step4: 生成新的 BrCAD 对象进行比较
+    converter_2 = TopoDSShapeConvertor(get_TopoDS_Shape_from_solid_id_map(solid_map))
+    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, "difference", new_solid_id, related_solid_id_list, False)
+    brcad_compare = BrCADCompare(brcad_1, brcad_2)
+    # step5: 保存操作
+    solid_ids = save_shape(solid_map)
+    operation = Operation(
+        type="Difference",
+        project_id=project_id,
+        operator_id=int(operator_id),
+        time=int(time.time() * 1000),
+        data=data,
+        brcad=pickle.dumps(brcad_2),
+        solid_ids=solid_ids,
+    )
+    operation.save()
+    # step6: 更新 project 的 operation_history_ids
+    project = Project.objects.get(id=project_id)
+    project.operation_history_ids.append(operation.id)
+    project.save()
+    # step7: 通知前端更新历史记录
+    notify_update_history_list(project_id)
+    
+    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()}) 
+
+# Operation "Intersection"
+@api_view(["POST"])
+def intersection(request: HttpRequest):
+    # step1: 获取参数
+    params = json.loads(request.body)
+    last_operation_id = params.get("lastOperationId")
+    project_id = params.get("projectId")
+    operator_id = params.get("operatorId")
+    data = params.get("data")
+    props = data.get("props")
+    solid_1 = props.get("solid1")
+    solid_2 = props.get("solid2")
+    related_solid_id_list = data.get("relatedSolidIdList")
+    # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
+    brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
+    solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
+    solid_1 = solid_map[related_solid_id_list[0]]
+    solid_2 = solid_map[related_solid_id_list[1]]
+    solid = BRepAlgoAPI_Common(solid_1, solid_2).Shape()
+    new_solid_id = uuid.uuid1().hex
+    solid_map[new_solid_id] = solid
+    solid_map.pop(related_solid_id_list[0])
+    solid_map.pop(related_solid_id_list[1])
+    # step4: 生成新的 BrCAD 对象进行比较
+    converter_2 = TopoDSShapeConvertor(get_TopoDS_Shape_from_solid_id_map(solid_map))
+    brcad_2 = converter_2.get_BrCAD_after_operation(brcad_1, "intersection", new_solid_id, related_solid_id_list, False)
+    brcad_compare = BrCADCompare(brcad_1, brcad_2)
+    # step5: 保存操作
+    solid_ids = save_shape(solid_map)
+    operation = Operation(
+        type="Intersection",
+        project_id=project_id,
+        operator_id=int(operator_id),
+        time=int(time.time() * 1000),
+        data=data,
+        brcad=pickle.dumps(brcad_2),
+        solid_ids=solid_ids,
+    )
+    operation.save()
+    # step6: 更新 project 的 operation_history_ids
+    project = Project.objects.get(id=project_id)
+    project.operation_history_ids.append(operation.id)
+    project.save()
+    # step7: 通知前端更新历史记录
+    notify_update_history_list(project_id)
+    
+    return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})     
 
 # Operation "Rollback"
 @api_view(["POST"])

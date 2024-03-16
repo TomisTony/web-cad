@@ -20,5 +20,9 @@ urlpatterns = [
     path("operation/makeCone", operation_views.makeCone, name="cone"),
     path("operation/makeSphere", operation_views.makeSphere, name="sphere"),
     path("operation/makeCylinder", operation_views.makeCylinder, name="cylinder"),
+    path("operation/boolean", operation_views.boolean, name="boolean"),
+    path("operation/union", operation_views.union, name="union"),
+    path("operation/difference", operation_views.difference, name="difference"),
+    path("operation/intersection", operation_views.intersection, name="intersect"),
     path("operation/rollback", operation_views.rollback_with_concatenation_mode, name="rollback"),
 ]

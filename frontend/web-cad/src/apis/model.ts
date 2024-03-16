@@ -46,6 +46,10 @@ export function transform(data: any) {
   return request.post("/cad/operation/transform", data)
 }
 
+export function deleteSolid(data: any) {
+  return request.post("/cad/operation/deleteSolid", data)
+}
+
 export function makeBox(data: any) {
   return request.post("/cad/operation/makeBox", data)
 }
@@ -66,8 +70,20 @@ export function makeTorus(data: any) {
   return request.post("/cad/operation/makeTorus", data)
 }
 
-export function deleteSolid(data: any) {
-  return request.post("/cad/operation/deleteSolid", data)
+export function boolean(data: any) {
+  return request.post("/cad/operation/boolean", data)
+}
+
+export function union(data: any) {
+  return request.post("/cad/operation/union", data)
+}
+
+export function difference(data: any) {
+  return request.post("/cad/operation/difference", data)
+}
+
+export function intersection(data: any) {
+  return request.post("/cad/operation/intersection", data)
 }
 
 export function rollback(data: any) {

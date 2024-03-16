@@ -9,6 +9,10 @@ import cylinder from "@/assets/operations/Part_Cylinder.png"
 import Cone from "@/assets/operations/Part_Cone.png"
 import Torus from "@/assets/operations/Part_Torus.png"
 import Sphere from "@/assets/operations/Part_Sphere.png"
+import Boolean from "@/assets/operations/Part_Booleans.png"
+import Cut from "@/assets/operations/Part_Cut.png"
+import Fuse from "@/assets/operations/Part_Fuse.png"
+import Common from "@/assets/operations/Part_Common.png"
 
 import {
   UploadOutlined,
@@ -35,6 +39,10 @@ import {
   makeConeAsync,
   makeSphereAsync,
   makeTorusAsync,
+  booleanAsync,
+  unionAsync,
+  differenceAsync,
+  intersectionAsync,
 } from "@/store/model/modelActions"
 
 interface Operation {
@@ -347,6 +355,86 @@ const operationList: Operation[] = [
   },
   {
     label: "delimiter2",
+    img: "",
+    action: () => {
+      console.log("delimiter")
+    },
+    isDelimiter: true,
+  },
+  {
+    label: "Boolean",
+    img: Boolean,
+    action: () => store.dispatch(setOperationPanel("Boolean")),
+    abled: (historyChecking: boolean) => historyChecking === false,
+    operationSetting: {
+      operationName: "Boolean",
+      chooseCount: 2,
+      chooseLabelList: ["Solid1", "Solid2"],
+      chooseTypeList: ["solid", "solid"],
+      props: [
+        {
+          type: "select",
+          label: "type",
+          info: "type",
+          defaultValue: "union",
+          options: ["union", "intersection", "difference"],
+        },
+      ],
+      onSubmit: (values) => {
+        store.dispatch(booleanAsync(values))
+      },
+    },
+  },
+  {
+    label: "Union",
+    img: Fuse,
+    action: () => store.dispatch(setOperationPanel("Union")),
+    abled: (historyChecking: boolean) => historyChecking === false,
+    operationSetting: {
+      operationName: "Union",
+      chooseCount: 2,
+      chooseLabelList: ["Solid1", "Solid2"],
+      chooseTypeList: ["solid", "solid"],
+      props: [],
+      onSubmit: (values) => {
+        store.dispatch(unionAsync(values))
+      },
+    },
+  },
+  {
+    label: "Difference",
+    img: Cut,
+    action: () => store.dispatch(setOperationPanel("Difference")),
+    abled: (historyChecking: boolean) => historyChecking === false,
+    operationSetting: {
+      operationName: "Difference",
+      chooseCount: 2,
+      chooseLabelList: ["Solid1", "Solid2"],
+      chooseTypeList: ["solid", "solid"],
+      props: [],
+      onSubmit: (values) => {
+        store.dispatch(differenceAsync(values))
+      },
+    },
+  },
+  {
+    label: "Intersection",
+    img: Common,
+    action: () => store.dispatch(setOperationPanel("Intersection")),
+    abled: (historyChecking: boolean) => historyChecking === false,
+    operationSetting: {
+      operationName: "Intersection",
+      chooseCount: 2,
+      chooseLabelList: ["Solid1", "Solid2"],
+      chooseTypeList: ["solid", "solid"],
+      props: [],
+      onSubmit: (values) => {
+        store.dispatch(intersectionAsync(values))
+      },
+    },
+  },
+  {
+    label: "delimiter3",
     img: "",
     action: () => {
       console.log("delimiter")
