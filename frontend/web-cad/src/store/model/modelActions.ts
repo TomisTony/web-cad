@@ -30,209 +30,6 @@ export const {
   setStructureMap,
 } = modelSlice.actions
 
-export const importFile = (data: any) => (dispatch: any, getState: any) => {
-  const { model: newModel, diff } = data
-  dispatch(setOperationExecuting(true))
-  ThreeApp.getScene().clearScene()
-  let model
-  if (newModel) {
-    model = newModel
-  } else {
-    model = Shape.applyDiffToBrCAD(getState().model.model, diff)
-  }
-  Shape.setBrCADToScene(model)
-  dispatch(setModel(model))
-  dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
-  dispatch(setOperationExecuting(false))
-}
-export const filletAsync = (value: any) => (dispatch: any, getState: any) => {
-  dispatch(setOperationExecuting(true))
-  const historyList = getState().history.historyList
-  const lastOperationId = historyList[historyList.length - 1]?.operationId ?? -1
-  const projectId = getState().globalStatus.projectId
-  const params = {
-    lastOperationId,
-    projectId,
-    operatorId: getUserId(),
-    data: {
-      ...value,
-    },
-  }
-  apis
-    .fillet(params)
-    .then((data) => {
-      const { diff } = data
-      ThreeApp.getScene().clearScene()
-      let model = getState().model.model
-      model = Shape.applyDiffToBrCAD(model, diff)
-      Shape.setBrCADToScene(model)
-      dispatch(setModel(model))
-      dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
-    })
-    .catch((err) => {
-      dispatch(
-        setGlobalMessage({
-          type: "error",
-          content: "Error: Server Error! Check the console.",
-        }),
-      )
-    })
-    .finally(() => {
-      dispatch(setOperationExecuting(false))
-    })
-}
-
-export const chamferAsync = (value: any) => (dispatch: any, getState: any) => {
-  dispatch(setOperationExecuting(true))
-  const historyList = getState().history.historyList
-  const lastOperationId = historyList[historyList.length - 1]?.operationId ?? -1
-  const projectId = getState().globalStatus.projectId
-  const params = {
-    lastOperationId,
-    projectId,
-    operatorId: getUserId(),
-    data: {
-      ...value,
-    },
-  }
-  apis
-    .chamfer(params)
-    .then((data) => {
-      const { diff } = data
-      ThreeApp.getScene().clearScene()
-      let model = getState().model.model
-      model = Shape.applyDiffToBrCAD(model, diff)
-      Shape.setBrCADToScene(model)
-      dispatch(setModel(model))
-      dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
-    })
-    .catch((err) => {
-      dispatch(
-        setGlobalMessage({
-          type: "error",
-          content: "Error: Server Error! Check the console.",
-        }),
-      )
-    })
-    .finally(() => {
-      dispatch(setOperationExecuting(false))
-    })
-}
-
-export const renameAsync = (value: any) => (dispatch: any, getState: any) => {
-  console.log("renameAsync")
-  dispatch(setOperationExecuting(true))
-  const historyList = getState().history.historyList
-  const lastOperationId = historyList[historyList.length - 1]?.operationId ?? -1
-  const projectId = getState().globalStatus.projectId
-  const params = {
-    lastOperationId,
-    projectId,
-    operatorId: getUserId(),
-    data: {
-      ...value,
-    },
-  }
-  apis
-    .rename(params)
-    .then((data) => {
-      const { diff } = data
-      ThreeApp.getScene().clearScene()
-      let model = getState().model.model
-      model = Shape.applyDiffToBrCAD(model, diff)
-      Shape.setBrCADToScene(model)
-      dispatch(setModel(model))
-      dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
-    })
-    .catch((err) => {
-      dispatch(
-        setGlobalMessage({
-          type: "error",
-          content: "Error: Server Error! Check the console.",
-        }),
-      )
-    })
-    .finally(() => {
-      dispatch(setOperationExecuting(false))
-    })
-}
-
-export const transformAsync =
-  (value: any) => (dispatch: any, getState: any) => {
-    dispatch(setOperationExecuting(true))
-    const historyList = getState().history.historyList
-    const lastOperationId =
-      historyList[historyList.length - 1]?.operationId ?? -1
-    const projectId = getState().globalStatus.projectId
-    const params = {
-      lastOperationId,
-      projectId,
-      operatorId: getUserId(),
-      data: {
-        ...value,
-      },
-    }
-    apis
-      .transform(params)
-      .then((data) => {
-        const { diff } = data
-        ThreeApp.getScene().clearScene()
-        let model = getState().model.model
-        model = Shape.applyDiffToBrCAD(model, diff)
-        Shape.setBrCADToScene(model)
-        dispatch(setModel(model))
-        dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
-      })
-      .catch((err) => {
-        dispatch(
-          setGlobalMessage({
-            type: "error",
-            content: "Error: Server Error! Check the console.",
-          }),
-        )
-      })
-      .finally(() => {
-        dispatch(setOperationExecuting(false))
-      })
-  }
-
-export const deleteAsync = (value: any) => (dispatch: any, getState: any) => {
-  dispatch(setOperationExecuting(true))
-  const historyList = getState().history.historyList
-  const lastOperationId = historyList[historyList.length - 1]?.operationId ?? -1
-  const projectId = getState().globalStatus.projectId
-  const params = {
-    lastOperationId,
-    projectId,
-    operatorId: getUserId(),
-    data: {
-      ...value,
-    },
-  }
-  apis
-    .deleteSolid(params)
-    .then((data) => {
-      const { diff } = data
-      ThreeApp.getScene().clearScene()
-      let model = getState().model.model
-      model = Shape.applyDiffToBrCAD(model, diff)
-      Shape.setBrCADToScene(model)
-      dispatch(setModel(model))
-      dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
-    })
-    .catch((err) => {
-      dispatch(
-        setGlobalMessage({
-          type: "error",
-          content: "Error: Server Error! Check the console.",
-        }),
-      )
-    })
-    .finally(() => {
-      dispatch(setOperationExecuting(false))
-    })
-}
-
 const makeSomethingAsync =
   (api: (data: any) => Promise<any>) =>
   (value: any) =>
@@ -280,6 +77,72 @@ const makeSomethingAsync =
       })
   }
 
+const makeOperationAsync =
+  (api: (data: any) => Promise<any>) =>
+  (value: any) =>
+  (dispatch: any, getState: any) => {
+    dispatch(setOperationExecuting(true))
+    const historyList = getState().history.historyList
+    const lastOperationId =
+      historyList[historyList.length - 1]?.operationId ?? -1
+    const projectId = getState().globalStatus.projectId
+    const params = {
+      lastOperationId,
+      projectId,
+      operatorId: getUserId(),
+      data: {
+        ...value,
+      },
+    }
+    api(params)
+      .then((data) => {
+        const { diff } = data
+        ThreeApp.getScene().clearScene()
+        let model = getState().model.model
+        model = Shape.applyDiffToBrCAD(model, diff)
+        Shape.setBrCADToScene(model)
+        dispatch(setModel(model))
+        dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
+      })
+      .catch((err) => {
+        dispatch(
+          setGlobalMessage({
+            type: "error",
+            content: "Error: Server Error! Check the console.",
+          }),
+        )
+      })
+      .finally(() => {
+        dispatch(setOperationExecuting(false))
+      })
+  }
+
+export const importFile = (data: any) => (dispatch: any, getState: any) => {
+  const { model: newModel, diff } = data
+  dispatch(setOperationExecuting(true))
+  ThreeApp.getScene().clearScene()
+  let model
+  if (newModel) {
+    model = newModel
+  } else {
+    model = Shape.applyDiffToBrCAD(getState().model.model, diff)
+  }
+  Shape.setBrCADToScene(model)
+  dispatch(setModel(model))
+  dispatch(operationDoneUpdateHistoryChooseAndNowIndex())
+  dispatch(setOperationExecuting(false))
+}
+
+export const filletAsync = makeOperationAsync(apis.fillet)
+
+export const chamferAsync = makeOperationAsync(apis.chamfer)
+
+export const renameAsync = makeOperationAsync(apis.rename)
+
+export const transformAsync = makeOperationAsync(apis.transform)
+
+export const deleteAsync = makeOperationAsync(apis.deleteSolid)
+
 export const makeBoxAsync = makeSomethingAsync(apis.makeBox)
 
 export const makeCylinderAsync = makeSomethingAsync(apis.makeCylinder)
@@ -289,6 +152,14 @@ export const makeConeAsync = makeSomethingAsync(apis.makeCone)
 export const makeSphereAsync = makeSomethingAsync(apis.makeSphere)
 
 export const makeTorusAsync = makeSomethingAsync(apis.makeTorus)
+
+export const booleanAsync = makeOperationAsync(apis.boolean)
+
+export const unionAsync = makeOperationAsync(apis.union)
+
+export const intersectionAsync = makeOperationAsync(apis.intersection)
+
+export const differenceAsync = makeOperationAsync(apis.difference)
 
 export const rollbackAsync = (value: any) => (dispatch: any, getState: any) => {
   dispatch(setOperationExecuting(true))
