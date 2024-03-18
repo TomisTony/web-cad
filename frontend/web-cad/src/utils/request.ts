@@ -9,7 +9,7 @@ export class Request {
   // 基础配置，url和超时时间
   baseConfig: AxiosRequestConfig = {
     baseURL: "http://localhost:8000/api",
-    timeout: 10000,
+    timeout: 3000000,
   }
 
   constructor(config: AxiosRequestConfig) {
