@@ -90,9 +90,16 @@ export class Shape {
       let vInd = 0
       faceList.forEach((face) => {
         // Copy Vertices into three.js Vector3 List
-        vertices.push(...face.vertexCoordinates)
-        normals.push(...face.normalCoordinates)
-        uvs.push(...face.uvCoordinates)
+        // 不能直接使用 ...，会堆栈溢出
+        for (let i = 0; i < face.vertexCoordinates.length; i++) {
+          vertices.push(face.vertexCoordinates[i])
+        }
+        for (let i = 0; i < face.normalCoordinates.length; i++) {
+          normals.push(face.normalCoordinates[i])
+        }
+        for (let i = 0; i < face.uvCoordinates.length; i++) {
+          uvs.push(face.uvCoordinates[i])
+        }
 
         for (let i = 0; i < face.vertexCoordinates.length / 3; i++) {
           faceIds.push(face.id)
@@ -265,10 +272,19 @@ export class Shape {
     const addFaces = diff.add.faces
     const addEdges = diff.add.edges
 
+    const faces = newFaces
+    const edges = newEdges
+    for (let i = 0; i < addFaces.length; i++) {
+      faces.push(addFaces[i])
+    }
+    for (let i = 0; i < addEdges.length; i++) {
+      edges.push(addEdges[i])
+    }
+
     return {
       structure: newStructure,
-      faces: [...newFaces, ...addFaces],
-      edges: [...newEdges, ...addEdges],
+      faces,
+      edges,
     } as BrCAD
   }
 }

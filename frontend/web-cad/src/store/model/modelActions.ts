@@ -210,11 +210,16 @@ export const rollbackAsync = (value: any) => (dispatch: any, getState: any) => {
 export const setSceneToOperationModalAsync =
   (operationId: number) => (dispatch: any) => {
     dispatch(setOperationExecuting(true))
-    apis.getModel(operationId).then((data) => {
-      ThreeApp.getScene().clearScene()
-      Shape.setBrCADToScene(data.model)
-      dispatch(setModel(data.model))
-    })
+    apis
+      .getModel(operationId)
+      .then((data) => {
+        ThreeApp.getScene().clearScene()
+        Shape.setBrCADToScene(data.model)
+        dispatch(setModel(data.model))
+      })
+      .catch((err) => {
+        console.error(err)
+      })
     dispatch(setNowHistoryIndexByOperationId(operationId))
     dispatch(setOperationExecuting(false))
   }
