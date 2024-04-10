@@ -2,6 +2,7 @@ import React from "react"
 import { useAppSelector, useAppDispatch } from "@/app/hooks"
 import { Descriptions, DescriptionsProps } from "antd"
 import { getUserData } from "@/utils/localStorage"
+import { getTimeString } from "@/utils/time"
 
 interface SidePanelProps {
   className?: string
@@ -34,7 +35,7 @@ function SidePanel(props: SidePanelProps) {
       key: "projectCreateTime",
       label: "Create Time",
       span: 1,
-      children: projectInfo?.createTime,
+      children: getTimeString(projectInfo?.createTime),
     },
     {
       key: "projectEditors",
