@@ -161,6 +161,7 @@ export const intersectionAsync = makeOperationAsync(apis.intersection)
 
 export const differenceAsync = makeOperationAsync(apis.difference)
 
+// rollback 在 nowHistoryIndex 和 chooseHistory 的处理逻辑与正常的 operation 不同
 export const rollbackAsync = (value: any) => (dispatch: any, getState: any) => {
   dispatch(setOperationExecuting(true))
   const historyList = getState().history.historyList
