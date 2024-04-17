@@ -65,10 +65,11 @@ const makeSomethingAsync =
         }
       })
       .catch((err) => {
+        console.log("fuck" + err)
         dispatch(
           setGlobalMessage({
             type: "error",
-            content: "Error: Server Error! Check the console.",
+            content: err ?? "Error: Server Error! Check the console.",
           }),
         )
       })
@@ -108,7 +109,7 @@ const makeOperationAsync =
         dispatch(
           setGlobalMessage({
             type: "error",
-            content: "Error: Server Error! Check the console.",
+            content: err ?? "Error: Server Error! Check the console.",
           }),
         )
       })
