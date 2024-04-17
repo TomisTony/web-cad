@@ -5,6 +5,7 @@ from cad.models import Operation
 from cad.models import Project
 from django.conf import settings
 from django.http import HttpRequest, FileResponse
+from django.db import transaction, DatabaseError
 
 from cad.views.channels_views import notify_update_history_list
 
@@ -31,6 +32,11 @@ from OCC.Extend.DataExchange import read_step_file
 from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_StepModelType
 from OCC.Extend.DataExchange import write_stl_file
 
+def is_last_operation(operation_id:str, project_id:int):
+    project = Project.objects.get(id=project_id)
+    true_last_operation_id = project.operation_history_ids[-1]
+    return operation_id == true_last_operation_id
+
 # 获得指定 Operation 的模型
 @api_view(["GET"])
 def getOperationModel(request: HttpRequest):
@@ -43,6 +49,8 @@ def getOperationModel(request: HttpRequest):
 @api_view(["POST"])
 def uploadFile(request: HttpRequest, project_id: int, operator_id: int, last_operation_id: str):
     last_operation_id = int(last_operation_id)
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     file = request.FILES.get("file", None)
     if file is None:
         return ApiResponse("No file is uploaded", data_status=400)
@@ -73,9 +81,16 @@ def uploadFile(request: HttpRequest, project_id: int, operator_id: int, last_ope
             )
             operation.save()
             # 更新 project 的 operation_history_ids
-            project = Project.objects.get(id=project_id)
-            project.operation_history_ids.append(operation.id)
-            project.save()
+            try:
+              with transaction.atomic():
+                project = Project.objects.select_for_update().get(id=project_id)
+                if not is_last_operation(last_operation_id, project_id):
+                    operation.delete()
+                    return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+                project.operation_history_ids.append(operation.id)
+                project.save()
+            except Exception as e:
+                return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
             # 通知前端更新历史记录
             notify_update_history_list(project_id)
             # 删除文件
@@ -101,9 +116,16 @@ def uploadFile(request: HttpRequest, project_id: int, operator_id: int, last_ope
             )
             operation.save()
             # 更新 project 的 operation_history_ids
-            project = Project.objects.get(id=project_id)
-            project.operation_history_ids.append(operation.id)
-            project.save()
+            try:
+              with transaction.atomic():
+                project = Project.objects.select_for_update().get(id=project_id)
+                if not is_last_operation(last_operation_id, project_id):
+                    operation.delete()
+                    return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+                project.operation_history_ids.append(operation.id)
+                project.save()
+            except Exception as e:
+                return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
             # 通知前端更新历史记录
             notify_update_history_list(project_id)
             # 删除文件
@@ -167,8 +189,11 @@ def fillet(request: HttpRequest):
     choosedId = choosed_id_list[0]
     props = data.get("props")
     radius = props.get("radius")
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
-    brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
+    brcad_1_pickle = Operation.objects.get(id=last_operation_id).brcad
+    brcad_1: BrCAD = pickle.loads(brcad_1_pickle)
     solid_id_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
     target_solid = solid_id_map[related_solid_id_list[0]]
     # 获得更改的 solid 的 对应的 face 和 edge 的 id map
@@ -199,12 +224,18 @@ def fillet(request: HttpRequest):
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids
-    project = Project.objects.get(id=project_id)
-    project.operation_history_ids.append(operation.id)
-    project.save()
+    try:
+      with transaction.atomic():
+        project = Project.objects.select_for_update().get(id=project_id)
+        if not is_last_operation(last_operation_id, project_id):
+            operation.delete()
+            return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+    except Exception as e:
+        return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
     # step7: 通知前端更新历史记录
     notify_update_history_list(project_id)
-
     return ApiResponse({"operationId": operation.id, "diff": brcad_compare.get_diff()})
 
 # Operation "Chamfer"
@@ -221,6 +252,8 @@ def chamfer(request: HttpRequest):
     choosedId = choosed_id_list[0]
     props = data.get("props")
     length = props.get("length")
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
     brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
     solid_id_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
@@ -253,9 +286,16 @@ def chamfer(request: HttpRequest):
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids
-    project = Project.objects.get(id=project_id)
-    project.operation_history_ids.append(operation.id)
-    project.save()
+    try:
+      with transaction.atomic():
+        project = Project.objects.select_for_update().get(id=project_id)
+        if not is_last_operation(last_operation_id, project_id):
+            operation.delete()
+            return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+    except Exception as e:
+        return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
     # step7: 通知前端更新历史记录
     notify_update_history_list(project_id)
 
@@ -275,6 +315,8 @@ def rename(request: HttpRequest):
     choosedId = choosed_id_list[0]
     props = data.get("props")
     new_name = props.get("name")
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
     brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
     # step3: 执行对应操作
@@ -297,9 +339,16 @@ def rename(request: HttpRequest):
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids
-    project = Project.objects.get(id=project_id)
-    project.operation_history_ids.append(operation.id)
-    project.save()
+    try:
+      with transaction.atomic():
+        project = Project.objects.select_for_update().get(id=project_id)
+        if not is_last_operation(last_operation_id, project_id):
+            operation.delete()
+            return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+    except Exception as e:
+        return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
     # step7: 通知前端更新历史记录
     notify_update_history_list(project_id)
 
@@ -325,6 +374,8 @@ def transform(request: HttpRequest):
     rotate_y = props.get("rotateY")
     rotate_z = props.get("rotateZ")
     scale = props.get("scale")
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
     solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
     brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
@@ -376,9 +427,16 @@ def transform(request: HttpRequest):
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids
-    project = Project.objects.get(id=project_id)
-    project.operation_history_ids.append(operation.id)
-    project.save()
+    try:
+      with transaction.atomic():
+        project = Project.objects.select_for_update().get(id=project_id)
+        if not is_last_operation(last_operation_id, project_id):
+            operation.delete()
+            return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+    except Exception as e:
+        return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
     # step7: 通知前端更新历史记录
     notify_update_history_list(project_id)
     
@@ -396,6 +454,8 @@ def deleteSolid(request: HttpRequest):
     choosed_id_list = data.get("choosedIdList")
     related_solid_id_list = data.get("relatedSolidIdList")
     choosedId = choosed_id_list[0]
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
     brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
     solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
@@ -435,9 +495,16 @@ def deleteSolid(request: HttpRequest):
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids
-    project = Project.objects.get(id=project_id)
-    project.operation_history_ids.append(operation.id)
-    project.save()
+    try:
+      with transaction.atomic():
+        project = Project.objects.select_for_update().get(id=project_id)
+        if not is_last_operation(last_operation_id, project_id):
+            operation.delete()
+            return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+    except Exception as e:
+        return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
     # step7: 通知前端更新历史记录
     notify_update_history_list(project_id)
     
@@ -458,6 +525,8 @@ def makeBox(request: HttpRequest):
     x = props.get("x")
     y = props.get("y")
     z = props.get("z")
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     if last_operation_id == -1:
         # 如果是空项目，直接新建一个物体，传完整 BrCAD 对象
         solid = BRepPrimAPI_MakeBox(float(x), float(y), float(z)).Shape()
@@ -503,9 +572,16 @@ def makeBox(request: HttpRequest):
     )
     operation.save()
     #更新 project 的 operation_history_ids
-    project = Project.objects.get(id=project_id)
-    project.operation_history_ids.append(operation.id)
-    project.save()
+    try:
+      with transaction.atomic():
+        project = Project.objects.select_for_update().get(id=project_id)
+        if not is_last_operation(last_operation_id, project_id):
+            operation.delete()
+            return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+    except Exception as e:
+        return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
     #通知前端更新历史记录
     notify_update_history_list(project_id)
     
@@ -527,6 +603,8 @@ def makeCylinder(request: HttpRequest):
     height = props.get("height")
     angle = props.get("angle")
     PI = 3.14159265358979323846
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     if last_operation_id == -1:
         # 如果是空项目，直接新建一个物体，传完整 BrCAD 对象
         solid = BRepPrimAPI_MakeCylinder(float(radius), float(height), float(angle) * PI / 180).Shape()
@@ -572,9 +650,16 @@ def makeCylinder(request: HttpRequest):
     )
     operation.save()
     #更新 project 的 operation_history_ids
-    project = Project.objects.get(id=project_id)
-    project.operation_history_ids.append(operation.id)
-    project.save()
+    try:
+      with transaction.atomic():
+        project = Project.objects.select_for_update().get(id=project_id)
+        if not is_last_operation(last_operation_id, project_id):
+            operation.delete()
+            return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+    except Exception as e:
+        return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
     #通知前端更新历史记录
     notify_update_history_list(project_id)
     
@@ -595,6 +680,8 @@ def makeSphere(request: HttpRequest):
     radius = props.get("radius")
     angle = props.get("angle")
     PI = 3.14159265358979323846
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     if last_operation_id == -1:
         # 如果是空项目，直接新建一个物体，传完整 BrCAD 对象
         solid = BRepPrimAPI_MakeSphere(float(radius), float(angle) * PI / 180).Shape()
@@ -640,9 +727,16 @@ def makeSphere(request: HttpRequest):
     )
     operation.save()
     #更新 project 的 operation_history_ids
-    project = Project.objects.get(id=project_id)
-    project.operation_history_ids.append(operation.id)
-    project.save()
+    try:
+      with transaction.atomic():
+        project = Project.objects.select_for_update().get(id=project_id)
+        if not is_last_operation(last_operation_id, project_id):
+            operation.delete()
+            return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+    except Exception as e:
+        return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
     #通知前端更新历史记录
     notify_update_history_list(project_id)
     
@@ -664,6 +758,8 @@ def makeCone(request: HttpRequest):
     radius_2 = props.get("radius2")
     height = props.get("height")
     PI = 3.14159265358979323846
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     if last_operation_id == -1:
         # 如果是空项目，直接新建一个物体，传完整 BrCAD 对象
         solid = BRepPrimAPI_MakeCone(float(radius_1), float(radius_2), float(height)).Shape()
@@ -709,9 +805,16 @@ def makeCone(request: HttpRequest):
     )
     operation.save()
     #更新 project 的 operation_history_ids
-    project = Project.objects.get(id=project_id)
-    project.operation_history_ids.append(operation.id)
-    project.save()
+    try:
+      with transaction.atomic():
+        project = Project.objects.select_for_update().get(id=project_id)
+        if not is_last_operation(last_operation_id, project_id):
+            operation.delete()
+            return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+    except Exception as e:
+        return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
     #通知前端更新历史记录
     notify_update_history_list(project_id)
     
@@ -733,6 +836,8 @@ def makeTorus(request: HttpRequest):
     radius_2 = props.get("radius2")
     angle = props.get("angle")
     PI = 3.14159265358979323846
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     if last_operation_id == -1:
         # 如果是空项目，直接新建一个物体，传完整 BrCAD 对象
         solid = BRepPrimAPI_MakeTorus(float(radius_1), float(radius_2), float(angle) * PI / 180).Shape()
@@ -778,9 +883,16 @@ def makeTorus(request: HttpRequest):
     )
     operation.save()
     #更新 project 的 operation_history_ids
-    project = Project.objects.get(id=project_id)
-    project.operation_history_ids.append(operation.id)
-    project.save()
+    try:
+      with transaction.atomic():
+        project = Project.objects.select_for_update().get(id=project_id)
+        if not is_last_operation(last_operation_id, project_id):
+            operation.delete()
+            return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+    except Exception as e:
+        return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
     #通知前端更新历史记录
     notify_update_history_list(project_id)
     
@@ -800,6 +912,8 @@ def boolean(request: HttpRequest):
     solid_1 = props.get("solid1")
     solid_2 = props.get("solid2")
     related_solid_id_list = data.get("relatedSolidIdList")
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
     brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
     solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
@@ -834,9 +948,16 @@ def boolean(request: HttpRequest):
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids
-    project = Project.objects.get(id=project_id)
-    project.operation_history_ids.append(operation.id)
-    project.save()
+    try:
+      with transaction.atomic():
+        project = Project.objects.select_for_update().get(id=project_id)
+        if not is_last_operation(last_operation_id, project_id):
+            operation.delete()
+            return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+    except Exception as e:
+        return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
     # step7: 通知前端更新历史记录
     notify_update_history_list(project_id)
     
@@ -855,6 +976,8 @@ def union(request: HttpRequest):
     solid_1 = props.get("solid1")
     solid_2 = props.get("solid2")
     related_solid_id_list = data.get("relatedSolidIdList")
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
     brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
     solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
@@ -882,9 +1005,16 @@ def union(request: HttpRequest):
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids
-    project = Project.objects.get(id=project_id)
-    project.operation_history_ids.append(operation.id)
-    project.save()
+    try:
+      with transaction.atomic():
+        project = Project.objects.select_for_update().get(id=project_id)
+        if not is_last_operation(last_operation_id, project_id):
+            operation.delete()
+            return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+    except Exception as e:
+        return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
     # step7: 通知前端更新历史记录
     notify_update_history_list(project_id)
     
@@ -903,6 +1033,8 @@ def difference(request: HttpRequest):
     solid_1 = props.get("solid1")
     solid_2 = props.get("solid2")
     related_solid_id_list = data.get("relatedSolidIdList")
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
     brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
     solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
@@ -930,9 +1062,16 @@ def difference(request: HttpRequest):
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids
-    project = Project.objects.get(id=project_id)
-    project.operation_history_ids.append(operation.id)
-    project.save()
+    try:
+      with transaction.atomic():
+        project = Project.objects.select_for_update().get(id=project_id)
+        if not is_last_operation(last_operation_id, project_id):
+            operation.delete()
+            return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+    except Exception as e:
+        return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
     # step7: 通知前端更新历史记录
     notify_update_history_list(project_id)
     
@@ -951,6 +1090,8 @@ def intersection(request: HttpRequest):
     solid_1 = props.get("solid1")
     solid_2 = props.get("solid2")
     related_solid_id_list = data.get("relatedSolidIdList")
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     # step2: 获取上一步操作的 shape 和 id_TopoDS_Shape_map 和 BrCAD 对象
     brcad_1: BrCAD = pickle.loads(Operation.objects.get(id=last_operation_id).brcad)
     solid_map = get_solid_id_map(Operation.objects.get(id=last_operation_id).solid_ids)
@@ -978,9 +1119,16 @@ def intersection(request: HttpRequest):
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids
-    project = Project.objects.get(id=project_id)
-    project.operation_history_ids.append(operation.id)
-    project.save()
+    try:
+      with transaction.atomic():
+        project = Project.objects.select_for_update().get(id=project_id)
+        if not is_last_operation(last_operation_id, project_id):
+            operation.delete()
+            return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+    except Exception as e:
+        return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
     # step7: 通知前端更新历史记录
     notify_update_history_list(project_id)
     
@@ -997,6 +1145,8 @@ def rollback_with_concatenation_mode(request: HttpRequest):
     data = params.get("data")
     props = data.get("props")
     rollback_operation_id = props.get("rollbackId")
+    if not is_last_operation(last_operation_id, project_id):
+        return ApiResponse("Wrong History! Please refresh page!", status=status.HTTP_400_BAD_REQUEST)
     # step2: 获取上一步的 BrCAD 对象
     # step3: 执行对应操作
     rollback_solid_ids = Operation.objects.get(id=rollback_operation_id).solid_ids
@@ -1015,9 +1165,16 @@ def rollback_with_concatenation_mode(request: HttpRequest):
     )
     operation.save()
     # step6: 更新 project 的 operation_history_ids
-    project = Project.objects.get(id=project_id)
-    project.operation_history_ids.append(operation.id)
-    project.save()
+    try:
+      with transaction.atomic():
+        project = Project.objects.select_for_update().get(id=project_id)
+        if not is_last_operation(last_operation_id, project_id):
+            operation.delete()
+            return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
+        project.operation_history_ids.append(operation.id)
+        project.save()
+    except Exception as e:
+        return ApiResponse("Other users is operating, please try again.", data_status=status.HTTP_400_BAD_REQUEST)
     # step7: 通知前端更新历史记录
     notify_update_history_list(project_id)
     
