@@ -69,7 +69,7 @@ const makeSomethingAsync =
         dispatch(
           setGlobalMessage({
             type: "error",
-            content: err ?? "Error: Server Error! Check the console.",
+            content: err || "Error: Server Error! Check the console.",
           }),
         )
       })
@@ -109,7 +109,7 @@ const makeOperationAsync =
         dispatch(
           setGlobalMessage({
             type: "error",
-            content: err ?? "Error: Server Error! Check the console.",
+            content: err || "Error: Server Error! Check the console.",
           }),
         )
       })

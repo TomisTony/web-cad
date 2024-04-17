@@ -39,14 +39,21 @@ export class Request {
       },
     )
 
-    this.instance.interceptors.response.use((res: AxiosResponse) => {
-      // 直接返回res，当然你也可以只返回res.data
-      // 系统如果有自定义code也可以在这里处理
-      if (res.data?.code !== 200) {
-        return Promise.reject(res?.data?.data)
-      }
-      return res.data?.data
-    })
+    this.instance.interceptors.response.use(
+      (res: AxiosResponse) => {
+        // 直接返回res，当然你也可以只返回res.data
+        // 系统如果有自定义code也可以在这里处理
+        if (res.data?.code !== 200) {
+          return Promise.reject(res?.data?.data)
+        }
+        return res.data?.data
+      },
+      (err: any) => {
+        // 响应错误，这里可以用全局提示框进行提示
+        console.log("response error:" + err)
+        return Promise.reject("Error: Server Error! Check the console.")
+      },
+    )
   }
 
   // 定义请求方法
