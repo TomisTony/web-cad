@@ -30,6 +30,7 @@ function NewProjectForm(props: NewProjectFormProps) {
       )
     })
   }, [])
+
   const onFinish = (values: any) => {
     form.validateFields().then(() => {
       console.log(values)
@@ -37,6 +38,7 @@ function NewProjectForm(props: NewProjectFormProps) {
         message.success("Create project success.")
         props.onFinish()
       })
+      form.resetFields()
     })
   }
 
@@ -79,7 +81,10 @@ function NewProjectForm(props: NewProjectFormProps) {
         <Button
           className="ml-4"
           htmlType="button"
-          onClick={() => props.onCancle()}
+          onClick={() => {
+            props.onCancle()
+            form.resetFields()
+          }}
         >
           Cancel
         </Button>

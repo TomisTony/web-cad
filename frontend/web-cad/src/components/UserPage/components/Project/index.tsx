@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { Button, Table, Modal, message, Form } from "antd"
-import type { TableProps } from "antd"
+import type { FormInstance, TableProps } from "antd"
 import { useNavigate, useLocation } from "react-router-dom"
 import apis from "@/apis"
 import { getTimeString } from "@/utils/time"
@@ -14,8 +14,6 @@ interface DataType extends ProjectInfo {
 }
 
 function Project() {
-  const navigate = useNavigate()
-  const location = useLocation()
   const [deleteProjectModalOpen, setDeleteProjectModalOpen] = useState(false)
   const [newProjectModalOpen, setNewProjectModalOpen] = useState(false)
   const [updateProjectModalOpen, setUpdateProjectModalOpen] = useState(false)

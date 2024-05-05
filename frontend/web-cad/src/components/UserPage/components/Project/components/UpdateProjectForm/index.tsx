@@ -32,6 +32,9 @@ function UpdateProjectForm(props: UpdateProjectFormProps) {
       )
     })
   }, [])
+  useEffect(() => {
+    form.setFieldsValue(props.projectData)
+  }, [props.projectData])
   const onFinish = (values: any) => {
     form.validateFields().then(() => {
       console.log(values)
@@ -84,7 +87,9 @@ function UpdateProjectForm(props: UpdateProjectFormProps) {
         <Button
           className="ml-4"
           htmlType="button"
-          onClick={() => props.onCancle()}
+          onClick={() => {
+            props.onCancle()
+          }}
         >
           Cancel
         </Button>
