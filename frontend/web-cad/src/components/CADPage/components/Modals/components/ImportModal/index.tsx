@@ -26,7 +26,7 @@ function ImportModal() {
   const lastOperationId = historyList[historyList.length - 1]?.operationId ?? -1
   const props: UploadProps = {
     name: "file",
-    accept: ".step,.stp",
+    accept: ".step,.stp,.stl,.iges",
     action: apis.getUploadFileUrl(
       parseInt(projectId || "0"),
       userId,
@@ -71,7 +71,8 @@ function ImportModal() {
           Click or drag file to this area to upload
         </p>
         <p className="ant-upload-hint">
-          Support for a single upload. Legel format: *.step, *.STP
+          Support for a single upload. Legel format: *.step, *.STP, *.stl,
+          *.iges
         </p>
       </Dragger>
     </Modal>

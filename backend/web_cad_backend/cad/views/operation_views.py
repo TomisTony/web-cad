@@ -28,12 +28,14 @@ from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Cut, BRepAlgoAPI_Fuse,BRepAlgoAPI_C
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
 from OCC.Core.BRep import BRep_Builder
 from OCC.Core.gp import gp_Pnt, gp_Trsf, gp_Vec, gp_Ax1, gp_Dir
-from OCC.Extend.DataExchange import read_step_file
+from OCC.Extend.DataExchange import read_step_file, read_iges_file, read_stl_file
 from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_StepModelType
-from OCC.Extend.DataExchange import write_stl_file
+from OCC.Extend.DataExchange import write_stl_file, write_iges_file
 
 def is_last_operation(operation_id:str, project_id:int):
     project = Project.objects.get(id=project_id)
+    if len(project.operation_history_ids) == 0:
+        return True
     true_last_operation_id = project.operation_history_ids[-1]
     return operation_id == true_last_operation_id
 
@@ -63,7 +65,14 @@ def uploadFile(request: HttpRequest, project_id: int, operator_id: int, last_ope
             for chunk in file.chunks():
                 f.write(chunk)
         # 读取文件
-        shape = read_step_file(filename)
+        # 根据后缀名选择读取的方法
+        shape = None
+        if file.name.lower().endswith(".stl"):
+            shape = read_stl_file(filename)
+        elif file.name.lower().endswith(".step") or file.name.lower().endswith(".stp"): 
+            shape = read_step_file(filename)
+        elif file.name.lower().endswith(".iges"):
+            shape = read_iges_file(filename)
         # 分两种情况,如果是空项目,则直接返回 BrCAD 对象,否则返回操作后的 BrCAD 对象
         if last_operation_id == -1:
             converter = TopoDSShapeConvertor(shape)
@@ -153,6 +162,7 @@ def downloadFile(request: HttpRequest):
         MIME_TYPES = {
             ".step": "application/vnd.ms-pki.stl",
             ".stl": "application/vnd.ms-pki.stl",
+            ".iges": "application/vnd.ms-pki.stl",
         }
         # 保存文件
         filename = os.path.join(settings.MEDIA_ROOT, timestamp, f"model{fileFormat}")
@@ -162,6 +172,8 @@ def downloadFile(request: HttpRequest):
             step_writer.Write(filename)
         elif fileFormat == ".stl":
             write_stl_file(last_shape, filename)
+        elif fileFormat == ".iges":
+            write_iges_file(last_shape, filename)
         # 传递文件给前端
         file = open(filename, "rb")
         response = FileResponse(file)

@@ -74,6 +74,7 @@ function ExportModal() {
   const options = [
     { value: ".step", label: "STEP" },
     { value: ".stl", label: "STL" },
+    { value: ".iges", label: "IGES" },
   ]
   return (
     <Modal
