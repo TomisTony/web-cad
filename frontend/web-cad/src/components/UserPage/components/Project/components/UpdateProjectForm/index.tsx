@@ -41,7 +41,7 @@ function UpdateProjectForm(props: UpdateProjectFormProps) {
       apis
         .updateProject({ userId, projectId: props.projectData?.id, ...values })
         .then(() => {
-          message.success("Create project success.")
+          message.success("Edit project success.")
           props.onFinish()
         })
     })
