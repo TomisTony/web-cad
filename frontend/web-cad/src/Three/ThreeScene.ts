@@ -86,7 +86,7 @@ export class ThreeScene {
       this.renderer.domElement.clientWidth /
         this.renderer.domElement.clientHeight ?? 1,
       0.1,
-      10000,
+      20000,
     )
     this.camera.position.set(0, -300, 200)
     this.camera.up = new THREE.Vector3(0, 0, 1)
@@ -124,7 +124,7 @@ export class ThreeScene {
     //this.controls = new TrackballControls(this.camera, this.renderer.domElement);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement)
     // 使动画循环使用时阻尼或自转 意思是否有惯性
-    this.controls.enableDamping = true
+    this.controls.enableDamping = false
     //动态阻尼系数 就是鼠标拖拽旋转灵敏度
     this.controls.dampingFactor = 0.5
     //是否可以缩放

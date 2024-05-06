@@ -71,7 +71,7 @@ def uploadFile(request: HttpRequest, project_id: int, operator_id: int, last_ope
             shape = read_stl_file(filename)
         elif file.name.lower().endswith(".step") or file.name.lower().endswith(".stp"): 
             shape = read_step_file(filename)
-        elif file.name.lower().endswith(".iges"):
+        elif file.name.lower().endswith(".iges") or file.name.lower().endswith(".igs"):
             shape = read_iges_file(filename)
         # 分两种情况,如果是空项目,则直接返回 BrCAD 对象,否则返回操作后的 BrCAD 对象
         if last_operation_id == -1:
