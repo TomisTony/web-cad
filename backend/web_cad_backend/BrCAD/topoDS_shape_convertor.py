@@ -91,7 +91,7 @@ class TopoDSShapeConvertor:
         added_faces_id = []
         new_faces_id_list_copy = new_faces_id_list.copy()
         for face_id in old_faces_id_list:
-            if face_id in new_faces_id_list:
+            if face_id in new_faces_id_list_copy:
                   new_faces_id_list_copy.remove(face_id)  
             else:
                 deleted_faces_id.append(face_id)
@@ -103,7 +103,7 @@ class TopoDSShapeConvertor:
         added_edges_id = []
         new_edges_id_list_copy = new_edges_id_list.copy()
         for edge_id in old_edges_id_list:
-            if edge_id in new_edges_id_list:
+            if edge_id in new_edges_id_list_copy:
                 new_edges_id_list_copy.remove(edge_id)
             else:
                 deleted_edges_id.append(edge_id)
