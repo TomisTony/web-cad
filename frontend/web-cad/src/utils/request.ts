@@ -1,6 +1,7 @@
 import store from "@/app/store"
 import axios from "axios"
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios"
+export const ip = "localhost:8000"
 
 // 导出Request类，可以用来自定义传递配置来创建实例
 export class Request {
@@ -8,7 +9,7 @@ export class Request {
   instance: AxiosInstance
   // 基础配置，url和超时时间
   baseConfig: AxiosRequestConfig = {
-    baseURL: "http://localhost:8000/api",
+    baseURL: "http://" + ip + "/api",
     timeout: 3000000,
   }
 

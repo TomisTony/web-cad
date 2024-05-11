@@ -1,0 +1,7 @@
+asgiref==3.7.2
+channels==4.0.0
+Django==2.1
+djangorestframework==3.15.1
+djangorestframework_simplejwt==5.3.1
+OCC==0.0.2.dev20190912195130
+rest_framework_simplejwt==0.0.2

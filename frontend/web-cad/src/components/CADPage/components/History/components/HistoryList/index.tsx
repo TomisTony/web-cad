@@ -11,6 +11,7 @@ import { useParams } from "react-router-dom"
 import { refreshHistoryList } from "@/store/history/historyAction"
 import { setSceneToOperationModalAsync } from "@/store/model/modelActions"
 import apis from "@/apis"
+import { ip } from "@/utils/request"
 
 interface HistoryListProps {
   className?: string
@@ -43,7 +44,7 @@ function HistoryList(props: HistoryListProps) {
     })
     // websocket 订阅 HistoryList 更新
     const socket = new Socket(
-      `ws://localhost:8000/websocket?projectId=${projectId}`,
+      `ws://${ip}/websocket?projectId=${projectId}`,
       (message: any) => {
         const data = JSON.parse(message.data)
         if (data.type === "updateHistoryList") {
